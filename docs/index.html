@@ -307,6 +307,15 @@
     .badge-cyan { background: rgba(56, 189, 248, 0.16); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.35); }
     .badge-amber { background: rgba(251, 191, 36, 0.16); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.35); }
     .badge-rose { background: rgba(251, 113, 133, 0.16); color: var(--accent-rose); border: 1px solid rgba(251, 113, 133, 0.35); }
+    .src-cell {
+      white-space: normal !important;
+      min-width: 230px;
+      max-width: 330px;
+      font-size: 0.78rem;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+    .src-cell a { color: var(--accent-cyan); }
 
     /* ── Tabs / Filter Buttons ── */
     .filter-bar {
@@ -452,7 +461,7 @@
         <div class="section-tag">Main Experiment 2 · Table 2</div>
         <h2 class="section-title">🏆 中文长文去 AI 味公共方法排行榜 (Humanization Leaderboard)</h2>
         <p class="section-desc">
-          在完全相同的 10 篇配对科技长文（566 个自然段）上同场评测。点击表头可按任意指标排序。注意观察传统 <strong>LLM 盲判通过率</strong>与 <strong>四维防刷 Z / 事实保真率</strong>之间的巨大剪刀差：多轮口癖对抗改写（TTM / PA）虽骗过了 LLM 裁判（90% 通过），但因改写近半篇幅、丢失 15%–18% 事实且强塞虚假经历，被防刷锁精准拦截。
+          在完全相同的 10 篇配对科技长文（566 个自然段）上同场评测。点击表头可按任意指标排序。<strong>「出处 / Provenance」列</strong>标明每个席位的方法来源：🌟 绿色 = 本基准自建真人语料锚点；🔬 蓝色 = 本工作提出/消融；外部公共基线均附原始论文链接（如 <a href="https://arxiv.org/abs/2509.14543" target="_blank" style="color: var(--accent-cyan);">Catch Me If You Can (EMNLP 2025)</a>、<a href="https://arxiv.org/abs/2507.16799" target="_blank" style="color: var(--accent-cyan);">TTM</a>、<a href="https://arxiv.org/pdf/2610.30006" target="_blank" style="color: var(--accent-cyan);">DetectorScope</a>）。注意观察传统 <strong>LLM 盲判通过率</strong>与 <strong>四维防刷 Z / 事实保真率</strong>之间的巨大剪刀差：多轮口癖对抗改写（TTM / PA）虽骗过了 LLM 裁判（90% 通过），但因改写近半篇幅、丢失 15%–18% 事实且强塞虚假经历，被防刷锁精准拦截。
         </p>
       </div>
 
@@ -469,6 +478,7 @@
             <tr>
               <th onclick="sortTable('lb-table', 0, false)">排名 & 方法名称 ⇅</th>
               <th>类别</th>
+              <th class="src-cell">出处 / Provenance</th>
               <th class="num" onclick="sortTable('lb-table', 2, true)">传统 LLM 盲判</th>
               <th class="num" onclick="sortTable('lb-table', 3, true)">D1 微观拐杖↓</th>
               <th class="num" onclick="sortTable('lb-table', 4, true)">D2 跨句衔接↓</th>
@@ -485,6 +495,7 @@
             <tr class="row-human" data-cat="human">
               <td>🌟 <strong>#1 Human Ceiling (Pre-AI Blogs 2011–2022)</strong></td>
               <td><span class="badge badge-green">Pre-AI 真人锚</span></td>
+              <td class="src-cell">本基准自建语料：陈皓 CoolShell / 阮一峰周刊等 2011–2022 Pre-AI 归档（<a href="#loao" >LOAO §留一博主验证</a>）</td>
               <td class="num">100.0%</td>
               <td class="num">0.28</td>
               <td class="num">0.15</td>
@@ -499,6 +510,7 @@
             <tr class="row-human" data-cat="human">
               <td>🌟 <strong>#2 Human Ceiling (Contemporary Tech Blogs)</strong></td>
               <td><span class="badge badge-green">当代真人博客</span></td>
+              <td class="src-cell">本基准自建语料：云风 CodingNow / piglei / laixintao「卡瓦邦噶！」等当代独立博客（<a href="#loao">LOAO §留一博主验证</a>）</td>
               <td class="num">100.0%</td>
               <td class="num">0.40</td>
               <td class="num">0.13</td>
@@ -513,6 +525,7 @@
             <tr class="row-highlight" data-cat="ours">
               <td>🛠️ <strong>#3 C-LongSlop Guided Repair + Quality Gate (Ours)</strong></td>
               <td><span class="badge badge-cyan">处方微修+门禁</span></td>
+              <td class="src-cell"><strong>本工作提出</strong>：句段级处方单（参照 DetectorScope evidence-block 定向改写协议，<a href="https://arxiv.org/pdf/2610.30006" target="_blank">arXiv 2610.30006</a>）+ 段落门禁消融见 <a href="#antihack">4-Lock §Table 3</a></td>
               <td class="num">—</td>
               <td class="num"><strong>0.26</strong></td>
               <td class="num"><strong>0.09</strong></td>
@@ -527,6 +540,7 @@
             <tr data-cat="baseline">
               <td>📝 <strong>#4 Few-Shot Exemplar Imitation (5-Shot)</strong></td>
               <td><span class="badge badge-amber">范文模仿基线</span></td>
+              <td class="src-cell">公共基线，复现 <a href="https://arxiv.org/abs/2509.14543" target="_blank">Catch Me If You Can? (EMNLP 2025 Findings)</a> 的 Few-Shot 风格模仿改写协议（Prompt 内注入 5 篇真人范文）</td>
               <td class="num">90.0%</td>
               <td class="num">1.00</td>
               <td class="num">0.14</td>
@@ -541,6 +555,7 @@
             <tr data-cat="ours">
               <td>🧪 <strong>#5 C-LongSlop Guided Repair (w/o Gate Ablation)</strong></td>
               <td><span class="badge badge-cyan">无门禁消融组</span></td>
+              <td class="src-cell"><strong>本工作消融</strong>：移除 ParagraphQualityGate 的处方引导微修，用于证明门禁必要性（详见 <a href="#antihack">Table 3 门禁审计</a>）</td>
               <td class="num">—</td>
               <td class="num">1.14</td>
               <td class="num">0.13</td>
@@ -555,6 +570,7 @@
             <tr data-cat="baseline">
               <td>🤖 <strong>#6 Raw LLM Long-Form (Unedited Paired-10)</strong></td>
               <td><span class="badge badge-rose">未编辑 AI 原文</span></td>
+              <td class="src-cell">本基准自建配对语料：与 10 篇真人长文同题的前沿 LLM 原生长文（未经任何编辑，配对协议同 <a href="https://arxiv.org/abs/2509.14543" target="_blank">Catch Me If You Can</a>）</td>
               <td class="num">80.0% (漏检)</td>
               <td class="num">0.72</td>
               <td class="num">0.11</td>
@@ -569,6 +585,7 @@
             <tr data-cat="baseline">
               <td>💬 <strong>#7 Zero-Shot Generic Prompting (Blind Rewrite)</strong></td>
               <td><span class="badge badge-amber">泛泛提示盲改</span></td>
+              <td class="src-cell">公共基线，复现 DeepMind <a href="https://arxiv.org/pdf/2610.30006" target="_blank">DetectorScope (arXiv 2610.30006)</a> Fig.5 的 Generic 泛化改写提示（仅给目标不给定位）</td>
               <td class="num">80.0%</td>
               <td class="num">0.72</td>
               <td class="num">0.11</td>
@@ -583,6 +600,7 @@
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>#8 Two-Stage Style Transfer (TTM 3-Round)</strong></td>
               <td><span class="badge badge-rose">口癖注入/丢事实</span></td>
+              <td class="src-cell">公共基线，<a href="https://arxiv.org/abs/2507.16799" target="_blank">Test-Time-Matching (arXiv 2507.16799)</a> 的「先内容中性化 → 再逐句风格注入」两阶段解耦改写，3 轮迭代</td>
               <td class="num">90.0% (被骗)</td>
               <td class="num">0.70</td>
               <td class="num">0.24</td>
@@ -597,6 +615,7 @@
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>#9 Persona-Adversarial Loop (PA 3-Round)</strong></td>
               <td><span class="badge badge-rose">口癖注入/丢事实</span></td>
+              <td class="src-cell">本基准自建基线：Persona 人设注入 + 裁判反馈多轮对抗改写（设计参照角色扮演范式 <a href="https://arxiv.org/abs/2504.04332" target="_blank">IMPersona, COLM 2025</a> / <a href="https://arxiv.org/abs/2507.16799" target="_blank">TTM</a>）</td>
               <td class="num">90.0% (被骗)</td>
               <td class="num">0.88</td>
               <td class="num">0.18</td>
@@ -611,6 +630,7 @@
             <tr class="row-hacked" data-cat="baseline">
               <td>📋 <strong>#10 Naive Rule-Checklist Rewriting (Single-Sided)</strong></td>
               <td><span class="badge badge-rose">破折号代偿爆炸</span></td>
+              <td class="src-cell">公共基线，单向禁用词表规则提示（复现 <a href="https://arxiv.org/abs/2509.14543" target="_blank">Catch Me If You Can</a> 的显式 checklist 约束改写：「禁用首先/此外，长短句交替」无防代偿锁）</td>
               <td class="num">80.0%</td>
               <td class="num">9.40 🚨</td>
               <td class="num">0.15</td>

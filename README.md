@@ -63,32 +63,32 @@ v1.1 共 **549 篇长文样本**（`dev` 301 篇：`human=140, machine=161`；`h
 
 在 Heldout 集（248 篇长文）与 10 篇配对改写集上，对比传统统计基线、单分数 LLM 裁判与 C-LongSlopBench 探针：
 
-| 检测 / 评价范式 | Heldout AUROC↑ | Pre-AI 真人误杀率 (FPR)↓ | 原生 AI 检出率↑ | 对抗改写检出率↑ |
-|---|---:|---:|---:|---:|
-| 1. Perplexity / Surprisal Baseline | 0.2407 | 16.7% | 30.0% | 20.0% |
-| 2. Burstiness / Sent-Length CV (GPTZero-style) | 0.6522 | 15.2% | 40.0% | 10.0% |
-| 3. Classic Cliche Lexicon (Forbidden Words) | 0.3814 | 15.2% | 50.0% | 10.0% |
-| 4. Single-Score LLM-as-a-Judge (`hy3-ioa`) | 0.6000 | 5.3% | 20.0% (80%漏检) | 10.0% (90%被骗) |
-| **5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)** | **0.8336** | 13.6% | **90.0%** | **80.0%** |
-| **6. C-LongSlop Bipolar Sparse Probe (Ours)** | **0.9702** | **10.6%** | **100.0%** | **80.0%** |
-| **7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)** | **0.9494** | 13.6% | **100.0%** | **90.0%** |
+| 检测 / 评价范式 | 出处 / Provenance | Heldout AUROC↑ | Pre-AI 真人误杀率 (FPR)↓ | 原生 AI 检出率↑ | 对抗改写检出率↑ |
+|---|---|---:|---:|---:|---:|
+| 1. Perplexity / Surprisal Baseline | 经典统计基线（GPTZero/Binoculars 时代通用做法，参考 [SlopBench](https://arxiv.org/pdf/2609.33905) 复现协议） | 0.2407 | 16.7% | 30.0% | 20.0% |
+| 2. Burstiness / Sent-Length CV (GPTZero-style) | 经典统计基线，[GPTZero](https://gptzero.me) 核心句长方差特征的开源复现 | 0.6522 | 15.2% | 40.0% | 10.0% |
+| 3. Classic Cliche Lexicon (Forbidden Words) | 传统禁用套话词表匹配（词表整理自 Slop 风格研究，中文清单为本基准自建校准） | 0.3814 | 15.2% | 50.0% | 10.0% |
+| 4. Single-Score LLM-as-a-Judge (`hy3-ioa`) | 单分数 LLM 盲判裁判（内部模型 hy3-ioa，判 HUMAN/AI 单标签） | 0.6000 | 5.3% | 20.0% (80%漏检) | 10.0% (90%被骗) |
+| **5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)** | **本工作提出**（四维正交探针 + 双边人类分布带 + 四道防刷锁） | **0.8336** | 13.6% | **90.0%** | **80.0%** |
+| **6. C-LongSlop Bipolar Sparse Probe (Ours)** | **本工作实现**（方法配方源自 DeepMind [DetectorScope](https://arxiv.org/pdf/2610.30006) 稀疏特征检测范式，中文 TF-IDF 字符 n-gram + ElasticNet 自训） | **0.9702** | **10.6%** | **100.0%** | **80.0%** |
+| **7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)** | **本工作提出**（四维防刷 Z 与稀疏探针的联合集成判据） | **0.9494** | 13.6% | **100.0%** | **90.0%** |
 
 ### 主实验二（Table 2）：配对长文去 AI 味公共方法排行榜（Humanization Leaderboard，不含内部代号）
 
 在 10 篇同题配对科技长文上，横向评测 2 组真人天花板、1 组未编辑 AI 基线、5 种主流公共去 AI 味范式与我们的处方引导微修方案：
 
-| 梯队与公共方法名称 | LLM 盲判通过率 | D1 微观↓ | D2 衔接↓ | D3 骨架↓ | D4 宏观↓ | 防刷 Z↓ | 稀疏 AI 率↓ | 字符改动% | 事实保真率↑ | **综合总分↑** |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 🌟 **1. Human Ceiling (Pre-AI Blogs 2011–2022)** | 100% | 0.28 | 0.15 | 0.84 | 0.62 | 0.472 | 0.203 | 0.0% | 100.0% | **83.8** |
-| 🌟 **2. Human Ceiling (Contemporary Tech Blogs)** | 100% | 0.40 | 0.13 | 0.74 | 0.14 | 0.413 | 0.252 | 0.0% | 100.0% | **82.9** |
-| 🛠️ **3. C-LongSlop Guided Repair + Quality Gate (Ours)** | — | **0.26** | **0.09** | **1.00** | **0.08** | **0.358** | 0.579 | **3.2%** | **100.0%** | **72.1** |
-| 📝 **4. Few-Shot Exemplar Imitation (5-Shot)** | 90% | 1.00 | 0.14 | 1.14 | 0.11 | 0.595 | 0.557 | 23.0% | 93.5% | **68.4** |
-| 🧪 **5. C-LongSlop Guided Repair (w/o Gate Ablation)** | — | 1.14 | 0.13 | 1.78 | 0.10 | 0.788 | 0.531 | 7.2% | 100.0% | **65.8** |
-| 🤖 **6. Raw LLM Long-Form (Unedited Paired-10)** | 80% (漏检) | 0.72 | 0.11 | 1.07 | 0.09 | 0.497 | 0.685 | 0.0% | 100.0% | **65.8** |
-| 💬 **7. Zero-Shot Generic Prompting (Blind Rewrite)** | 80% | 0.72 | 0.11 | 1.07 | 0.09 | 0.497 | 0.684 | 0.0% | 100.0% | **65.8** |
-| 🎭 **8. Two-Stage Style Transfer (TTM 3-Round)** | 90% (被骗) | 0.70 | 0.24 | 0.80 | 0.08 | 1.180 | 0.387 | **58.7%** | **81.5%** | **64.7** |
-| 🎭 **9. Persona-Adversarial Loop (PA 3-Round)** | 90% (被骗) | 0.88 | 0.18 | 1.03 | 0.06 | 1.537 | 0.389 | **48.1%** | **84.8%** | **59.5** |
-| 📋 **10. Naive Rule-Checklist Rewriting (Single-Sided)** | 80% | **9.40** | 0.15 | 1.07 | 0.12 | **2.684** | 0.669 | 2.7% | 100.0% | **38.0** |
+| 梯队与公共方法名称 | 出处 / Provenance | LLM 盲判通过率 | D1 微观↓ | D2 衔接↓ | D3 骨架↓ | D4 宏观↓ | 防刷 Z↓ | 稀疏 AI 率↓ | 字符改动% | 事实保真率↑ | **综合总分↑** |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 🌟 **1. Human Ceiling (Pre-AI Blogs 2011–2022)** | 本基准自建语料（陈皓 CoolShell / 阮一峰周刊等 Pre-AI 归档，LOAO §留一博主验证） | 100% | 0.28 | 0.15 | 0.84 | 0.62 | 0.472 | 0.203 | 0.0% | 100.0% | **83.8** |
+| 🌟 **2. Human Ceiling (Contemporary Tech Blogs)** | 本基准自建语料（云风 CodingNow / piglei / laixintao 等当代独立博客，LOAO §留一博主验证） | 100% | 0.40 | 0.13 | 0.74 | 0.14 | 0.413 | 0.252 | 0.0% | 100.0% | **82.9** |
+| 🛠️ **3. C-LongSlop Guided Repair + Quality Gate (Ours)** | **本工作提出**（句段级处方单参照 DetectorScope evidence-block 定向改写协议 [arXiv 2610.30006](https://arxiv.org/pdf/2610.30006)） | — | **0.26** | **0.09** | **1.00** | **0.08** | **0.358** | 0.579 | **3.2%** | **100.0%** | **72.1** |
+| 📝 **4. Few-Shot Exemplar Imitation (5-Shot)** | 公共基线，复现 [Catch Me If You Can? (EMNLP 2025 Findings)](https://arxiv.org/abs/2509.14543) 的 Few-Shot 风格模仿改写协议 | 90% | 1.00 | 0.14 | 1.14 | 0.11 | 0.595 | 0.557 | 23.0% | 93.5% | **68.4** |
+| 🧪 **5. C-LongSlop Guided Repair (w/o Gate Ablation)** | **本工作消融**（移除 ParagraphQualityGate，证明门禁必要性，见 Table 3） | — | 1.14 | 0.13 | 1.78 | 0.10 | 0.788 | 0.531 | 7.2% | 100.0% | **65.8** |
+| 🤖 **6. Raw LLM Long-Form (Unedited Paired-10)** | 本基准自建配对语料（与真人长文同题的前沿 LLM 原生长文，未编辑；配对协议同 [Catch Me If You Can](https://arxiv.org/abs/2509.14543)） | 80% (漏检) | 0.72 | 0.11 | 1.07 | 0.09 | 0.497 | 0.685 | 0.0% | 100.0% | **65.8** |
+| 💬 **7. Zero-Shot Generic Prompting (Blind Rewrite)** | 公共基线，复现 DeepMind [DetectorScope (arXiv 2610.30006)](https://arxiv.org/pdf/2610.30006) Fig.5 的 Generic 泛化改写提示 | 80% | 0.72 | 0.11 | 1.07 | 0.09 | 0.497 | 0.684 | 0.0% | 100.0% | **65.8** |
+| 🎭 **8. Two-Stage Style Transfer (TTM 3-Round)** | 公共基线，[Test-Time-Matching (arXiv 2507.16799)](https://arxiv.org/abs/2507.16799) 的「先内容中性化 → 再逐句风格注入」两阶段解耦改写，3 轮迭代 | 90% (被骗) | 0.70 | 0.24 | 0.80 | 0.08 | 1.180 | 0.387 | **58.7%** | **81.5%** | **64.7** |
+| 🎭 **9. Persona-Adversarial Loop (PA 3-Round)** | 本基准自建基线（Persona 人设注入 + 裁判反馈多轮对抗，设计参照 [IMPersona, COLM 2025](https://arxiv.org/abs/2504.04332) / [TTM](https://arxiv.org/abs/2507.16799) 角色扮演范式） | 90% (被骗) | 0.88 | 0.18 | 1.03 | 0.06 | 1.537 | 0.389 | **48.1%** | **84.8%** | **59.5** |
+| 📋 **10. Naive Rule-Checklist Rewriting (Single-Sided)** | 公共基线，单向禁用词表规则提示（复现 [Catch Me If You Can](https://arxiv.org/abs/2509.14543) 的显式 checklist 约束改写，无防代偿锁） | 80% | **9.40** | 0.15 | 1.07 | 0.12 | **2.684** | 0.669 | 2.7% | 100.0% | **38.0** |
 
 ### 主实验三（Table 3）：段落级防刷门禁（Paragraph Quality Gate）消融审计
 
