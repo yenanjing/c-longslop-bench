@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C-LongSlopBench | 中文长文 AI 味可归因与防刷分评测基准</title>
+  <meta name="description" content="C-LongSlopBench (v1.1): Auditable, Anti-Hacking, and Actionable Benchmark for Chinese Long-Form AI Slop Detection and Humanization." />
+  <style>
+    :root {
+      --bg-base: #070b14;
+      --bg-card: rgba(16, 23, 41, 0.82);
+      --bg-card-hover: rgba(24, 34, 60, 0.92);
+      --border-subtle: rgba(148, 163, 184, 0.16);
+      --border-glow: rgba(56, 189, 248, 0.42);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-violet: #a78bfa;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.08), transparent 35%),
+                  radial-gradient(circle at 85% 20%, rgba(167, 139, 250, 0.08), transparent 35%),
+                  var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Top Navigation ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(7, 11, 20, 0.84);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.08rem;
+      color: var(--text-main);
+      text-decoration: none;
+      letter-spacing: 0.2px;
+    }
+    .brand-badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent-cyan); }
+
+    /* ── Layout Container ── */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 48px 24px 88px;
+    }
+
+    /* ── Hero Header ── */
+    .hero {
+      text-align: center;
+      padding: 36px 16px 48px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 48px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      background: rgba(167, 139, 250, 0.12);
+      border: 1px solid rgba(167, 139, 250, 0.32);
+      color: #c4b5fd;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4.2vw, 3.25rem);
+      font-weight: 800;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 10%, #bae6fd 55%, #c4b5fd 95%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+    .hero-sub {
+      max-width: 880px;
+      margin: 0 auto 28px;
+      font-size: 1.08rem;
+      color: var(--text-muted);
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #6d28d9);
+      color: #fff;
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 6px 22px rgba(2, 132, 199, 0.28);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(2, 132, 199, 0.4); }
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.72);
+      color: var(--text-main);
+    }
+    .btn-secondary:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+    /* ── Stat Strip ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 18px 20px;
+      text-align: left;
+    }
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── Section Commons ── */
+    section { margin-bottom: 64px; }
+    .section-header {
+      margin-bottom: 24px;
+    }
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent-cyan);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.96rem;
+      max-width: 860px;
+    }
+
+    /* ── Cards & Grids ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 22px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: rgba(56, 189, 248, 0.35); }
+    .card h3 {
+      font-size: 1.12rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card p { color: var(--text-muted); font-size: 0.92rem; }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+    }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow-x: auto;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    th, td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+      white-space: nowrap;
+    }
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { color: var(--accent-cyan); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(30, 41, 59, 0.45); }
+    .num { font-family: var(--font-mono); text-align: right; }
+    .row-highlight td {
+      background: rgba(56, 189, 248, 0.09);
+      font-weight: 600;
+    }
+    .row-human td {
+      background: rgba(52, 211, 153, 0.06);
+    }
+    .row-hacked td {
+      background: rgba(251, 113, 133, 0.06);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    .badge-green { background: rgba(52, 211, 153, 0.16); color: var(--accent-emerald); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .badge-cyan { background: rgba(56, 189, 248, 0.16); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .badge-amber { background: rgba(251, 191, 36, 0.16); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.35); }
+    .badge-rose { background: rgba(251, 113, 133, 0.16); color: var(--accent-rose); border: 1px solid rgba(251, 113, 133, 0.35); }
+
+    /* ── Tabs / Filter Buttons ── */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 7px 15px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent-cyan);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    /* ── Interactive Prescription Sandbox ── */
+    .sandbox-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 860px) { .sandbox-box { grid-template-columns: 1fr; } }
+    .code-pane {
+      background: rgba(10, 15, 28, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 18px;
+      font-size: 0.9rem;
+      line-height: 1.75;
+    }
+    .pane-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tell-mark {
+      background: rgba(251, 113, 133, 0.22);
+      border-bottom: 2px solid var(--accent-rose);
+      color: #fecdd3;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .fix-mark {
+      background: rgba(52, 211, 153, 0.2);
+      border-bottom: 2px solid var(--accent-emerald);
+      color: #a7f3d0;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    pre.BibTeX {
+      background: rgba(10, 15, 28, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+
+    footer {
+      text-align: center;
+      padding-top: 36px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.86rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="#" class="brand">
+        <span>🧭 C-LongSlopBench</span>
+        <span class="brand-badge">v1.1 Release</span>
+      </a>
+      <div class="nav-links">
+        <a href="#leaderboard">Leaderboard (Table 2)</a>
+        <a href="#evaluators">Evaluator Benchmark (Table 1)</a>
+        <a href="#antihack">4-Lock Anti-Hacking</a>
+        <a href="#loao">Multi-Author LOAO</a>
+        <a href="#sandbox">Prescription Sandbox</a>
+        <a href="https://yenanjing.github.io/" target="_blank">Author Home ↗</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-eyebrow">⚡ Auditable · Anti-Hacking · Actionable Prescription Benchmark</div>
+      <h1>C-LongSlopBench: 中文长文 AI 味检测与防刷分评测基准</h1>
+      <p class="hero-sub">
+        针对 1,000–10,000 字中文深度长文的确定性诊断基准。告别黑盒「单分数 LLM 裁判」的 80% 漏检与口癖刷分骗局，通过<strong>四维正交探针 + 四道物理防刷锁 + 双极稀疏特征归因</strong>，在 50ms 内输出精确到句段的《病灶定位与微修处方单》。
+      </p>
+      <div class="hero-actions">
+        <a href="#leaderboard" class="btn btn-primary">🏆 查看官方排行榜 (Leaderboard)</a>
+        <a href="#sandbox" class="btn btn-secondary">🔬 在线体验句段级处方微修</a>
+        <a href="https://github.com/yenanjing/c-longslop-bench" target="_blank" class="btn btn-secondary">📦 GitHub 代码与数据集</a>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-val">549 篇</div>
+          <div class="stat-label">标准跨领域长文集（含陈皓 CoolShell、阮一峰等 6 大真人博主 109 篇黄金锚点）</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">0.9697</div>
+          <div class="stat-label">留一博主交叉验证 (LOAO) 平均 AUROC — 零样本泛化至未知真人作者</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">0.9494</div>
+          <div class="stat-label">Heldout 全集判别 AUROC（单分数 LLM 裁判仅 0.6000，Perplexity 仅 0.2407）</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">3.2% 改动</div>
+          <div class="stat-label">处方引导 + 段落门禁微修预算，100% 事实保真并夺得改写组第一 (Z=0.358)</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Experiment 2: Leaderboard -->
+    <section id="leaderboard">
+      <div class="section-header">
+        <div class="section-tag">Main Experiment 2 · Table 2</div>
+        <h2 class="section-title">🏆 中文长文去 AI 味公共方法排行榜 (Humanization Leaderboard)</h2>
+        <p class="section-desc">
+          在完全相同的 10 篇配对科技长文（566 个自然段）上同场评测。点击表头可按任意指标排序。注意观察传统 <strong>LLM 盲判通过率</strong>与 <strong>四维防刷 Z / 事实保真率</strong>之间的巨大剪刀差：多轮口癖对抗改写（TTM / PA）虽骗过了 LLM 裁判（90% 通过），但因改写近半篇幅、丢失 15%–18% 事实且强塞虚假经历，被防刷锁精准拦截。
+        </p>
+      </div>
+
+      <div class="filter-bar">
+        <button class="tab-btn active" onclick="filterLeaderboard('all', this)">全部参评席位 (10)</button>
+        <button class="tab-btn" onclick="filterLeaderboard('human', this)">🌟 真人天花板基准 (2)</button>
+        <button class="tab-btn" onclick="filterLeaderboard('ours', this)">🛠️ C-LongSlop 处方微修 (2)</button>
+        <button class="tab-btn" onclick="filterLeaderboard('baseline', this)">📋 公共改写基线与代偿样本 (6)</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="lb-table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('lb-table', 0, false)">排名 & 方法名称 ⇅</th>
+              <th>类别</th>
+              <th class="num" onclick="sortTable('lb-table', 2, true)">传统 LLM 盲判</th>
+              <th class="num" onclick="sortTable('lb-table', 3, true)">D1 微观拐杖↓</th>
+              <th class="num" onclick="sortTable('lb-table', 4, true)">D2 跨句衔接↓</th>
+              <th class="num" onclick="sortTable('lb-table', 5, true)">D3 骨架克隆↓</th>
+              <th class="num" onclick="sortTable('lb-table', 6, true)">D4 宏观回环↓</th>
+              <th class="num" onclick="sortTable('lb-table', 7, true)">四维防刷 Z↓</th>
+              <th class="num" onclick="sortTable('lb-table', 8, true)">稀疏 AI 率↓</th>
+              <th class="num" onclick="sortTable('lb-table', 9, true)">字符改动%</th>
+              <th class="num" onclick="sortTable('lb-table', 10, true)">事实保真率↑</th>
+              <th class="num" onclick="sortTable('lb-table', 11, true)">C-LongSlop 总分↑</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-human" data-cat="human">
+              <td>🌟 <strong>#1 Human Ceiling (Pre-AI Blogs 2011–2022)</strong></td>
+              <td><span class="badge badge-green">Pre-AI 真人锚</span></td>
+              <td class="num">100.0%</td>
+              <td class="num">0.28</td>
+              <td class="num">0.15</td>
+              <td class="num">0.84</td>
+              <td class="num">0.62</td>
+              <td class="num">0.472</td>
+              <td class="num">0.203</td>
+              <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
+              <td class="num"><strong>83.8</strong></td>
+            </tr>
+            <tr class="row-human" data-cat="human">
+              <td>🌟 <strong>#2 Human Ceiling (Contemporary Tech Blogs)</strong></td>
+              <td><span class="badge badge-green">当代真人博客</span></td>
+              <td class="num">100.0%</td>
+              <td class="num">0.40</td>
+              <td class="num">0.13</td>
+              <td class="num">0.74</td>
+              <td class="num">0.14</td>
+              <td class="num">0.413</td>
+              <td class="num">0.252</td>
+              <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
+              <td class="num"><strong>82.9</strong></td>
+            </tr>
+            <tr class="row-highlight" data-cat="ours">
+              <td>🛠️ <strong>#3 C-LongSlop Guided Repair + Quality Gate (Ours)</strong></td>
+              <td><span class="badge badge-cyan">处方微修+门禁</span></td>
+              <td class="num">—</td>
+              <td class="num"><strong>0.26</strong></td>
+              <td class="num"><strong>0.09</strong></td>
+              <td class="num"><strong>1.00</strong></td>
+              <td class="num"><strong>0.08</strong></td>
+              <td class="num"><strong>0.358</strong></td>
+              <td class="num">0.579</td>
+              <td class="num"><strong>3.2%</strong></td>
+              <td class="num"><strong>100.0%</strong></td>
+              <td class="num"><strong>72.1</strong></td>
+            </tr>
+            <tr data-cat="baseline">
+              <td>📝 <strong>#4 Few-Shot Exemplar Imitation (5-Shot)</strong></td>
+              <td><span class="badge badge-amber">范文模仿基线</span></td>
+              <td class="num">90.0%</td>
+              <td class="num">1.00</td>
+              <td class="num">0.14</td>
+              <td class="num">1.14</td>
+              <td class="num">0.11</td>
+              <td class="num">0.595</td>
+              <td class="num">0.557</td>
+              <td class="num">23.0%</td>
+              <td class="num">93.5%</td>
+              <td class="num">68.4</td>
+            </tr>
+            <tr data-cat="ours">
+              <td>🧪 <strong>#5 C-LongSlop Guided Repair (w/o Gate Ablation)</strong></td>
+              <td><span class="badge badge-cyan">无门禁消融组</span></td>
+              <td class="num">—</td>
+              <td class="num">1.14</td>
+              <td class="num">0.13</td>
+              <td class="num">1.78</td>
+              <td class="num">0.10</td>
+              <td class="num">0.788</td>
+              <td class="num">0.531</td>
+              <td class="num">7.2%</td>
+              <td class="num">100.0%</td>
+              <td class="num">65.8</td>
+            </tr>
+            <tr data-cat="baseline">
+              <td>🤖 <strong>#6 Raw LLM Long-Form (Unedited Paired-10)</strong></td>
+              <td><span class="badge badge-rose">未编辑 AI 原文</span></td>
+              <td class="num">80.0% (漏检)</td>
+              <td class="num">0.72</td>
+              <td class="num">0.11</td>
+              <td class="num">1.07</td>
+              <td class="num">0.09</td>
+              <td class="num">0.497</td>
+              <td class="num">0.685</td>
+              <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
+              <td class="num">65.8</td>
+            </tr>
+            <tr data-cat="baseline">
+              <td>💬 <strong>#7 Zero-Shot Generic Prompting (Blind Rewrite)</strong></td>
+              <td><span class="badge badge-amber">泛泛提示盲改</span></td>
+              <td class="num">80.0%</td>
+              <td class="num">0.72</td>
+              <td class="num">0.11</td>
+              <td class="num">1.07</td>
+              <td class="num">0.09</td>
+              <td class="num">0.497</td>
+              <td class="num">0.684</td>
+              <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
+              <td class="num">65.8</td>
+            </tr>
+            <tr class="row-hacked" data-cat="baseline">
+              <td>🎭 <strong>#8 Two-Stage Style Transfer (TTM 3-Round)</strong></td>
+              <td><span class="badge badge-rose">口癖注入/丢事实</span></td>
+              <td class="num">90.0% (被骗)</td>
+              <td class="num">0.70</td>
+              <td class="num">0.24</td>
+              <td class="num">0.80</td>
+              <td class="num">0.08</td>
+              <td class="num">1.180</td>
+              <td class="num">0.387</td>
+              <td class="num">58.7%</td>
+              <td class="num">81.5% 🚨</td>
+              <td class="num">64.7</td>
+            </tr>
+            <tr class="row-hacked" data-cat="baseline">
+              <td>🎭 <strong>#9 Persona-Adversarial Loop (PA 3-Round)</strong></td>
+              <td><span class="badge badge-rose">口癖注入/丢事实</span></td>
+              <td class="num">90.0% (被骗)</td>
+              <td class="num">0.88</td>
+              <td class="num">0.18</td>
+              <td class="num">1.03</td>
+              <td class="num">0.06</td>
+              <td class="num">1.537</td>
+              <td class="num">0.389</td>
+              <td class="num">48.1%</td>
+              <td class="num">84.8% 🚨</td>
+              <td class="num">59.5</td>
+            </tr>
+            <tr class="row-hacked" data-cat="baseline">
+              <td>📋 <strong>#10 Naive Rule-Checklist Rewriting (Single-Sided)</strong></td>
+              <td><span class="badge badge-rose">破折号代偿爆炸</span></td>
+              <td class="num">80.0%</td>
+              <td class="num">9.40 🚨</td>
+              <td class="num">0.15</td>
+              <td class="num">1.07</td>
+              <td class="num">0.12</td>
+              <td class="num">2.684</td>
+              <td class="num">0.669</td>
+              <td class="num">2.7%</td>
+              <td class="num">100.0%</td>
+              <td class="num">38.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Main Experiment 1: Evaluator Benchmark -->
+    <section id="evaluators">
+      <div class="section-header">
+        <div class="section-tag">Main Experiment 1 · Table 1</div>
+        <h2 class="section-title">🧭 检测器与 LLM 裁判跨领域对抗横评 (Evaluator Benchmark)</h2>
+        <p class="section-desc">
+          在 Heldout 盲测集（248 篇长文，含 6 位真人博主与多领域 AI）及 10 篇配对改写对抗集上，对比经典困惑度、句长方差（Burstiness）、传统套话词表、单分数 LLM 裁判与 C-LongSlopBench 探针。
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table id="eval-table">
+          <thead>
+            <tr>
+              <th>检测 / 评价范式 (Detector / Evaluation Paradigm)</th>
+              <th class="num">Heldout 全集 AUROC↑</th>
+              <th class="num">Pre-AI 真人误杀率 (FPR)↓</th>
+              <th class="num">原生 AI 检出率 (TPR)↑</th>
+              <th class="num">对抗改写检出率 (Adv TPR)↑</th>
+              <th>核心实证结论</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. Perplexity / Surprisal Baseline</td>
+              <td class="num">0.2407</td>
+              <td class="num">16.7%</td>
+              <td class="num">30.0%</td>
+              <td class="num">20.0%</td>
+              <td><span class="badge badge-rose">方向倒置</span> 现代 LLM 长文比人类更平滑，传统困惑度彻底失效</td>
+            </tr>
+            <tr>
+              <td>2. Burstiness / Sent-Length CV (GPTZero-style)</td>
+              <td class="num">0.6522</td>
+              <td class="num">15.2%</td>
+              <td class="num">40.0%</td>
+              <td class="num">10.0%</td>
+              <td><span class="badge badge-amber">易被绕过</span> 随便剁碎几个短句即可刷高句长方差，对抗检出仅 10%</td>
+            </tr>
+            <tr>
+              <td>3. Classic Cliche Lexicon (Forbidden Words)</td>
+              <td class="num">0.3814</td>
+              <td class="num">15.2%</td>
+              <td class="num">50.0%</td>
+              <td class="num">10.0%</td>
+              <td><span class="badge badge-rose">词表过时</span> 2026 模型早已洗净「首先/综上所述」，单看套话完全抓瞎</td>
+            </tr>
+            <tr>
+              <td>4. Single-Score LLM-as-a-Judge (<code>hy3-ioa</code>)</td>
+              <td class="num">0.6000</td>
+              <td class="num"><strong>5.3%</strong></td>
+              <td class="num">20.0%</td>
+              <td class="num">10.0%</td>
+              <td><span class="badge badge-rose">裁判失明</span> 对信息密集的科技 AI 原文 80% 漏检，对口癖改写 90% 被骗</td>
+            </tr>
+            <tr class="row-highlight">
+              <td><strong>5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)</strong></td>
+              <td class="num"><strong>0.8336</strong></td>
+              <td class="num">13.6%</td>
+              <td class="num"><strong>90.0%</strong></td>
+              <td class="num"><strong>80.0%</strong></td>
+              <td><span class="badge badge-cyan">结构防刷</span> 纯确定性语法/连贯性/宏观探针，对抗检出率提升 8 倍</td>
+            </tr>
+            <tr class="row-highlight">
+              <td><strong>6. C-LongSlop Bipolar Sparse Probe (Ours)</strong></td>
+              <td class="num"><strong>0.9702</strong></td>
+              <td class="num"><strong>10.6%</strong></td>
+              <td class="num"><strong>100.0%</strong></td>
+              <td class="num"><strong>80.0%</strong></td>
+              <td><span class="badge badge-cyan">可解释归因</span> 专名掩码后的字符/标点骨架 ElasticNet 探针，毫秒级出证据块</td>
+            </tr>
+            <tr class="row-highlight">
+              <td><strong>7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)</strong></td>
+              <td class="num"><strong>0.9494</strong></td>
+              <td class="num">13.6%</td>
+              <td class="num"><strong>100.0%</strong></td>
+              <td class="num"><strong>90.0%</strong></td>
+              <td><span class="badge badge-green">SOTA 综合</span> 原生 AI 100% 检出，且抓出 90% 骗过 LLM 裁判的伪人味改写</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4-Dim Probes & 4 Anti-Hacking Locks -->
+    <section id="antihack">
+      <div class="section-header">
+        <div class="section-tag">Architecture · Four Orthogonal Dimensions & Four Anti-Hacking Locks</div>
+        <h2 class="section-title">🛡️ 四维正交探针 × 四道物理防刷锁（为什么刷不烂？）</h2>
+        <p class="section-desc">
+          传统单向指标（如「多用语气词」「提高句长方差」）极易被模型钻空子。C-LongSlopBench 将所有连续特征锚定在多博主真实人类分布的双边区间 <code>[P10, P90]</code> 内，并绑定成对张力锁。
+        </p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 24px;">
+        <div class="card">
+          <h3>🔬 D1 微观气口与标点拐杖</h3>
+          <p>联合监控中文口语缓冲词率（<code>其实/说白了/吧/呢</code>）与<strong>解释性标点拐杖总密度</strong>（破折号 <code>——</code> + 括号注释 <code>（E）</code> + 冒号枚举 <code>：</code>）。</p>
+          <div class="pill-list">
+            <span class="pill">M1_speech_buffer_rate</span>
+            <span class="pill">M1_punct_crutch_total</span>
+            <span class="pill">M3_MATTR_band</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🔗 D2 跨句推进与信息流</h3>
+          <p>基于 OSU <code>Old-to-New</code> 连贯链与 206 万字参考 LM 的逐词 Surprisal，检测相邻句实词/代词搭扣断裂率与句首生硬信息冲击。</p>
+          <div class="pill-list">
+            <span class="pill">M2_cohesion_break_rate</span>
+            <span class="pill">UID_onset_minus_end_surp</span>
+            <span class="pill">M2_new_topic_abrupt</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🦴 D3 句式骨架与起手式克隆</h3>
+          <p>抽离具体实词只保留词性序列（POS 4-gram）与各自然段首句词性模式，专抓「换词不换骨」的隐蔽排比与提纲填空同质化。</p>
+          <div class="pill-list">
+            <span class="pill">M3_opener_homogeneity</span>
+            <span class="pill">M2_pos_template_rep</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🏔️ D4 宏观回环与中段塌陷</h3>
+          <p>基于 SciSlop 远距句子回环重合度与 ConStory 全文 30%–70% 中段具象锚点（数字/专名/引语）衰减率，捕捉长文中段空洞化。</p>
+          <div class="pill-list">
+            <span class="pill">M3_macro_redundancy</span>
+            <span class="pill">M3_mid_concrete_slump</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>恶意刷分攻击类型 (Reward Hacking Attack Simulation)</th>
+              <th class="num">传统单向脆弱评分 (越低越好)</th>
+              <th class="num">C-LongSlop 防刷 Z (越低越好)</th>
+              <th class="num">事实保真红线</th>
+              <th class="num">HumanPass 得分↑</th>
+              <th>触发的防刷锁与拦截机制</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-human">
+              <td>🌟 <strong>真实人类基准均值 (Authentic Human Baseline)</strong></td>
+              <td class="num">0.094</td>
+              <td class="num"><strong>0.171</strong></td>
+              <td class="num"><span class="badge badge-green">PASS</span></td>
+              <td class="num"><strong>94.2</strong></td>
+              <td>落在人类真实 <code>[P10, P90]</code> 钟形带中心</td>
+            </tr>
+            <tr class="row-hacked">
+              <td>💥 <strong>Hack A：口水词轰炸</strong>（每段尾强塞「其实说白了吧，你想想呢」）</td>
+              <td class="num"><strong>0.000 (被骗满分!)</strong></td>
+              <td class="num"><strong>4.739 (重罚!)</strong></td>
+              <td class="num"><span class="badge badge-green">PASS</span></td>
+              <td class="num"><strong>19.0</strong></td>
+              <td><strong>Lock 1 双边分布带上限锁</strong>：超出人类 P90 上界按标准差倍数重罚</td>
+            </tr>
+            <tr class="row-hacked">
+              <td>✂️ <strong>Hack B：剁碎短句刷节奏</strong>（把逗号全改句号强刷 Burstiness）</td>
+              <td class="num">0.638</td>
+              <td class="num"><strong>2.969 (重罚!)</strong></td>
+              <td class="num"><span class="badge badge-green">PASS</span></td>
+              <td class="num"><strong>35.4</strong></td>
+              <td><strong>Lock 2 成对张力耦合锁</strong>：跨句搭扣断裂 × 句首惊奇度冲击触发乘性惩罚</td>
+            </tr>
+            <tr class="row-hacked">
+              <td>🔄 <strong>Hack C：标点拐杖转移</strong>（禁掉破折号后全部换成括号与冒号）</td>
+              <td class="num">5.888</td>
+              <td class="num"><strong>2.064 (不降反升!)</strong></td>
+              <td class="num"><span class="badge badge-green">PASS</span></td>
+              <td class="num"><strong>48.6</strong></td>
+              <td><strong>Lock 2 标点解释拐杖总量守恒锁</strong>：破折号+括号+冒号合并计权，堵死符号转移</td>
+            </tr>
+            <tr class="row-hacked">
+              <td>🗑️ <strong>Hack D：删减硬核数据段</strong>（删掉含小数的难句换取低复杂度）</td>
+              <td class="num">0.281</td>
+              <td class="num">2.084</td>
+              <td class="num"><span class="badge badge-rose">REJECT</span></td>
+              <td class="num"><strong>0.0</strong></td>
+              <td><strong>Lock 3 原子事实锚点红线</strong>：核心实验数字/专名丢失直接一票否决清零</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Leave-One-Author-Out Cross Validation -->
+    <section id="loao">
+      <div class="section-header">
+        <div class="section-tag">Generalization Audit · Leave-One-Author-Out (LOAO)</div>
+        <h2 class="section-title">👥 多博主真实人类锚点与留一交叉验证（告别单一博主口癖偏置）</h2>
+        <p class="section-desc">
+          每次将 1 位真人博主的全部文章从训练集和分布带拟合中<strong>彻底剔除（Zero-Shot Unseen Blogger）</strong>，仅用其余作者训练探针，验证评测器对从未见过的真人写作者是否依然零误杀。6 位未知博主平均联合 AUROC 达 <strong>0.9697</strong>。
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>被留出的未知真人博主 (Zero-Shot Unseen Blogger)</th>
+              <th>真实身份与时代属性</th>
+              <th class="num">长文篇数</th>
+              <th class="num">平均字数</th>
+              <th class="num">四维防刷 Z AUROC</th>
+              <th class="num">双极稀疏探针 AUROC</th>
+              <th class="num">联合判据 AUROC↑</th>
+              <th class="num">未知博主被判 AI 概率↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>陈皓 (<code>chenhao_coolshell</code>)</strong></td>
+              <td>左耳朵耗子·酷壳博客（<strong>2011–2022 Pre-AI 黄金锚</strong>）</td>
+              <td class="num">25</td>
+              <td class="num">4,412</td>
+              <td class="num">0.7768</td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><span class="badge badge-green">0.252 (稳居人类区)</span></td>
+            </tr>
+            <tr>
+              <td><strong>阮一峰 (<code>ruanyifeng</code>)</strong></td>
+              <td>《科技爱好者周刊》刊首语随笔（<strong>2019–2021 Pre-AI 黄金锚</strong>）</td>
+              <td class="num">22</td>
+              <td class="num">823</td>
+              <td class="num">0.8812</td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>0.9545</strong></td>
+              <td class="num"><span class="badge badge-green">0.231 (稳居人类区)</span></td>
+            </tr>
+            <tr>
+              <td><strong>云风 (<code>yunfeng</code>)</strong></td>
+              <td>吴云洋·中国游戏引擎泰斗（CodingNow 20 年独立博客）</td>
+              <td class="num">15</td>
+              <td class="num">4,356</td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><span class="badge badge-green">0.288 (稳居人类区)</span></td>
+            </tr>
+            <tr>
+              <td><strong>piglei (<code>piglei</code>)</strong></td>
+              <td>《Python 工匠》作者（软件工程哲学独立博客）</td>
+              <td class="num">20</td>
+              <td class="num">4,187</td>
+              <td class="num">0.7415</td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>0.9886</strong></td>
+              <td class="num"><span class="badge badge-green">0.363 (稳居人类区)</span></td>
+            </tr>
+            <tr>
+              <td><strong>laixintao (<code>kawabangga</code>)</strong></td>
+              <td>知名基础设施工程师（「卡瓦邦噶！」独立博客）</td>
+              <td class="num">8</td>
+              <td class="num">3,233</td>
+              <td class="num">0.8295</td>
+              <td class="num"><strong>0.8750</strong></td>
+              <td class="num"><strong>0.8750</strong></td>
+              <td class="num"><span class="badge badge-green">0.324 (稳居人类区)</span></td>
+            </tr>
+            <tr>
+              <td><strong>数字生命卡兹克 (<code>kazike</code>)</strong></td>
+              <td>头部科技公众号亲笔长文</td>
+              <td class="num">19</td>
+              <td class="num">3,150</td>
+              <td class="num"><strong>0.9952</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><span class="badge badge-green">0.203 (稳居人类区)</span></td>
+            </tr>
+            <tr class="row-highlight">
+              <td><strong>6 大真人博主 LOAO 宏平均 (Macro Average)</strong></td>
+              <td>跨越 2011–2026 年、涵盖硬核架构/科技评论/随笔多文风</td>
+              <td class="num"><strong>109</strong></td>
+              <td class="num"><strong>3,522</strong></td>
+              <td class="num"><strong>0.8707</strong></td>
+              <td class="num"><strong>0.9792</strong></td>
+              <td class="num"><strong>0.9697</strong></td>
+              <td class="num"><span class="badge badge-cyan">0.277 (&lt;0.50 全员通过)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Interactive Prescription Sandbox -->
+    <section id="sandbox">
+      <div class="section-header">
+        <div class="section-tag">Actionable Diagnostics · Interactive Prescription Sandbox</div>
+        <h2 class="section-title">🔬 句段级《病灶处方单》与段落门禁微修实例对比</h2>
+        <p class="section-desc">
+          DeepMind DetectorScope 证明：只给分数让模型盲改，翻转率不足 8.7%；而给出<strong>精确到句段的触发证据 <code>[[...]]</code> 与定向修复处方</strong>，1 轮微修即可消除病灶。点击下方病灶类型切换查看真实样本对比：
+        </p>
+      </div>
+
+      <div class="filter-bar">
+        <button class="tab-btn active" onclick="showCase(0, this)">案例 1：破折号同位语 + 冒号提示体 (EM_DASH & COLON)</button>
+        <button class="tab-btn" onclick="showCase(1, this)">案例 2：段首无搭扣硬抛新概念 (ABRUPT_ONSET_BREAK)</button>
+        <button class="tab-btn" onclick="showCase(2, this)">案例 3：句内括号机器编号癖 (PARENTHETICAL_ENUM_TIC)</button>
+        <button class="tab-btn" onclick="showCase(3, this)">案例 4：中段抽象机制空转 (MID_SECTION_ABSTRACT_DRIFT)</button>
+      </div>
+
+      <div class="sandbox-box">
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>🚨 微修前病灶段落 + 自动探针处方单</span>
+            <span class="badge badge-rose" id="case-tag">EM_DASH_CRUTCH + COLON_PROMPT_TIC</span>
+          </div>
+          <div id="case-before" style="margin-bottom: 14px;">
+            <span class="tell-mark">[[先交代一句前提：]]</span>Codex 是厂商自己做的、专门面向终端的 harness，不是拿来凑数的弱基线。同一个 GPT-5.3-Codex，权重一行没动，在 Terminal-Bench 上还是被拉开了一截<span class="tell-mark">[[——]]</span>拉开的幅度，放到后面三个基准并排看，落在 6.7 到 16.7 个百分点这个区间里。
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: #cbd5e1;" id="case-rx">
+            <strong>📋 自动生成的定向修复处方：</strong><br/>
+            1. 去掉破折号 <code>——</code>，改用自然句末断句与口语顺承词（「至于拉开的幅度有多大」）把解释顺下来，严禁代偿性替换为括号 <code>（）</code>；<br/>
+            2. 消除段首「总结词：展开」的冒号提示体，改为自然主谓宾陈述。
+          </div>
+        </div>
+
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>✅ 处方引导 1 轮手术后（通过 ParagraphQualityGate）</span>
+            <span class="badge badge-green" id="case-gain">D1 偏离度 -87.5% · 事实锚点 100% 保留</span>
+          </div>
+          <div id="case-after" style="margin-bottom: 14px;">
+            <span class="fix-mark">咱们先交代一句前提，我觉得</span> Codex 是厂商自己做的、专门面向终端的 harness，不是拿来凑数的弱基线。同一个 GPT-5.3-Codex，权重一行没动，在 Terminal-Bench 上还是被拉开了一截<span class="fix-mark">。至于拉开的幅度有多大</span>，放到后面三个基准并排看，落在 6.7 到 16.7 个百分点这个区间里。
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: var(--accent-emerald);" id="case-audit">
+            <strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>
+            • 关键数字锚点 <code>5.3</code>, <code>6.7</code>, <code>16.7</code> 与专名 <code>Codex</code>, <code>Terminal-Bench</code> 保留率：<strong>100.0% (PASS)</strong><br/>
+            • 稀疏探针 AI 特征 <code>—— (+0.268)</code> 与 <code>：(+0.246)</code> 已熄灭，激活人类特征 <code>我觉得 (-1.359)</code>。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Start & Citation -->
+    <section id="quickstart">
+      <div class="grid-2">
+        <div>
+          <div class="section-tag">Quick Start</div>
+          <h3 style="margin-bottom: 10px;">⚡ 3 行命令运行评测与处方生成</h3>
+          <pre class="BibTeX"># 1. 重建可复现的多博主标准数据集 (549 篇, seed=42)
+python3 build_bench_dataset.py
+
+# 2. 运行官方四锁防刷评测器并输出句段级处方单
+python3 evaluators/antihack_scorer.py \
+  --input data/processed/c_longslop_bench_v1_1.jsonl \
+  --split heldout --with-prescriptions \
+  --output results/heldout_scores_v1_1.json
+
+# 3. 复现论文全部三大主实验 (Table 1, Table 2, Table 3)
+python3 run_main_bench_experiments.py</pre>
+        </div>
+        <div>
+          <div class="section-tag">Citation</div>
+          <h3 style="margin-bottom: 10px;">📖 引用 C-LongSlopBench</h3>
+          <pre class="BibTeX">@misc{li2026clongslopbench,
+  title   = {C-LongSlopBench: An Auditable and Anti-Hacking Benchmark
+             for Chinese Long-Form AI Text Detection and Humanization},
+  author  = {Wenwei Li},
+  year    = {2026},
+  url     = {https://yenanjing.github.io/c-longslop-bench/}
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      C-LongSlopBench v1.1 · Built by <a href="https://yenanjing.github.io/" style="color: var(--accent-cyan); text-decoration: none;">Wenwei Li (@yenanjing)</a> · 100% Deterministic & Reproducible Evaluation
+    </footer>
+  </div>
+
+  <script>
+    // ── Table Filter ──
+    function filterLeaderboard(cat, btn) {
+      document.querySelectorAll('#leaderboard .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('#lb-table tbody tr').forEach(row => {
+        if (cat === 'all' || row.dataset.cat === cat) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // ── Table Sort ──
+    const sortDir = {};
+    function sortTable(tableId, colIdx, isNumeric) {
+      const table = document.getElementById(tableId);
+      const tbody = table.tBodies[0];
+      const rows = Array.from(tbody.rows);
+      const key = tableId + '_' + colIdx;
+      sortDir[key] = !sortDir[key];
+      const asc = sortDir[key];
+
+      rows.sort((a, b) => {
+        let va = a.cells[colIdx].innerText.replace(/[^0-9.\-]/g, '');
+        let vb = b.cells[colIdx].innerText.replace(/[^0-9.\-]/g, '');
+        if (isNumeric) {
+          let na = parseFloat(va);
+          let nb = parseFloat(vb);
+          if (isNaN(na)) na = asc ? 999999 : -999999;
+          if (isNaN(nb)) nb = asc ? 999999 : -999999;
+          return asc ? na - nb : nb - na;
+        }
+        return asc
+          ? a.cells[colIdx].innerText.localeCompare(b.cells[colIdx].innerText)
+          : b.cells[colIdx].innerText.localeCompare(a.cells[colIdx].innerText);
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    }
+
+    // ── Prescription Sandbox Cases ──
+    const CASES = [
+      {
+        tag: "EM_DASH_CRUTCH + COLON_PROMPT_TIC",
+        before: `<span class="tell-mark">[[先交代一句前提：]]</span>Codex 是厂商自己做的、专门面向终端的 harness，不是拿来凑数的弱基线。同一个 GPT-5.3-Codex，权重一行没动，在 Terminal-Bench 上还是被拉开了一截<span class="tell-mark">[[——]]</span>拉开的幅度，放到后面三个基准并排看，落在 6.7 到 16.7 个百分点这个区间里。`,
+        rx: `<strong>📋 自动生成的定向修复处方：</strong><br/>1. 去掉破折号 <code>——</code>，改用自然句末断句与口语顺承词（「至于拉开的幅度有多大」）把解释顺下来，严禁代偿性替换为括号 <code>（）</code>；<br/>2. 消除段首「总结词：展开」的冒号提示体，改为自然主谓宾陈述。`,
+        gain: "D1 偏离度 -87.5% · 事实锚点 100% 保留",
+        after: `<span class="fix-mark">咱们先交代一句前提，我觉得</span> Codex 是厂商自己做的、专门面向终端的 harness，不是拿来凑数的弱基线。同一个 GPT-5.3-Codex，权重一行没动，在 Terminal-Bench 上还是被拉开了一截<span class="fix-mark">。至于拉开的幅度有多大</span>，放到后面三个基准并排看，落在 6.7 到 16.7 个百分点这个区间里。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 关键数字锚点 <code>5.3</code>, <code>6.7</code>, <code>16.7</code> 与专名 <code>Codex</code>, <code>Terminal-Bench</code> 保留率：<strong>100.0% (PASS)</strong><br/>• 稀疏探针 AI 特征 <code>—— (+0.268)</code> 与 <code>：(+0.246)</code> 已熄灭，激活人类特征 <code>我觉得 (-1.359)</code>。`
+      },
+      {
+        tag: "ABRUPT_ONSET_BREAK (OSU Old-to-New Violation)",
+        before: `（上一段末：……复杂题该检索的没检索，该多步的单步交卷。平均分最优承诺不了每一类都最优。）<br/><br/><span class="tell-mark">[[维度坐标决定下一刀落在哪。]]</span>失败发生时没有归因坐标，你只知道这题错了，说不上错在哪一段，只能整段重写提示再碰一次运气。`,
+        rx: `<strong>📋 自动生成的定向修复处方：</strong><br/>1. 本段首句直接硬抛生僻新概念「维度坐标」，与上一段末尾「复杂题翻车」零实词交集，导致句首惊奇度冲击高达 4.8 bits；<br/>2. 请在句首补上承接上一段末尾概念的旧信息搭扣，遵循「句首接旧知、句尾抛新知」。`,
+        gain: "D2 跨句断链率 -33.9% · 句首冲击恢复正常",
+        after: `（上一段末：……复杂题该检索的没检索，该多步的单步交卷。平均分最优承诺不了每一类都最优。）<br/><br/><span class="fix-mark">但光知道复杂题会翻车还不够，关键是怎么顺着维度坐标找到下一刀该落在哪。以前</span>失败发生时没有归因坐标，你只知道这题错了，<span class="fix-mark">却</span>说不上错在哪一段，最后只能整段重写提示再去碰运气。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 相邻段首尾形成显式因果转折与旧词复现链（<code>复杂题 → 翻车 → 维度坐标</code>）<br/>• <code>UID_onset_minus_end_surp</code> 从 3.259 降至 1.620（进入人类 [P10, P90] 安全带）。`
+      },
+      {
+        tag: "PARENTHETICAL_ENUM_TIC (括号机器编号癖)",
+        before: `<span class="tell-mark">[[六维并不正交：]]</span>开了检索，提示要多留证据位<span class="tell-mark">[[（D1）]]</span>，预算得加长<span class="tell-mark">[[（D3）]]</span>，步骤变多轮<span class="tell-mark">[[（D4）]]</span>，结尾校验也得改成抽字段<span class="tell-mark">[[（D6）]]</span>。每次必须同时记主失败维度和连带维度。`,
+        rx: `<strong>📋 自动生成的定向修复处方：</strong><br/>1. 稀疏探针检出高频中文 AI 括号注释特征 <code>（E）(+0.376)</code>；人类写文章不会在每个分句尾巴挂机器索引号；<br/>2. 删除句内密集挂载的 <code>（D1）（D3）（D4）（D6）</code>，让中文词语「提示、预算、多轮、结尾校验」自然承担指代。`,
+        gain: "稀疏探针 AI 概率 -0.18 · 零信息损失",
+        after: `<span class="fix-mark">其实，但是这六个维度本来就不正交，</span>开了检索，提示要多留证据位，预算得加长，步骤变多轮，结尾校验也得改成抽字段。每次必须同时记主失败维度和连带维度。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 4 处冗余机器括号标签全部摘除，中文语义 100% 完整保留<br/>• 稀疏探针 logit 贡献净降 <code>-0.612</code>，成功越过 0.50 人类决策边界。`
+      },
+      {
+        tag: "MID_SECTION_ABSTRACT_DRIFT (ConStory 中段塌陷)",
+        before: `<span class="tell-mark">[[搜索策略自己也读这本库，决定下一代候选在哪几个维度动刀。盲搜于是变成了带病历的复诊：]]</span>不是每轮都从头做一遍全身体检，而是翻开上次写的病历，直接复查那一项。`,
+        rx: `<strong>📋 自动生成的定向修复处方：</strong><br/>1. 本段位于全文 48% 中段区域，连续抽象机制名词堆叠且无任何过渡气口，且含冒号提示体与「不是…而是…」套路对立；<br/>2. 补入段首因果指代钩子（「这样一来」）与具象动作感（「原本摸黑撞墙的盲搜」），消除冒号。`,
+        gain: "中段抽象漂移消除 · 综合 Z 降至 0.358",
+        after: `<span class="fix-mark">这样一来，搜索策略在动手前也会先翻翻这本经验库，再</span>决定下一代候选该往哪几个维度动刀。<span class="fix-mark">原本摸黑撞墙的盲搜，一下子就变成了带着病历的复诊，再也不用</span>每轮都从头做一遍全身体检，而是翻开上次的记录直接复查那一项。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 消除「盲搜于是变成了带病历的复诊：」冒号提示体，恢复以旧带新推进<br/>• 全段 Z-Score 下降 <code>0.34</code>，门禁判定 <strong>ACCEPTED</strong>。`
+      }
+    ];
+
+    function showCase(idx, btn) {
+      document.querySelectorAll('#sandbox .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const c = CASES[idx];
+      document.getElementById('case-tag').innerText = c.tag;
+      document.getElementById('case-before').innerHTML = c.before;
+      document.getElementById('case-rx').innerHTML = c.rx;
+      document.getElementById('case-gain').innerText = c.gain;
+      document.getElementById('case-after').innerHTML = c.after;
+      document.getElementById('case-audit').innerHTML = c.audit;
+    }
+  </script>
+</body>
+</html>

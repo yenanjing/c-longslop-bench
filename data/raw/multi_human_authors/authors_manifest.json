@@ -1,0 +1,32 @@
+{
+  "chenhao_coolshell": {
+    "author_zh": "陈皓(左耳朵耗子)",
+    "era": "2023",
+    "count": 25,
+    "avg_len": 4411.7
+  },
+  "ruanyifeng": {
+    "author_zh": "阮一峰",
+    "era": "pre_ai",
+    "count": 22,
+    "avg_len": 822.6
+  },
+  "yunfeng": {
+    "author_zh": "云风(吴云洋)",
+    "era": "post_ai_authentic_human",
+    "count": 15,
+    "avg_len": 4355.8
+  },
+  "piglei": {
+    "author_zh": "piglei(Python工匠作者)",
+    "era": "authentic_human_blog",
+    "count": 20,
+    "avg_len": 4187.2
+  },
+  "laixintao_kawabangga": {
+    "author_zh": "laixintao(卡瓦邦噶)",
+    "era": "authentic_human_blog",
+    "count": 8,
+    "avg_len": 3233.4
+  }
+}

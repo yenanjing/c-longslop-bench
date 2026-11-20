@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "南大&上海AI Lab开源TimeLens2：4B 模型在七项时序定位基准上超过 397B",
+    "url": "https://mp.weixin.qq.com/s/Dl39LOdIS0l_OInxTjoUrw",
+    "publish_time": "2026-07-23 07:30",
+    "content_length": 4104,
+    "source": "Hyman的杂货铺",
+    "file": "article_1_2026-07-23.md"
+  },
+  {
+    "id": 2,
+    "title": "CVPR 26 | Waymo把行车记录仪变成自动驾驶传感器：长尾数据终于能进仿真了",
+    "url": "https://mp.weixin.qq.com/s/LU5ldsQhD0EcIcOy0ynOtw",
+    "publish_time": "2026-05-23 07:30",
+    "content_length": 8329,
+    "source": "Hyman的杂货铺",
+    "file": "article_2_2026-05-23.md"
+  },
+  {
+    "id": 3,
+    "title": "北大等团队发布Chain of Mindset：让AI学会像人类一样灵活切换思维模式",
+    "url": "https://mp.weixin.qq.com/s/J7nz0lZDxwdd5EZb1CcOJQ",
+    "publish_time": "2026-02-15 07:30",
+    "content_length": 6419,
+    "source": "Hyman的杂货铺",
+    "file": "article_3_2026-02-15.md"
+  }
+]

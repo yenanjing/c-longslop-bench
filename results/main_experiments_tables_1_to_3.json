@@ -1,0 +1,303 @@
+{
+  "table1_evaluator_benchmark": [
+    {
+      "detector": "1. Perplexity / Surprisal Baseline",
+      "heldout_auroc": 0.2407,
+      "pre_ai_human_fpr": 0.1667,
+      "raw_ai_tpr_on_paired10": 0.3,
+      "adversarial_rewrite_tpr_on_paired10": 0.2
+    },
+    {
+      "detector": "2. Burstiness / Sent-Length CV (GPTZero-style)",
+      "heldout_auroc": 0.6522,
+      "pre_ai_human_fpr": 0.1515,
+      "raw_ai_tpr_on_paired10": 0.4,
+      "adversarial_rewrite_tpr_on_paired10": 0.1
+    },
+    {
+      "detector": "3. Classic Cliche Lexicon (Forbidden Words)",
+      "heldout_auroc": 0.3814,
+      "pre_ai_human_fpr": 0.1515,
+      "raw_ai_tpr_on_paired10": 0.5,
+      "adversarial_rewrite_tpr_on_paired10": 0.1
+    },
+    {
+      "detector": "4. Single-Score LLM-as-a-Judge (hy3-ioa)",
+      "heldout_auroc": 0.6,
+      "pre_ai_human_fpr": 0.0526,
+      "raw_ai_tpr_on_paired10": 0.2,
+      "adversarial_rewrite_tpr_on_paired10": 0.1
+    },
+    {
+      "detector": "5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)",
+      "heldout_auroc": 0.8336,
+      "pre_ai_human_fpr": 0.1364,
+      "raw_ai_tpr_on_paired10": 0.9,
+      "adversarial_rewrite_tpr_on_paired10": 0.8
+    },
+    {
+      "detector": "6. C-LongSlop Bipolar Sparse Probe (Ours)",
+      "heldout_auroc": 0.9702,
+      "pre_ai_human_fpr": 0.1061,
+      "raw_ai_tpr_on_paired10": 1.0,
+      "adversarial_rewrite_tpr_on_paired10": 0.8
+    },
+    {
+      "detector": "7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)",
+      "heldout_auroc": 0.9494,
+      "pre_ai_human_fpr": 0.1364,
+      "raw_ai_tpr_on_paired10": 1.0,
+      "adversarial_rewrite_tpr_on_paired10": 0.9
+    }
+  ],
+  "table2_humanization_leaderboard_paired10": [
+    {
+      "method": "1. Human Ceiling (Pre-AI Blogs 2011–2022)",
+      "n": 24,
+      "llm_judge_pass_rate": "100%",
+      "D1": 0.28,
+      "D2": 0.15,
+      "D3": 0.84,
+      "D4": 0.62,
+      "composite_z": 0.472,
+      "sparse_ai_prob": 0.203,
+      "edit_budget_pct": 0.0,
+      "factual_retention": 1.0,
+      "combined_score": 83.8
+    },
+    {
+      "method": "2. Human Ceiling (Contemporary Tech Blogs)",
+      "n": 32,
+      "llm_judge_pass_rate": "100%",
+      "D1": 0.4,
+      "D2": 0.13,
+      "D3": 0.74,
+      "D4": 0.14,
+      "composite_z": 0.413,
+      "sparse_ai_prob": 0.252,
+      "edit_budget_pct": 0.0,
+      "factual_retention": 1.0,
+      "combined_score": 82.9
+    },
+    {
+      "method": "3. Raw LLM Long-Form (Unedited Paired-10)",
+      "n": 10,
+      "llm_judge_pass_rate": "80% (漏检!)",
+      "D1": 0.72,
+      "D2": 0.11,
+      "D3": 1.07,
+      "D4": 0.09,
+      "composite_z": 0.497,
+      "sparse_ai_prob": 0.685,
+      "edit_budget_pct": 0.0,
+      "factual_retention": 1.0,
+      "combined_score": 65.8
+    },
+    {
+      "method": "4. Zero-Shot Generic Prompting (Blind Rewrite)",
+      "n": 10,
+      "llm_judge_pass_rate": "80%",
+      "D1": 0.72,
+      "D2": 0.11,
+      "D3": 1.07,
+      "D4": 0.09,
+      "composite_z": 0.497,
+      "sparse_ai_prob": 0.684,
+      "edit_budget_pct": 0.0,
+      "factual_retention": 1.0,
+      "combined_score": 65.8
+    },
+    {
+      "method": "5. Naive Rule-Checklist Rewriting (Single-Sided)",
+      "n": 10,
+      "llm_judge_pass_rate": "80%",
+      "D1": 9.4,
+      "D2": 0.15,
+      "D3": 1.07,
+      "D4": 0.12,
+      "composite_z": 2.684,
+      "sparse_ai_prob": 0.669,
+      "edit_budget_pct": 2.7,
+      "factual_retention": 1.0,
+      "combined_score": 38.0
+    },
+    {
+      "method": "6. Persona-Adversarial Multi-Round (PA 3-Round)",
+      "n": 10,
+      "llm_judge_pass_rate": "90% (被骗!)",
+      "D1": 0.88,
+      "D2": 0.18,
+      "D3": 1.03,
+      "D4": 0.06,
+      "composite_z": 1.537,
+      "sparse_ai_prob": 0.389,
+      "edit_budget_pct": 48.1,
+      "factual_retention": 0.848,
+      "combined_score": 59.5
+    },
+    {
+      "method": "7. Two-Stage Style Transfer (TTM 3-Round)",
+      "n": 10,
+      "llm_judge_pass_rate": "90% (被骗!)",
+      "D1": 0.7,
+      "D2": 0.24,
+      "D3": 0.8,
+      "D4": 0.08,
+      "composite_z": 1.18,
+      "sparse_ai_prob": 0.387,
+      "edit_budget_pct": 58.7,
+      "factual_retention": 0.815,
+      "combined_score": 64.7
+    },
+    {
+      "method": "8. Few-Shot Exemplar Imitation (5-Shot)",
+      "n": 10,
+      "llm_judge_pass_rate": "90%",
+      "D1": 1.0,
+      "D2": 0.14,
+      "D3": 1.14,
+      "D4": 0.11,
+      "composite_z": 0.595,
+      "sparse_ai_prob": 0.557,
+      "edit_budget_pct": 23.0,
+      "factual_retention": 0.935,
+      "combined_score": 68.4
+    },
+    {
+      "method": "9. C-LongSlop Guided Repair (w/o Gate, 1-Pass)",
+      "n": 10,
+      "llm_judge_pass_rate": "—",
+      "D1": 1.14,
+      "D2": 0.13,
+      "D3": 1.78,
+      "D4": 0.1,
+      "composite_z": 0.788,
+      "sparse_ai_prob": 0.531,
+      "edit_budget_pct": 7.2,
+      "factual_retention": 1.0,
+      "combined_score": 65.8
+    },
+    {
+      "method": "10. C-LongSlop Guided Repair + Gate (Ours, 1-Pass)",
+      "n": 10,
+      "llm_judge_pass_rate": "—",
+      "D1": 0.26,
+      "D2": 0.09,
+      "D3": 1.0,
+      "D4": 0.08,
+      "composite_z": 0.358,
+      "sparse_ai_prob": 0.579,
+      "edit_budget_pct": 3.2,
+      "factual_retention": 1.0,
+      "combined_score": 72.1
+    }
+  ],
+  "table3_prescription_gate_audit_paired10": {
+    "avg_edit_budget_pct": 3.2,
+    "avg_factual_retention": 1.0,
+    "total_accepted_paragraphs": 206,
+    "total_reverted_paragraphs": 349,
+    "per_article_logs": [
+      {
+        "article": "article_2026-03-07_微软推出Proact-VL_让你的AI搭子主动和你视频聊天",
+        "total_paras": 88,
+        "prescriptions_triggered": 75,
+        "accepted_edits": 31,
+        "reverted_by_gate": 54,
+        "edit_budget_pct": 4.5,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-03-13_英伟达等团队发布MM-Zero_视觉语言模型没有训练数据也能",
+        "total_paras": 42,
+        "prescriptions_triggered": 27,
+        "accepted_edits": 16,
+        "reverted_by_gate": 25,
+        "edit_budget_pct": 4.1,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-03-18_仅SFT超越Tongyi DeepResearch!上海交大",
+        "total_paras": 40,
+        "prescriptions_triggered": 28,
+        "accepted_edits": 16,
+        "reverted_by_gate": 23,
+        "edit_budget_pct": 3.7,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-03-30_复旦&阶跃星辰开源PixelSmile_连续情感标注打破表情",
+        "total_paras": 64,
+        "prescriptions_triggered": 35,
+        "accepted_edits": 18,
+        "reverted_by_gate": 45,
+        "edit_budget_pct": 2.3,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-03-31_千问团队发布Trace2Skill_从执行轨迹中蒸馏出可迁移",
+        "total_paras": 71,
+        "prescriptions_triggered": 51,
+        "accepted_edits": 34,
+        "reverted_by_gate": 37,
+        "edit_budget_pct": 4.8,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-07-17_腾讯混元提出Harness Handbook_给 Agent",
+        "total_paras": 52,
+        "prescriptions_triggered": 27,
+        "accepted_edits": 15,
+        "reverted_by_gate": 36,
+        "edit_budget_pct": 2.0,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-07-20_圣母大学提出 MemoHarness_同一模型只改 harn",
+        "total_paras": 41,
+        "prescriptions_triggered": 36,
+        "accepted_edits": 18,
+        "reverted_by_gate": 23,
+        "edit_budget_pct": 2.9,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-07-23_纽约大学团队用国际象棋测试,发现模型预训练越好,强化学习提升",
+        "total_paras": 38,
+        "prescriptions_triggered": 31,
+        "accepted_edits": 20,
+        "reverted_by_gate": 16,
+        "edit_budget_pct": 3.8,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2026-07-26_高德地图开源ABot-World-0_一张显卡实时推演可交互",
+        "total_paras": 41,
+        "prescriptions_triggered": 33,
+        "accepted_edits": 15,
+        "reverted_by_gate": 26,
+        "edit_budget_pct": 2.5,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      },
+      {
+        "article": "article_2_2026-05-23",
+        "total_paras": 89,
+        "prescriptions_triggered": 54,
+        "accepted_edits": 23,
+        "reverted_by_gate": 64,
+        "edit_budget_pct": 1.8,
+        "factual_gate_passed": true,
+        "anchor_retention": 1.0
+      }
+    ]
+  }
+}

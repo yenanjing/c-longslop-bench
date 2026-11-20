@@ -1,0 +1,701 @@
+{
+  "total": 87,
+  "success": 86,
+  "failed": 1,
+  "articles": [
+    {
+      "title": "谷歌开源 GNM Head:优于FLAME的高精度人体头部生成式参数模型",
+      "date": "2026-07-29",
+      "file": "article_2026-07-29_谷歌开源 GNM Head_优于FLAME的高精度人体头部生.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpErn77M6NiINbNsLJgCuhSWhN6s2mRV4mQ-AjNZhjPeQqMVTxsVgF6si4yOTjJzSuhs8g0aJtqA5areG7YUR62&new=1",
+      "char_count": 4356,
+      "status": "success"
+    },
+    {
+      "title": "JarvisX开源JarvisHub:把可编辑画布做成多模态创作Agent的共享项目状态",
+      "date": "2026-07-29",
+      "file": "article_2026-07-29_JarvisX开源JarvisHub_把可编辑画布做成多模态.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoii9umbVszA38nAWgl1fvxVxJmV*taHNjynHsW3QdZxK191L76lQkh6DBs0HyS-1YvCVUJ38v8zDgspbyK2xBp&new=1",
+      "char_count": 4558,
+      "status": "success"
+    },
+    {
+      "title": "南洋理工开源 IDEAgent:兼顾idea的质量和多样性,超最强基线 3.89 倍",
+      "date": "2026-07-28",
+      "file": "article_2026-07-28_南洋理工开源 IDEAgent_兼顾idea的质量和多样性,.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqNMnXah*yxAUcG2qB*htXfGfg4gtLd7HnD7LHOal0qIsWbBBTbUvSaRExhgLCU2LIWygXwv7DOBEUn1AybLOxj&new=1",
+      "char_count": 5348,
+      "status": "success"
+    },
+    {
+      "title": "阿里Qwen开源 Skill-SP:自博弈实现模型和Skill协同进化新范式,模型能力大幅跃升",
+      "date": "2026-07-28",
+      "file": "article_2026-07-28_阿里Qwen开源 Skill-SP_自博弈实现模型和Skil.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpqFVwnzhZS4iJEf86Y844Vbdz*UfxVC29tXf0uXRfp1gouLVIkyzHmgkXMt3SochIMPcHtXn6FECYhb0NBra-y&new=1",
+      "char_count": 4748,
+      "status": "success"
+    },
+    {
+      "title": "北大等开源 K12-KGraph:从小学到高中的教材全部整合成知识图谱,既做bench又能训练",
+      "date": "2026-07-27",
+      "file": "article_2026-07-27_北大等开源 K12-KGraph_从小学到高中的教材全部整合.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErwrJjPPzMBSkq7x1EPL2lA0f1TSrNaggZIRKTGWkbTKW0fHmvwbgpraIe2fCi0ZxRYS17YAkd2Ms*RCJWaLHEX&new=1",
+      "char_count": 5046,
+      "status": "success"
+    },
+    {
+      "title": "高德地图开源ABot-World-0:一张显卡实时推演可交互世界",
+      "date": "2026-07-26",
+      "file": "article_2026-07-26_高德地图开源ABot-World-0_一张显卡实时推演可交互.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEriNKm33l*UamOMJ1T11g7JLGzcSIDt3JvuVZWmUBSEuFYPXi3SvCxqNGtJ6fP4rdLxUdp7TC48ZR9GgHBIN6Yz&new=1",
+      "char_count": 4930,
+      "status": "success"
+    },
+    {
+      "title": "上交字节提出 SWE-Pruner Pro:Coding Agent 的模型内部已经知道该裁剪哪些内容",
+      "date": "2026-07-25",
+      "file": "article_2026-07-25_上交字节提出 SWE-Pruner Pro_Coding A.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEopnxrLqUPFkgyHgM73ZdZ-0-ZezqHO84s6MgpIWlduV9VnORHkbNkqIZublEtA0FY-OPRM6hzqaB6YyrxSdGPV&new=1",
+      "char_count": 4699,
+      "status": "success"
+    },
+    {
+      "title": "腾讯开源 WorkBuddy Bench,Coding,Web,Office,Security四大领域评测,还能防止作弊刷分",
+      "date": "2026-07-25",
+      "file": "article_2026-07-25_腾讯开源 WorkBuddy Bench,Coding,We.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoR4mq4fq*7kekU*rxkmVtDq3YIudil5lEhSMgx-xRCUrVGAaFe065RATe1M208GqdZjvOwiMTb6KVS88SUC-lC&new=1",
+      "char_count": 6335,
+      "status": "success"
+    },
+    {
+      "title": "Alaya Lab 开源 AlayaWorld:用有界记忆做可交互长程视频世界,世界模型基准多项SOTA",
+      "date": "2026-07-24",
+      "file": "article_2026-07-24_Alaya Lab 开源 AlayaWorld_用有界记忆做.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErMKbGBvraUUvTrgyyhLYO76kDdmKgIj0uaYVFjCnPV0zuBy6hLek-RJPMTRlhjdVHlcLtptGPQYe86DcHWlBMD&new=1",
+      "char_count": 5271,
+      "status": "success"
+    },
+    {
+      "title": "纽约大学团队用国际象棋测试,发现模型预训练越好,强化学习提升越快",
+      "date": "2026-07-23",
+      "file": "article_2026-07-23_纽约大学团队用国际象棋测试,发现模型预训练越好,强化学习提升.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpJ-55LCn5RtvcLuavt9GCBGcd3JYEdu1i2nbOshtfnOCPSg5jazIOhZZLI9ns8TmG8vX6dV7BnfJBUNoup*0xg&new=1",
+      "char_count": 5156,
+      "status": "success"
+    },
+    {
+      "title": "微软开源 Resource2Skill:把教程视频蒸馏成 Agent 可执行技能",
+      "date": "2026-07-22",
+      "file": "article_2026-07-22_微软开源 Resource2Skill_把教程视频蒸馏成 A.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoxvqaVIwHDA3cGhdfkE2XEVIXJDFa7HU2FUQ*VBq5xJyQiqJacJ0*K1cuuGQjy3ZxldiJCiZLL45EHiKhAJHZt&new=1",
+      "char_count": 4667,
+      "status": "success"
+    },
+    {
+      "title": "超越 DeepSeek 的 mHC,上交&小红书开源xHC:残差流扩展到十六路,性能提升算力不炸",
+      "date": "2026-07-21",
+      "file": "article_2026-07-21_超越 DeepSeek 的 mHC,上交&小红书开源xHC_.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEr0js*3kpGYb07zhwuwCU1T7Je8DV*vXy6Hi-Eji4eYWwHpSWiKmxLpevALDRw*SH4bYs3cljj-TYbfIGZSSmQQ&new=1",
+      "char_count": 5167,
+      "status": "success"
+    },
+    {
+      "title": "圣母大学提出 MemoHarness:同一模型只改 harness,终端任务成功率提升 8.4 个百分点",
+      "date": "2026-07-20",
+      "file": "article_2026-07-20_圣母大学提出 MemoHarness_同一模型只改 harn.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqi*kFn6rxouI1EwjysKmthuXFLHAxuYNJ8-q7-m8snVze2Otb7m90XorgiSi2j3ETz0e3eWHLIKefHLKoLeUCc&new=1",
+      "char_count": 5071,
+      "status": "success"
+    },
+    {
+      "title": "人大高瓴&蚂蚁发布 SearchOS:把长程搜索进度做成可调度的系统状态",
+      "date": "2026-07-18",
+      "file": "article_2026-07-18_人大高瓴&蚂蚁发布 SearchOS_把长程搜索进度做成可调.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpYzuvv-Q9soCJYRCy6FPZmOoLV2Ja10JxxFNSBmt6xNbOLjCEpO-9tdap-Me-eMsMnd9ps3WLhMON*I2ykkGRw&new=1",
+      "char_count": 5779,
+      "status": "success"
+    },
+    {
+      "title": "清华浙大等开源发布SEED:自进化OPD的长程Agent强化学习训练方法",
+      "date": "2026-07-18",
+      "file": "article_2026-07-18_清华浙大等开源发布SEED_自进化OPD的长程Agent强化.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqRLcv0UQDWpXHJfD2ZTy2*2Q63XJFtJGtEM9kWaYstkHLpH09HC892*FyTv9zNt6GDJhEvImvuCNp7vBqNzOBp&new=1",
+      "char_count": 6614,
+      "status": "success"
+    },
+    {
+      "title": "腾讯混元提出Harness Handbook:给 Agent harness 做一张可导航,可编辑,可读的行为地图",
+      "date": "2026-07-17",
+      "file": "article_2026-07-17_腾讯混元提出Harness Handbook_给 Agent.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEomY7GFGFk*nBMUQOvQ59AvuKTb-1Oqevo7IYWIXchahaoCXOnlCfhqF0jrsCUy5RPw4kVUGSt3CbvKnUmLYN2*&new=1",
+      "char_count": 5018,
+      "status": "success"
+    },
+    {
+      "title": "小米发布Xiaomi-Robotics-U0:把世界模型变成机器人数据引擎",
+      "date": "2026-07-17",
+      "file": "article_2026-07-17_小米发布Xiaomi-Robotics-U0_把世界模型变成.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEq5pjxHNQ6SogrotQn2iQnw2ViFrIuue*TTFVwLzqfBrcfXYEJVu2SrKmb0GqKOM*26yeAFTc8kTN3*8Ce9*miH&new=1",
+      "char_count": 4373,
+      "status": "success"
+    },
+    {
+      "title": "清华&智谱开源发布ScaleCUA:可扩展的任务合成和在线强化学习 GUI Agent框架,9B模型刷新开源SOTA",
+      "date": "2026-07-16",
+      "file": "article_2026-07-16_清华&智谱开源发布ScaleCUA_可扩展的任务合成和在线强.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEps6Ysx9VL5BdJIg0hBdPVYhcrmPR0qHG9v926hNzEb6cfEri6v6kSBnG8gpc6Q1LZUcxVE-5toqetI3H2O63og&new=1",
+      "char_count": 4525,
+      "status": "success"
+    },
+    {
+      "title": "这篇文章把强化学习玩明白了",
+      "date": "2026-07-16",
+      "file": "article_2026-07-16_这篇文章把强化学习玩明白了.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpbtBSvmUK8OCJV8OPbhNHiJ*GgB9VbqS8YR06QtgGb9UyF5FbDa7-h-WDdM7WffHbX-u-Od29qQ0l9saQ4BiSd&new=1",
+      "char_count": 765,
+      "status": "success"
+    },
+    {
+      "title": "企业究竟需要什么样的Agent?ServiceNow在企业真实落地实践:一个终端就够了,729个任务证明复杂Agent框架未必好用",
+      "date": "2026-04-03",
+      "file": "article_2026-04-03_企业究竟需要什么样的Agent?ServiceNow在企业真.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEq6wDp5q35mW*aYsWsUV69BmG9IkIFV18hvT1j9cfVfQQLNCuv0NX7ZDLJDc*cMOEr-emeu*V17hjhy8UCfHX0D&new=1",
+      "char_count": 7362,
+      "status": "success"
+    },
+    {
+      "title": "上交等团队发布daVinci-LLM:全球首个全开放大模型预训练项目,连失败实验都公开了",
+      "date": "2026-04-02",
+      "file": "article_2026-04-02_上交等团队发布daVinci-LLM_全球首个全开放大模型预.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpp8vPCglV9M7AjKm4zhWRnRl*Nxeb5pYhnMlLPOrujsUIacYtOMRRqI4-WIYP1XBwtVGRSzoortV*J2VI2PCgA&new=1",
+      "char_count": 5072,
+      "status": "success"
+    },
+    {
+      "title": "斯坦福新作Meta-Harness:Agent自动搜索Harness代码,三大任务全面超越手工设计最优方案",
+      "date": "2026-04-01",
+      "file": "article_2026-04-01_斯坦福新作Meta-Harness_Agent自动搜索Har.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqsUFTn0*Xt4Yk5xWG27vC1KUTVkBwk-z5U-DLVsX6hDeqHPEh1w2mx-QuQWWdaTKflQS3m0ZXx2zEtHgr4lR2u&new=1",
+      "char_count": 5617,
+      "status": "success"
+    },
+    {
+      "title": "首个医疗AI科学家诞生:香港中文大学框架超越GPT-5,论文质量达医学顶会水平",
+      "date": "2026-04-01",
+      "file": "article_2026-04-01_首个医疗AI科学家诞生_香港中文大学框架超越GPT-5,论文.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo7rgNvPYB-QgQwD8SqBOEaGhZ2bKALAtfiLpaVEuWwLuYP2XVgRhKupxdWbz73qch5xStJbGdpQ6hylCnzgqLw&new=1",
+      "char_count": 7830,
+      "status": "success"
+    },
+    {
+      "title": "RAG还要不要分块?西南财经大学M-RAG:用LLM提取k-v元标记,低token预算下全面碾压传统方法",
+      "date": "2026-04-01",
+      "file": "article_2026-04-01_RAG还要不要分块?西南财经大学M-RAG_用LLM提取k-.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEquBTokVLM*c-Helw1Gw82OqyaRBLxBvl2W3aHCfNjItZtOLju*lQJ6qHJud-Rs9EQJ5ebqQSAS3o-6WFZKbDw8&new=1",
+      "char_count": 6137,
+      "status": "success"
+    },
+    {
+      "title": "Meta发布AIRA_2:首次系统性解决AI研究Agent的三大性能瓶颈",
+      "date": "2026-03-31",
+      "file": "article_2026-03-31_Meta发布AIRA_2_首次系统性解决AI研究Agent的.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErbIsyuqsn2wdQJUJvvCHr3grCk1zuLigfxiiPu0I4WcfP-wTQhI33ybqAAawT-dHmPvMIEjkMugdN3jQvPH1E6&new=1",
+      "char_count": 4960,
+      "status": "success"
+    },
+    {
+      "title": "千问团队发布Trace2Skill:从执行轨迹中蒸馏出可迁移的Agent技能,35B参数模型即可驱动",
+      "date": "2026-03-31",
+      "file": "article_2026-03-31_千问团队发布Trace2Skill_从执行轨迹中蒸馏出可迁移.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEokZ03EXgJ6OgV3tvrWgB-u96yeHarv-XEh6EB3KKVuIt3nK*rkmE-cXpTTRgqVM*jptzmvZUUucZYVgU4m1Wj7&new=1",
+      "char_count": 6619,
+      "status": "success"
+    },
+    {
+      "title": "首个能预测未来的大模型!EchoZ-1.0力压Gemini和Claude,人类交易员也输了",
+      "date": "2026-03-31",
+      "file": "article_2026-03-31_首个能预测未来的大模型!EchoZ-1.0力压Gemini和.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpeTMOIpQiDCqWb2BJVMk2QnJvOq1Y*EwMLnogy564wGz5PLpFnLborFjPIM7456eeBDxTF72sLyjor*d0*bEjs&new=1",
+      "char_count": 6162,
+      "status": "success"
+    },
+    {
+      "title": "Google DeepMind最新研究AutoHarness:让Agent自己写代码约束层,小模型反超GPT-5.2",
+      "date": "2026-03-30",
+      "file": "article_2026-03-30_Google DeepMind最新研究AutoHarness.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqjJlUeHyTBFcrzUGfNW6-3OB7ayx*8vN4tSh1yzLoS1OqC7Z6f1pm5HwxNf*un5HXhhsmqecNNIovGPyJkSALu&new=1",
+      "char_count": 6367,
+      "status": "success"
+    },
+    {
+      "title": "全球首个万亿参数科学模型开源!上海AI实验室Intern-S1-Pro横扫100+专业任务,科学推理5倍领先GPT-5.2",
+      "date": "2026-03-30",
+      "file": "article_2026-03-30_全球首个万亿参数科学模型开源!上海AI实验室Intern-S.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqUMOEvETKyT45K-UpmTgo49fc7iAqeJGxs7YR72BKxeIDfP1-fCkCGCc3OPJCN5fPeL8KBRiab*a56nc1R5NNH&new=1",
+      "char_count": 8848,
+      "status": "success"
+    },
+    {
+      "title": "AI奇点已死?Google团队颠覆性论文:下一次智能爆炸是'社会',不是'大脑'",
+      "date": "2026-03-30",
+      "file": "article_2026-03-30_AI奇点已死?Google团队颠覆性论文_下一次智能爆炸是'.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErxDOMy24WxNzzjeIBZTAngdvOrTf8v9T62LUA4R87UVYu2DarYxzOnn92GHnhypVI7fR8xwp8Ix697Tr8SGHMz&new=1",
+      "char_count": 5952,
+      "status": "success"
+    },
+    {
+      "title": "复旦&阶跃星辰开源PixelSmile:连续情感标注打破表情语义重叠,细粒度面部表情编辑新SOTA",
+      "date": "2026-03-30",
+      "file": "article_2026-03-30_复旦&阶跃星辰开源PixelSmile_连续情感标注打破表情.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqrOVq960e1swxlm3r4botiqCGnqiK-QD945xielh6aleuVfFDLP3pBtaDsRE05B2hTecLljnABk3F8Xe*VnEei&new=1",
+      "char_count": 6007,
+      "status": "success"
+    },
+    {
+      "title": "Cursor自研Composer 2:基于 Kimi K2.5 做后训练,代码性能超越Claude Opus 4.6",
+      "date": "2026-03-30",
+      "file": "article_2026-03-30_Cursor自研Composer 2_基于 Kimi K2..md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqM4JHo9ZvXPdbcYWyabhqdkvsgeOIIvfoByvHwSD4PLdIeSSY-Vk2HAP4VBJ0ZIEz8cnHyjmWhw-nV59S4HtDC&new=1",
+      "char_count": 7805,
+      "status": "success"
+    },
+    {
+      "title": "一亿token上下文!陈天桥团队Evermind开源MSA:4B参数模型实现1亿Token终身记忆",
+      "date": "2026-03-29",
+      "file": "article_2026-03-29_一亿token上下文!陈天桥团队Evermind开源MSA_.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErJ*skwEJitpGhy5T3Dubw5DTSumMleqwylA4Bh9jIzdG9Xjc4GPVbGNbSkdaauMEPhgIDdhEfTjLXA2120hc70&new=1",
+      "char_count": 6687,
+      "status": "success"
+    },
+    {
+      "title": "AI coding 为什么越迭代越烂?SlopCodeBench揭露Agent迭代编程2.2倍冗余度退化",
+      "date": "2026-03-29",
+      "file": "article_2026-03-29_AI coding 为什么越迭代越烂?SlopCodeBen.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEp8PDHQ6X1LkFr3TVnlpeAkBLoEp3ktMryKL-S-P5MDYsvszTeq0atzR8fckfWRYHkKFaMCDJ4xk-qG7ZEBVmDJ&new=1",
+      "char_count": 6572,
+      "status": "success"
+    },
+    {
+      "title": "RL训练彻底解耦!NVIDIA开源ProRL Agent:轨迹生成即服务,SWE-Bench 8B模型性能提升近2倍",
+      "date": "2026-03-29",
+      "file": "article_2026-03-29_RL训练彻底解耦!NVIDIA开源ProRL Agent_轨.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEql0gOCPSaWN87MSNIFT2gV*MbT9iix3*rUTuV8Jt91nK9B4i2UIEm*vrbho7-oyqjq10FpSmKqeY3zImbdYq2b&new=1",
+      "char_count": 7701,
+      "status": "success"
+    },
+    {
+      "title": "商汤CVPR2026:EVA用强化学习训练视频Agent,先想后看比暴力采样省10倍token",
+      "date": "2026-03-27",
+      "file": "article_2026-03-27_商汤CVPR2026_EVA用强化学习训练视频Agent,先.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo8p18uc-jJ1VLQzVx-04uPybVXSjcDPiJIkNCdehF0DJw*BCO35ZvAoiI3he5i-eOfuvwtzkCyGjJ4PfQk9Dpj&new=1",
+      "char_count": 6331,
+      "status": "success"
+    },
+    {
+      "title": "11个大模型争当CFO,仅16%活过11年:9B小模型反杀397B巨头",
+      "date": "2026-03-27",
+      "file": "article_2026-03-27_11个大模型争当CFO,仅16%活过11年_9B小模型反杀3.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpGdWgl0DWXobGW8bjbMrKgSEZ3ip02sRnCGDeBCxR6Pkwm9hIPg7jmce-2xgcti2lE0GL8JipG1JXE9DmoxHMr&new=1",
+      "char_count": 9768,
+      "status": "success"
+    },
+    {
+      "title": "LeCun团队世界模型最新突破:LeWorldModel首次实现稳定端到端JEPA训练,规划速度提升48倍",
+      "date": "2026-03-27",
+      "file": "article_2026-03-27_LeCun团队世界模型最新突破_LeWorldModel首次.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqrNf7W6I9a9KFotzYQhHf4j5CD*kvjSVIz*Yz9w7O5GUW1Z6EE90BvqLWwOl7B5ELKfOj8bScaGjRDS7BV7dZS&new=1",
+      "char_count": 6262,
+      "status": "success"
+    },
+    {
+      "title": "Google 发布 TurboQuant:6 倍无损量化压缩!大模型推理速度飙升8倍!",
+      "date": "2026-03-26",
+      "file": "article_2026-03-26_Google 发布 TurboQuant_6 倍无损量化压缩.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpzqNvA-p1kQLbHtJxQxPFoOsqRbEFFn-gGR8DTeoBSIgxlPzQDIpHijznHi4BIUMt-*93SOq5QWWZu7elpi25Y&new=1",
+      "char_count": 7870,
+      "status": "success"
+    },
+    {
+      "title": "58倍提速!牛津开源AgentSLR:AI自动完成系统文献综述仅需20小时,开源模型以1/100成本超越GPT-5.2",
+      "date": "2026-03-26",
+      "file": "article_2026-03-26_58倍提速!牛津开源AgentSLR_AI自动完成系统文献综.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEohx41MwEbaLoILwWqJ5sDQdo3Xc*Vjs6tb3PypBIH6xwQwd4cUr06RzlK4Ic5xDHiW61qsZrd7MsDz-8vcHpeP&new=1",
+      "char_count": 9368,
+      "status": "success"
+    },
+    {
+      "title": "小红书发布MOCR:3B参数模型解析文档所有内容,图形全部还原,超越Gemini 3 Pro",
+      "date": "2026-03-26",
+      "file": "article_2026-03-26_小红书发布MOCR_3B参数模型解析文档所有内容,图形全部还.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqyvxwAmqwA-SCOhomDW4pAe2sDdLVJQ1z*gMqRer3gzMPsN9qrVPdBTjL-zfLJXYBMCWZS1KOGJrPrMSLL5HOT&new=1",
+      "char_count": 5569,
+      "status": "success"
+    },
+    {
+      "title": "KAIST提出mSFT:解决多任务SFT异构过拟合,训练效果全面超越基线",
+      "date": "2026-03-25",
+      "file": "article_2026-03-25_KAIST提出mSFT_解决多任务SFT异构过拟合,训练效果.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqUxP93hicSRzxCNeoRPTUvQVi5XjMqYqTRgXiJIYBS*hoNIZHfD*7UFDM1NvJtApJb3X3UNWH4eyrlX0ouLkuM&new=1",
+      "char_count": 3393,
+      "status": "success"
+    },
+    {
+      "title": "CMU&Meta联合研究:生成式推荐的'泛化'竟是Token级记忆?和传统范式互补才能赢",
+      "date": "2026-03-24",
+      "file": "article_2026-03-24_CMU&Meta联合研究_生成式推荐的'泛化'竟是Token.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEozwLfxKGTVhvb5Aq9EOIKIAEmu*2OhTKfCRDyVKOdIZL5NICXvf1O2HRxeyecwgT2llc92t2ZkEb3D*PBJqL3l&new=1",
+      "char_count": 6063,
+      "status": "success"
+    },
+    {
+      "title": "22个多模态模型全部败下阵来,ProactiveBench揭示主动性问题",
+      "date": "2026-03-24",
+      "file": "article_2026-03-24_22个多模态模型全部败下阵来,ProactiveBench揭.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEotXgw5JZheSFeF8kX56UigI2PhFHRNoPPRoa2TTWw6bX65d-jC-HDQdTiQK-tQS27iJgdPulMGmrtAd2o33w3j&new=1",
+      "char_count": 4613,
+      "status": "success"
+    },
+    {
+      "title": "Google DeepMind最新:MiRA框架让Agent性能提升6倍!成功率从6.4%飙升至43%!",
+      "date": "2026-03-24",
+      "file": "article_2026-03-24_Google DeepMind最新_MiRA框架让Agent.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoJBnTMzQVYtIHx*pA*1p3eIS9vMlJ29VZynVahUDRyDYcpEOx70sRZssZYYLUOwNurPzkWWFNw6yfrCiYZWmkz&new=1",
+      "char_count": 4344,
+      "status": "success"
+    },
+    {
+      "title": "蚂蚁开源F2LLM-v2:11个MTEB基准第一,支持200+语言的多语言嵌入模型",
+      "date": "2026-03-22",
+      "file": "article_2026-03-22_蚂蚁开源F2LLM-v2_11个MTEB基准第一,支持200.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpPyf-qoCzhK-PupjPdrc0ZmkXRWicjUq5lEVkZwjjiFwVofatR6AvtuYS-lbDXJV4ml4pYUArja9JOGFX8ONIC&new=1",
+      "char_count": 4646,
+      "status": "success"
+    },
+    {
+      "title": "NVIDIA开源:30B MoE模型只激活3B参数,却拿下IMO/IOI/ICPC三项世界金牌,参数量仅为DeepSeek的1/20",
+      "date": "2026-03-22",
+      "file": "article_2026-03-22_NVIDIA开源_30B MoE模型只激活3B参数,却拿下I.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErqqpXa6vDIkLL8Td8V7inLtBHNnPnVxn4Lr2svPvG8TAxHD5kKtwQ9R3ZOmgFb5pTBWdvIL674WgJm4ZIjjiRX&new=1",
+      "char_count": 9105,
+      "status": "success"
+    },
+    {
+      "title": "Agent终于学会自己设计Agent了:Memento-Skills实现116%性能飞跃",
+      "date": "2026-03-21",
+      "file": "article_2026-03-21_Agent终于学会自己设计Agent了_Memento-Sk.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqjuaaFVFrFyLSde1pmaSFwifd4AIfr0DAmFMe6ILrGQZSJTHAM9oItEJNR09t1szGmuYUWCn2RsLsOmaIqMMtp&new=1",
+      "char_count": 4020,
+      "status": "success"
+    },
+    {
+      "title": "AI能否预测战争?MBZUAI最新研究,评估顶尖模型在实时事件中的战略推理能力",
+      "date": "2026-03-20",
+      "file": "article_2026-03-20_AI能否预测战争?MBZUAI最新研究,评估顶尖模型在实时事.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEooArGgrC-HquXbOhR4ccb-6xQQoT5iy5IgQ7A7jXX6OHZh0uufIqq0wnlEC6pdyQhdCJ1svn-BYt7LLqlGcZH*&new=1",
+      "char_count": 5619,
+      "status": "success"
+    },
+    {
+      "title": "MiroMind开源再突破:验证中心推理架构,深度研究任务超越OpenAI",
+      "date": "2026-03-20",
+      "file": "article_2026-03-20_MiroMind开源再突破_验证中心推理架构,深度研究任务超.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEq52Mh7s6e7A1YxpAt9fJmbPQSMAAkBitPlwxJXGLnUesmpGN1MpV9wBny3fcf7KqvKWj48--XOoCJDGWSTb4aI&new=1",
+      "char_count": 4776,
+      "status": "success"
+    },
+    {
+      "title": "北航开源发布InCoder-32B:首个32B工业代码基础模型,统一五大工业领域",
+      "date": "2026-03-19",
+      "file": "article_2026-03-19_北航开源发布InCoder-32B_首个32B工业代码基础模.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpznz6g852wp4BoqFPtwnQto58JFf4UfJtV3Qgw4meimOcsmfC3o8ntmbCxkyZAEl0Eo5VdE6xoBIOiRtheZ*jx&new=1",
+      "char_count": 2972,
+      "status": "success"
+    },
+    {
+      "title": "想idea也被AI学会了,OpenMOSS提出RLCF,强化学习提升AI的科研品味,提出具有高价值的科研idea",
+      "date": "2026-03-18",
+      "file": "article_2026-03-18_想idea也被AI学会了,OpenMOSS提出RLCF,强化.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo92nz8PtxnAumpd-rt8bI-qnTJmF0XAXOai7TcU15dBLW-EpG8QkJEZ*Io3QYXmuVGfGQHD5BHz2DvqDjpiD3D&new=1",
+      "char_count": 6555,
+      "status": "success"
+    },
+    {
+      "title": "仅SFT超越Tongyi DeepResearch!上海交大发布OpenSeeker,数据模型训练全部开源!",
+      "date": "2026-03-18",
+      "file": "article_2026-03-18_仅SFT超越Tongyi DeepResearch!上海交大.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpvBA*rpeRxTEeNdCMozH*ZKoG6seKio4eFFRWjD2EdijUrkN-zAutr7v4V**nt0XW--WoQpN3tg042kuagM73k&new=1",
+      "char_count": 3929,
+      "status": "success"
+    },
+    {
+      "title": "Kimi重大突破:重新定义深度残差连接,训练效率提升1.25倍",
+      "date": "2026-03-17",
+      "file": "article_2026-03-17_Kimi重大突破_重新定义深度残差连接,训练效率提升1.25.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqlzGy*m34pQRuzV5CsQL1TcUj2IgXhqPyj-TERB2PZRYWCBAkoc-ErtkSlh1Qv6e6eMzT4YITnLSIlQX21Zq2H&new=1",
+      "char_count": 3934,
+      "status": "success"
+    },
+    {
+      "title": "ICLR 2026 | 腾讯混元*KCL提出WildToolBench,以真实用户行为为准,最强模型集体翻车,准确率不足15%",
+      "date": "2026-03-17",
+      "file": "article_2026-03-17_ICLR 2026 | 腾讯混元*KCL提出WildTool.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqC07lY1ZZGANITF3taj-nCoFz5knVqXOJIa3urHcTFIlGf*hztbSc*URasdkS419ejI0ZEAUlX3gS2CY69eJNV&new=1",
+      "char_count": 2503,
+      "status": "success"
+    },
+    {
+      "title": "复旦,通义等团队发布DreamVideo-Omni:多人场景视频定制的＂认对人＂与＂动对位＂",
+      "date": "2026-03-16",
+      "file": "article_2026-03-16_复旦,通义等团队发布DreamVideo-Omni_多人场景.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqr7SB73JlQaaqRL2XrkqUS4biNCiAU1t2oae5S2Dm8ekJzd1ueDiX8UZRi-sI0cxUXlJ6yAZDd31s*bq7QeOvh&new=1",
+      "char_count": 2589,
+      "status": "success"
+    },
+    {
+      "title": "港科大浙大等团队推出「XSkill」:让多模态Agent真正学会＂举一反三＂",
+      "date": "2026-03-15",
+      "file": "article_2026-03-15_港科大浙大等团队推出「XSkill」_让多模态Agent真正.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoR9lbWDOkA553uSrX-bxqhT6x553GuePBg5hpra2yCfeiiHrcf2PQ*IfngHUqJvBwDjNbG78ohf18USAAUtfYC&new=1",
+      "char_count": 5939,
+      "status": "success"
+    },
+    {
+      "title": "UC Berkeley等团队推出Flash-KMeans:GPU加速K-Means极致优化!比FAISS快200倍!",
+      "date": "2026-03-13",
+      "file": "article_2026-03-13_UC Berkeley等团队推出Flash-KMeans_G.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErg9USyUygZtN1rNr-FufgIeVnHgZQsLb2ioLfuGG3Yj*SmG*mOqQOtFfalHpEFV9oSaYU9DnS4Mz7aSjrJDXXk&new=1",
+      "char_count": 10113,
+      "status": "success"
+    },
+    {
+      "title": "英伟达等团队发布MM-Zero:视觉语言模型没有训练数据也能自我进化",
+      "date": "2026-03-13",
+      "file": "article_2026-03-13_英伟达等团队发布MM-Zero_视觉语言模型没有训练数据也能.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoycxmx98JRY5PZikd6RTPFoZOcN5uVjfdaPO0FIbC89RrGzqgCxaNBtGfzNLQn-H5nniZushGgYEJgJwugJl*Y&new=1",
+      "char_count": 3863,
+      "status": "success"
+    },
+    {
+      "title": "南大和腾讯优图最新研究Omni-Diffusion:首个统一多模态的原生扩散模型,全面开源",
+      "date": "2026-03-12",
+      "file": "article_2026-03-12_南大和腾讯优图最新研究Omni-Diffusion_首个统一.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoaJjG8Vae0qjA3lPz3oaUqKXU9nrxvBD11CI95S*Xf4R2C16Oj4oJu2eHx3*czvkW8AkAppdR7GyG9S*icnmM9&new=1",
+      "char_count": 5144,
+      "status": "success"
+    },
+    {
+      "title": "思维链会触发模型的回忆,谷歌最新研究揭示COT对模型知识能力的影响",
+      "date": "2026-03-12",
+      "file": "article_2026-03-12_思维链会触发模型的回忆,谷歌最新研究揭示COT对模型知识能力.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo3sQ9ABqzpzWqOAHOm*JGKaP7XwNIrxqYY*eYrbQzTrtdJADuDoKY*CPkoIrlT1rVXNkG4grtHr0yWp-c9o4I6&new=1",
+      "char_count": 3423,
+      "status": "success"
+    },
+    {
+      "title": "ATLAS:4B小模型如何驾驭大规模工具?微软提出上下文智能管理方案",
+      "date": "2026-03-12",
+      "file": "article_2026-03-12_ATLAS_4B小模型如何驾驭大规模工具?微软提出上下文智能.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqqed1fnqt17S*VM2gP6DSHO4ohywroK9q9BGUCgmWypvIf5g5D48upMCPZJ3Kjkd--VaHbMbLEhZ3ix5mI35tP&new=1",
+      "char_count": 4786,
+      "status": "success"
+    },
+    {
+      "title": "推理模型能够控制自己的思维链吗?OpenAI 最新研究揭示 CoT 可控性真相",
+      "date": "2026-03-10",
+      "file": "article_2026-03-10_推理模型能够控制自己的思维链吗?OpenAI 最新研究揭示 .md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpwjNHqA9vFFjyRuJ1KHNNOTx-89bC08Dj9oUzVxDwNHQ0Zp-29SdPORfVXO79u7vtZ5dO*1PcIGyLLCZHWJmLo&new=1",
+      "char_count": 4625,
+      "status": "success"
+    },
+    {
+      "title": "字节北航等提出HACRL:让不同家族的模型互帮互助,强化学习效率翻倍",
+      "date": "2026-03-09",
+      "file": null,
+      "status": "failed_download"
+    },
+    {
+      "title": "AGI是错的?图灵奖得主LeCun最新论文,人类不应作为基准,SAI(超人自适应智能)才是正确目标",
+      "date": "2026-03-09",
+      "file": "article_2026-03-09_AGI是错的?图灵奖得主LeCun最新论文,人类不应作为基准.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEr9JSo*rH6T8-ZIqXXGeg3wh3drpeOoDLed1HS*Te5WC0CYLa3H8C4wnlTbt6a9NDw81MolSAPDmvrWiCaBovKW&new=1",
+      "char_count": 3887,
+      "status": "success"
+    },
+    {
+      "title": "港科大推出AgentVista:多模态Agent的极限挑战,Gemini 3 Pro准确率仅27.3%",
+      "date": "2026-03-08",
+      "file": "article_2026-03-08_港科大推出AgentVista_多模态Agent的极限挑战,.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpMLVaEOouBrZHEoF5UDl0KXfGqStzmHCqcQbYHFqjU37RAH2ge3MZTp1MpXT551IxPHnb4vUOf4Rk*-cBdRJBt&new=1",
+      "char_count": 4709,
+      "status": "success"
+    },
+    {
+      "title": "Skill迎来大一统,浙大阿里腾讯等众多研究机构联合推出SkillNet,拒绝「重复造轮子」",
+      "date": "2026-03-08",
+      "file": "article_2026-03-08_Skill迎来大一统,浙大阿里腾讯等众多研究机构联合推出Sk.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEr7LjYq2E9hP18CNeqWvLcd5AIa8UdqHiOadXL1spk9gQ2hWJ2WTWqawVPuB7R*ATSsCb6w06jjfDqE7S6PAh1S&new=1",
+      "char_count": 5118,
+      "status": "success"
+    },
+    {
+      "title": "字节清华推出Timer-S1:首个十亿参数规模的时间序列预测基座大模型",
+      "date": "2026-03-07",
+      "file": "article_2026-03-07_字节清华推出Timer-S1_首个十亿参数规模的时间序列预测.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErRuB28Znta4LXCQVA4f4V8BUhTgzSq0PlHM*kdITTDCmQUPAb6vMJzhJbrt6U-Of8kDmRDdVcCLMsoqXSu-6-w&new=1",
+      "char_count": 6369,
+      "status": "success"
+    },
+    {
+      "title": "微软推出Proact-VL:让你的AI搭子主动和你视频聊天",
+      "date": "2026-03-07",
+      "file": "article_2026-03-07_微软推出Proact-VL_让你的AI搭子主动和你视频聊天.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoKZEIi2oCl0aRRczznsRw5r87paOXl9CjTNSFfFAeCn93VwWsRfBI0uNpiGcj14OcXHasvrT77Ap4313nmBszU&new=1",
+      "char_count": 7836,
+      "status": "success"
+    },
+    {
+      "title": "快手可灵发布MotionControl:揭露全身角色动画生成的秘诀",
+      "date": "2026-03-06",
+      "file": "article_2026-03-06_快手可灵发布MotionControl_揭露全身角色动画生成.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309747&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErS2YNv0Za0U2VO-S-PILgLuOZ040o-yJGpfcrhciJKS5mvH5082YUfcs3y*LPGxEZIZ7zsFov-ee-GbVXNQyYG&new=1",
+      "char_count": 5044,
+      "status": "success"
+    },
+    {
+      "title": "港大小米发布Utonia:一个编码器统一所有领域的点云,均达到SOTA性能",
+      "date": "2026-03-06",
+      "file": "article_2026-03-06_港大小米发布Utonia_一个编码器统一所有领域的点云,均达.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309750&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo1R1bQtrKX5KnihjvqgMAxeUrKQySt27Y0TK*xfok5Vn7ONOsFSIrmT8ZFEAJ0f6lFsVzJMPR8YSl6bTLeFdoE&new=1",
+      "char_count": 6026,
+      "status": "success"
+    },
+    {
+      "title": "人大高瓴最新研究MemSifter:让小模型做＂记忆筛选＂,大模型专注于推理",
+      "date": "2026-03-06",
+      "file": "article_2026-03-06_人大高瓴最新研究MemSifter_让小模型做＂记忆筛选＂,.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpgvQ5ehCnwU6HqmxT9CcEMxCssEP*O4sH1GkbPoXU40duTFHfv0QJFx37CqR0ENrnXto7yedYYI5YirM6z1Vj7&new=1",
+      "char_count": 3373,
+      "status": "success"
+    },
+    {
+      "title": "Meta分享多模态模型从零预训练经验,超越大语言模型,迈向原生多模态模型的深度探索",
+      "date": "2026-03-05",
+      "file": "article_2026-03-05_Meta分享多模态模型从零预训练经验,超越大语言模型,迈向原.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoKozIWvaYZ8gjjfeL4iHuglJfJih57DxKxrm*aHwae938kTX0WVK0lbguD39XjUzzykFNTEZMDJzf8z92WPh5N&new=1",
+      "char_count": 6750,
+      "status": "success"
+    },
+    {
+      "title": "UIUC提出Tool-R0:零数据自我进化,大模型如何自主学习工具调用?",
+      "date": "2026-03-05",
+      "file": "article_2026-03-05_UIUC提出Tool-R0_零数据自我进化,大模型如何自主学.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErP2ExZWP4otbfoUq5dWHVrh0-*phCyzR9wPRU-wu7g5AitwczML-8ud-NaeGkv5RPlBA4ALXX*DsrK0a0*6bKw&new=1",
+      "char_count": 4311,
+      "status": "success"
+    },
+    {
+      "title": "IBM Research开源Exgentic:首个通用AI Agent评测榜单",
+      "date": "2026-03-04",
+      "file": "article_2026-03-04_IBM Research开源Exgentic_首个通用AI .md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEr-7KrHoXQcw*olV-qCzOKgwfCj*nVzhyony8kjemWXn4rST8IlUtAxU5bzLWBZVJxCIwHeETJqKsjbLcoTc3cA&new=1",
+      "char_count": 3579,
+      "status": "success"
+    },
+    {
+      "title": "字节清华发布CUDA Agent:Agent自己优化CUDA内核,大规模强化学习训练超越一众顶级模型",
+      "date": "2026-03-04",
+      "file": "article_2026-03-04_字节清华发布CUDA Agent_Agent自己优化CUDA.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEp4EqIq1ZM8jfytxQ0l*VSfIHf2euy9BLOofDOlYqzxdNQoQ-WvPpJBn8RNBjMl6aK6ZvYMBmPsmRQ4U-5XhJtX&new=1",
+      "char_count": 5045,
+      "status": "success"
+    },
+    {
+      "title": "现有Agent记忆基准测试全在＂作弊＂?斯坦福最新研究MemoryArena评估真实记忆能力",
+      "date": "2026-03-03",
+      "file": "article_2026-03-03_现有Agent记忆基准测试全在＂作弊＂?斯坦福最新研究Mem.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErQDUXMzns8RNXAl7kYoq35ruwtHTymUaRRbmPLiNeT3noRextw0RM*fipqXA*CaVJ8xJxXcANnztwgBAvKsieR&new=1",
+      "char_count": 4599,
+      "status": "success"
+    },
+    {
+      "title": "人大小红书等团队发布OmniGAIA:AI评估的全模态基准测试,Gemini3 Pro仅62.5分",
+      "date": "2026-03-02",
+      "file": "article_2026-03-02_人大小红书等团队发布OmniGAIA_AI评估的全模态基准测.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEpIirTSVaJqEpxj5rmNorF24HlyHmBD3E9cZKk*eRkk2mOgxnbkJs77*Hkr5pQs*obZ-Nhfzh92n0kdZlkOBRPM&new=1",
+      "char_count": 4364,
+      "status": "success"
+    },
+    {
+      "title": "中科院等团队提出Search-R1++:强化学习训练深度研究Agent的正确姿势",
+      "date": "2026-03-02",
+      "file": "article_2026-03-02_中科院等团队提出Search-R1++_强化学习训练深度研究.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309749&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErI-Q1tzCbK4526VJW1kQxKSXio-AJKYQq8SDzJFnntpfjvX8jFuLIEUEcMKf3nTbxRayizbdcIsf0nh7iwQjqu&new=1",
+      "char_count": 5180,
+      "status": "success"
+    },
+    {
+      "title": "UCLA发布ARLArena:AI Agent稳定训练的秘诀",
+      "date": "2026-03-01",
+      "file": "article_2026-03-01_UCLA发布ARLArena_AI Agent稳定训练的秘诀.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo4tmY*g1GGhy0NmvN57GhzNTbhRhrWUI1j3gzWb9XnHTyGQ6UrYfTruwrk2-DmDi6ugAqkc966CtTzyQX5gCvY&new=1",
+      "char_count": 4049,
+      "status": "success"
+    },
+    {
+      "title": "QRRanker:中科院联合腾讯微信开源长文本重排序新SOTA",
+      "date": "2026-03-01",
+      "file": "article_2026-03-01_QRRanker_中科院联合腾讯微信开源长文本重排序新SOT.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309751&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoJLw5kob5VMWOvXbw7WFGNFmfEbSLn5CJY3fWAzbqFPx4de063ixStNaQpiW9D6jyIXbiIasM7kGwAnQouv79Y&new=1",
+      "char_count": 5395,
+      "status": "success"
+    },
+    {
+      "title": "DeepSeek V4蓄势待发,发布最新论文DualPath:用空闲网卡打破Agent推理的存储带宽瓶颈",
+      "date": "2026-02-28",
+      "file": "article_2026-02-28_DeepSeek V4蓄势待发,发布最新论文DualPath.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEp1wbBxPc-k2Alf5eyK9brafeqZCxV1ACGVGx1zApV9hYg7R-k4SlA3qUnJmXsGboK4JXw-eh4ojX0Ovx1gH0Jq&new=1",
+      "char_count": 3734,
+      "status": "success"
+    },
+    {
+      "title": "腾讯混元发布高效推理的艺术:数据、奖励与优化的三重奏",
+      "date": "2026-02-27",
+      "file": "article_2026-02-27_腾讯混元发布高效推理的艺术_数据、奖励与优化的三重奏.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoKAyPojWvufaHteVvenizn6xmRJhwsaHk5FtLBGQKXhB*mSsYk5hX7bjxXHEVsZuPFT06Wxm6xTijhIBBzrizT&new=1",
+      "char_count": 5137,
+      "status": "success"
+    },
+    {
+      "title": "腾讯AI Lab发布Locas: 用0.02%参数让大模型学会＂终身记忆＂",
+      "date": "2026-02-27",
+      "file": "article_2026-02-27_腾讯AI Lab发布Locas_ 用0.02%参数让大模型学.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEoGIDymwS*QmsITWNXZz9AyN3Nzxb95pEVrlEQAuCIzd8AZRWQudbu1lLJOxsuy2hiGlDCJ0X2rn7q9kTyh6MFQ&new=1",
+      "char_count": 2977,
+      "status": "success"
+    },
+    {
+      "title": "NUS和MIT提出KLong:让AI Agent突破＂超级长程任务＂的极限",
+      "date": "2026-02-25",
+      "file": "article_2026-02-25_NUS和MIT提出KLong_让AI Agent突破＂超级长.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEo4eyIxDDGNOR5cmatGZKCyAItRs4wBYGjWiCMyj8dk9o02dHx92gUtkyAcePVyq55T4J62KsvulgpmHoLSWWa2&new=1",
+      "char_count": 3688,
+      "status": "success"
+    },
+    {
+      "title": "思维链越长越好吗?字节seed提出SAGE:让推理模型学会＂思维早停＂,准确率提升2.1%,Token消耗降低44%",
+      "date": "2026-02-25",
+      "file": "article_2026-02-25_思维链越长越好吗?字节seed提出SAGE_让推理模型学会＂.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309752&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiEqfbDWoITlloGRItfyEdeKB4lLdpWp8apZdcZK7QT0aik8Uq*t2VNzGVwjgm2Ic1DrWvWn*kb10k5a5WyY-4jnq&new=1",
+      "char_count": 3358,
+      "status": "success"
+    },
+    {
+      "title": "Meta最新研究PAHF:构建真正个性化,「懂你」的AI Agent",
+      "date": "2026-02-24",
+      "file": "article_2026-02-24_Meta最新研究PAHF_构建真正个性化,「懂你」的AI A.md",
+      "wx_url": "https://mp.weixin.qq.com/s?src=11&timestamp=1785309748&ver=6871&signature=w8HCAiG9aIED*s968nBKVSQ4xgfCLeQ-WcVHaDdWiErkwAwKbMQE8n3W2FZNGMQSFu6Mjyj7s*nmfVhNUIHvLidgwJeCPtg9IvtEnMEi6f2kpz7B843zYbs8MklHnH-W&new=1",
+      "char_count": 5150,
+      "status": "success"
+    }
+  ]
+}
