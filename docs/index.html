@@ -483,12 +483,12 @@
           <thead>
             <tr>
               <th onclick="sortTable('lb-table', 0, false)">方法 ⇅</th>
-              <th class="num" onclick="sortTable('lb-table', 1, true)">LLM 盲判通过↑</th>
-              <th class="num" onclick="sortTable('lb-table', 2, true)">总分↑</th>
-              <th class="num" onclick="sortTable('lb-table', 3, true)">防刷 Z↓</th>
-              <th class="num" onclick="sortTable('lb-table', 4, true)">稀疏 AI 率↓</th>
-              <th class="num" onclick="sortTable('lb-table', 5, true)">事实保真↑</th>
-              <th class="num" onclick="sortTable('lb-table', 6, true)">改动%</th>
+              <th class="num" onclick="sortTable('lb-table', 1, true)">总分↑</th>
+              <th class="num" onclick="sortTable('lb-table', 2, true)">防刷 Z↓</th>
+              <th class="num" onclick="sortTable('lb-table', 3, true)">稀疏 AI 率↓</th>
+              <th class="num" onclick="sortTable('lb-table', 4, true)">事实保真↑</th>
+              <th class="num" onclick="sortTable('lb-table', 5, true)">改动%</th>
+              <th class="num" onclick="sortTable('lb-table', 6, true)">LLM 盲判通过↑ <sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></th>
               <th class="num" onclick="sortTable('lb-table', 7, true)">D1↓</th>
               <th class="num" onclick="sortTable('lb-table', 8, true)">D2↓</th>
               <th class="num" onclick="sortTable('lb-table', 9, true)">D3↓</th>
@@ -498,12 +498,12 @@
           <tbody>
             <tr class="row-human" data-cat="human">
               <td>🌟 <strong>Pre-AI 真人锚</strong><sup class="fn"><a href="#lb-fn-1">①</a></sup></td>
-              <td class="num">100.0%</td>
               <td class="num"><strong>83.8</strong></td>
               <td class="num">0.472</td>
               <td class="num">0.203</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
               <td class="num">0.28</td>
               <td class="num">0.15</td>
               <td class="num">0.84</td>
@@ -511,12 +511,12 @@
             </tr>
             <tr class="row-human" data-cat="human">
               <td>🌟 <strong>当代真人锚</strong><sup class="fn"><a href="#lb-fn-2">②</a></sup></td>
-              <td class="num">100.0%</td>
               <td class="num"><strong>82.9</strong></td>
               <td class="num">0.413</td>
               <td class="num">0.252</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
+              <td class="num">100.0%</td>
               <td class="num">0.40</td>
               <td class="num">0.13</td>
               <td class="num">0.74</td>
@@ -524,12 +524,12 @@
             </tr>
             <tr class="row-highlight" data-cat="ours">
               <td>🛠️ <strong>Ours + Gate</strong><sup class="fn"><a href="#lb-fn-3">③</a></sup></td>
-              <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
               <td class="num"><strong>72.1</strong></td>
               <td class="num"><strong>0.358</strong></td>
               <td class="num">0.579</td>
               <td class="num"><strong>100.0%</strong></td>
               <td class="num"><strong>3.2%</strong></td>
+              <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
               <td class="num"><strong>0.26</strong></td>
               <td class="num"><strong>0.09</strong></td>
               <td class="num"><strong>1.00</strong></td>
@@ -537,12 +537,12 @@
             </tr>
             <tr data-cat="baseline">
               <td>📝 <strong>Few-Shot 模仿</strong><sup class="fn"><a href="#lb-fn-4">④</a></sup></td>
-              <td class="num">90.0%</td>
               <td class="num">68.4</td>
               <td class="num">0.595</td>
               <td class="num">0.557</td>
               <td class="num">93.5%</td>
               <td class="num">23.0%</td>
+              <td class="num">90.0%</td>
               <td class="num">1.00</td>
               <td class="num">0.14</td>
               <td class="num">1.14</td>
@@ -550,12 +550,12 @@
             </tr>
             <tr data-cat="ours">
               <td>🧪 <strong>Ours w/o Gate</strong><sup class="fn"><a href="#lb-fn-5">⑤</a></sup></td>
-              <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
               <td class="num">65.8</td>
               <td class="num">0.788</td>
               <td class="num">0.531</td>
               <td class="num">100.0%</td>
               <td class="num">7.2%</td>
+              <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
               <td class="num">1.14</td>
               <td class="num">0.13</td>
               <td class="num">1.78</td>
@@ -563,12 +563,12 @@
             </tr>
             <tr data-cat="baseline">
               <td>🤖 <strong>原生 AI 基线</strong><sup class="fn"><a href="#lb-fn-6">⑥</a></sup></td>
-              <td class="num">80.0% <span class="badge badge-rose">漏检</span></td>
               <td class="num">65.8</td>
               <td class="num">0.497</td>
               <td class="num">0.685</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
+              <td class="num">80.0% <span class="badge badge-rose">漏检</span></td>
               <td class="num">0.72</td>
               <td class="num">0.11</td>
               <td class="num">1.07</td>
@@ -576,12 +576,12 @@
             </tr>
             <tr data-cat="baseline">
               <td>💬 <strong>Zero-Shot 盲改</strong><sup class="fn"><a href="#lb-fn-7">⑦</a></sup></td>
-              <td class="num">80.0%</td>
               <td class="num">65.8</td>
               <td class="num">0.497</td>
               <td class="num">0.684</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
+              <td class="num">80.0%</td>
               <td class="num">0.72</td>
               <td class="num">0.11</td>
               <td class="num">1.07</td>
@@ -589,12 +589,12 @@
             </tr>
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>TTM 两阶段</strong><sup class="fn"><a href="#lb-fn-8">⑧</a></sup></td>
-              <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
               <td class="num">64.7</td>
               <td class="num">1.180</td>
               <td class="num">0.387</td>
               <td class="num">81.5% 🚨</td>
               <td class="num">58.7%</td>
+              <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
               <td class="num">0.70</td>
               <td class="num">0.24</td>
               <td class="num">0.80</td>
@@ -602,12 +602,12 @@
             </tr>
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>PA 人设对抗</strong><sup class="fn"><a href="#lb-fn-9">⑨</a></sup></td>
-              <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
               <td class="num">59.5</td>
               <td class="num">1.537</td>
               <td class="num">0.389</td>
               <td class="num">84.8% 🚨</td>
               <td class="num">48.1%</td>
+              <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
               <td class="num">0.88</td>
               <td class="num">0.18</td>
               <td class="num">1.03</td>
@@ -615,12 +615,12 @@
             </tr>
             <tr class="row-hacked" data-cat="baseline">
               <td>📋 <strong>Checklist 规则</strong><sup class="fn"><a href="#lb-fn-10">⑩</a></sup></td>
-              <td class="num">80.0%</td>
               <td class="num">38.0</td>
               <td class="num">2.684</td>
               <td class="num">0.669</td>
               <td class="num">100.0%</td>
               <td class="num">2.7%</td>
+              <td class="num">80.0%</td>
               <td class="num">9.40 🚨</td>
               <td class="num">0.15</td>
               <td class="num">1.07</td>
@@ -645,9 +645,7 @@
         </ol>
         <div class="fn-title">📐 指标定义与计算方式</div>
         <ul>
-          <li><strong>LLM 盲判通过率</strong>：单分数 LLM-as-a-Judge（<code>hy4</code>）对每篇文本独立盲判 HUMAN/AI，通过率 = 判 HUMAN 篇数 / 总篇数。<sup class="fn">①②</sup> 真人锚与 <sup class="fn">⑥</sup> AI 基线各 24/32/10 篇，改写基线为 10 篇配对产物。该裁判单独检测 AUROC 仅 0.6000（见下表 Table 1），因此其通过率仅作参照，不作排名依据。</li>
-          <li id="fn-ours-judge"><strong>* 关于 Ours 两个方法（+Gate / w/o Gate）的 0% 盲判通过率</strong>：补跑实测（裁判 <code>hy4</code>，与全部基线同一协议；逐篇记录见仓库 <code>results/llm_judge_ours_backfill.jsonl</code> 与 <code>results/llm_judge_ours_nogate.jsonl</code>，两组均为 10/10 全判 AI，置信度 80–98）。这一「反直觉」结果恰恰是本基准核心论点的双面铁证：① 处方微修仅改 3.2%–7.2% 字符、宏观段落骨架与原文一致，而单分数裁判主要依赖宏观结构信号——它连<strong>保真 100% 的真人参考改写都判 AI</strong>，说明其判断层系统性失灵（重结构轻表层，对 TTM/PA 这类「结构乱但表层像人」的毁灭式洗稿反而放行 90%）；② 反过来，它能被 48%–59% 的大改写骗过、却给不出任何可归因证据。这正是为什么本基准的官方排名指标是防刷 Z + 稀疏探针 + 事实保真，而非 LLM 裁判意见（裁判意见仅作参照列展示）。</li>
-          <li><strong>总分</strong> = <code>0.7 × HumanPass(四维防刷) + 0.3 × (1 − 稀疏 AI 率)</code>，其中 <code>HumanPass = 100·exp(−0.35·防刷Z)</code>。这是本基准的官方排名指标。</li>
+          <li><strong>总分（官方排名指标）</strong> = <code>0.7 × HumanPass(四维防刷) + 0.3 × (1 − 稀疏 AI 率)</code>，其中 <code>HumanPass = 100·exp(−0.35·防刷Z)</code>。排行榜按总分排序。</li>
           <li><strong>防刷 Z</strong>：四维正交探针（D1–D4）对多博主真人分布的双边偏离 Z-Score（锚定 <code>[P10, P90]</code> 区间，越界按超标距离重罚；含成对张力锁与事实红线）。越低越好，真人均值约 0.41–0.47。</li>
           <li><strong>稀疏 AI 率</strong>：DetectorScope 式双极稀疏探针（中文 TF-IDF 字符 n-gram + ElasticNet，专名/数字掩码后训练）输出的 AI 概率。0.50 为决策边界。</li>
           <li><strong>事实保真率</strong>：原子事实锚点（数字、专名、因果链）在改写后的保留比例；由确定性脚本抽验。</li>
@@ -656,6 +654,11 @@
           <li><strong>D2 跨句衔接</strong>：相邻句实词/代词搭扣断裂率 + 句首信息冲击（Surprisal 差），抓「剁短句导致断链」。</li>
           <li><strong>D3 骨架克隆</strong>：段首起手式同质化 + 词性 4-gram 骨架复读率，抓「换词不换骨」。</li>
           <li><strong>D4 宏观回环</strong>：跨段远距复述率 + 中段具象枯竭度，抓「提纲填空与车轱辘话」。</li>
+        </ul>
+        <div class="fn-title">📎 参照指标（不参与排名）</div>
+        <ul>
+          <li><strong>LLM 盲判通过率</strong>：单分数 LLM-as-a-Judge（<code>hy4</code>）对每篇文本独立盲判 HUMAN/AI，通过率 = 判 HUMAN 篇数 / 总篇数。<sup class="fn">①②</sup> 真人锚与 <sup class="fn">⑥</sup> AI 基线各 24/32/10 篇，改写基线为 10 篇配对产物。该裁判单独检测 AUROC 仅 0.6000（见下表 Table 1），且可被毁灭式洗稿欺骗，因此仅作参照，不参与排名。</li>
+          <li id="fn-ours-judge"><strong>* 关于 Ours 两个方法（+Gate / w/o Gate）的 0% 盲判通过率</strong>：补跑实测（裁判 <code>hy4</code>，与全部基线同一协议；逐篇记录见仓库 <code>results/llm_judge_ours_backfill.jsonl</code> 与 <code>results/llm_judge_ours_nogate.jsonl</code>，两组均为 10/10 全判 AI，置信度 80–98）。这一「反直觉」结果恰恰是本基准核心论点的双面铁证：① 处方微修仅改 3.2%–7.2% 字符、宏观段落骨架与原文一致，而单分数裁判主要依赖宏观结构信号——它连<strong>保真 100% 的真人参考改写都判 AI</strong>，说明其判断层系统性失灵（重结构轻表层，对 TTM/PA 这类「结构乱但表层像人」的毁灭式洗稿反而放行 90%）；② 反过来，它能被 48%–59% 的大改写骗过、却给不出任何可归因证据。这正是为什么本基准的官方排名指标是防刷 Z + 稀疏探针 + 事实保真，而非 LLM 裁判意见（裁判意见仅作参照列展示）。</li>
         </ul>
       </div>
     </section>
