@@ -1,0 +1,320 @@
+\documentclass[11pt]{article}
+
+% Use [review] for double-blind submission or [preprint] for camera-ready/arXiv with page numbers
+\usepackage[preprint]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xeCJK}
+\setCJKmainfont{Songti SC}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+\newcommand{\zh}[1]{#1}
+\newcommand{\bench}{\textsc{C-LongSlopBench}}
+\newcommand{\gate}{\texttt{ParagraphQualityGate}}
+
+\title{\bench{}: An Auditable and Anti-Hacking Benchmark for Chinese Long-Form AI Text Detection and Prescription-Guided Humanization}
+
+\author{
+  Wenwei Li \\
+  Independent Researcher \\
+  \texttt{https://yenanjing.github.io/c-longslop-bench/}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+As large language models (LLMs) increasingly generate 1,000--10,000 character Chinese technical articles and essays, readers and editors face a pervasive phenomenon known as stylistic ``AI slop''---formulaic punctuation crutches, abrupt sentence-initial information shocks, and homogeneous paragraph templates. However, existing evaluation paradigms for long-form AI text detection and humanization suffer from two fundamental failures: (1) zero-shot neural perplexity/curvature detectors (\texttt{Qwen2.5-0.5B} PPL, \texttt{Fast-DetectGPT}) collapse on cross-source Chinese long-form text ($\text{AUROC} \le 0.6787$), while supervised neural classifiers (\texttt{Chinese-RoBERTa}) are brittle against multi-round persona-adversarial rewriting (dropping from $100.0\%$ to $10.0\%$ recall); and (2) single-score \textit{LLM-as-a-Judge} protocols (\texttt{hy4}) miss $80.0\%$ of unedited AI technical articles yet get fooled by $90.0\%$ of destructive ``persona-hacking'' rewrites that fabricate personal anecdotes while losing $15\%$--$18\%$ of factual anchors.
+
+We introduce \textbf{\bench{} (v1.2)}, an auditable, deterministic, and anti-hacking benchmark comprising $418$ zero-leakage Chinese long-form documents (including $107$ authentic human essays from six verifiable authors spanning 2011--2026) and a $10$-article ($763$-paragraph) multi-method paired humanization testbed. \bench{} replaces black-box single-score judges with two complementary, interpretable pillars: (i) a \textbf{Four-Dimensional Orthogonal Probe} anchored to two-sided human distribution bands $[P_{10}, P_{90}]$ with four physical anti-hacking locks, and (ii) an entity-masked \textbf{Bipolar Sparse N-Gram Probe}. Together, our full ensemble achieves $100.0\%$ detection recall on both raw AI and adversarial rewrites at an $8.3\%$ pre-AI human false positive rate, and reaches $0.9953$ macro-average AUROC under Leave-One-Author-Out (LOAO) cross-validation. Furthermore, we propose \textbf{Prescription-Guided Local Repair} coupled with a zero-leakage \textbf{\gate{}}. Across $482$ triggered paragraph edits, our 1-pass LLM repair achieves the highest humanization score ($74.7 \pm 2.4$, $\text{Composite } Z = 0.316$, $p = 0.0020$ vs.\ raw AI) with only a $7.5\%$ character edit budget and $100.0\%$ factual anchor retention, while suppressing document-level variance by $77\%$ compared to unconstrained repair.
+\end{abstract}
+
+\section{Introduction}
+
+The proliferation of frontier large language models (LLMs) in Chinese long-form writing has shifted the primary challenge from grammatical fluency to \textit{stylistic authenticity}. Across technical blogs, scientific commentaries, and analytical essays of $1,000$ to $10,000$ characters, LLM-generated prose exhibits recurring structural and discourse-level artifacts---colloquially termed ``AI slop'' (\zh{AI味}) \cite{slopbench2026,detectorscope2026}. Unlike English short-form generations where lexical clichés (\textit{``delve into''}, \textit{``testament to''}) dominate, Chinese long-form AI slop manifests in deeper syntactic and information-theoretic regularities: excessive explanatory punctuation crutches (em-dashes ``\zh{——}'', parenthetical enumerations ``\zh{（1）}'', and colon-prompt headers ``\zh{核心结论：}''), deficits in natural spoken discourse buffers, abrupt sentence-initial surprisal spikes that violate Old-to-New information flow \cite{levy2007speakers}, and paragraph opener cloning across dozens of paragraphs.
+
+Evaluating both \textit{AI slop detectors} and \textit{humanization (de-slop) methods} in this regime exposes three critical bottlenecks in current NLP benchmarks:
+
+\paragraph{1. The Brittle Detector Dilemma.}
+Classical zero-shot statistical detectors such as token-level perplexity and conditional probability curvature (\texttt{Fast-DetectGPT}; \citealt{bao2024fastdetectgpt}) assume that machine text occupies regions of high likelihood and negative curvature under a surrogate language model. On cross-domain, multi-generator Chinese long-form articles, we find that \texttt{Qwen2.5-0.5B} log-likelihood and \texttt{Fast-DetectGPT} achieve heldout AUROCs of only $0.6787$ and $0.5253$, respectively (Table~\ref{tab:exp1}). Conversely, while a supervised neural classifier (\texttt{Chinese-RoBERTa-wwm-ext}; \citealt{cui2021pre}) achieves $0.9714$ AUROC on unedited machine text, its detection recall collapses from $100.0\%$ to $10.0\%$ when confronted with multi-round adversarial style transfer \cite{ttm2025,impersona2025}.
+
+\paragraph{2. The Vulnerability of Single-Score LLM-as-a-Judge.}
+A widely adopted alternative in recent style-transfer pipelines is using a frontier LLM as a binary or scalar judge (\textit{LLM-as-a-Judge}; \citealt{zheng2023judging}) to score ``human-likeness.'' Our controlled audit reveals a striking failure mode: when evaluating unedited, well-structured AI paper summaries, a calibrated judge model (\texttt{hy4}) suffers an \textbf{$80.0\%$ false negative rate} (misclassifying $8/10$ raw AI articles as human). Yet when evaluating multi-round Persona-Adversarial (PA) and Test-Time Matching (TTM) rewrites that inject performative internet slang (\zh{``说实话人麻了''}, \zh{``服务器直接干崩''}) while altering $48.3\%$--$58.8\%$ of the text and destroying $14.7\%$--$18.1\%$ of factual numbers, the LLM judge grants a \textbf{$90.0\%$ human pass rate}. Worse still, when evaluating our faithful prescription-guided repair ($7.5\%$ character edit, $100.0\%$ factual retention), the LLM judge assigns a \textbf{$0.0\%$ pass rate}, explicitly citing in its rationale that the text \textit{``follows a comprehensive paper outline without fabricating personal hardware-debugging anecdotes.''} In short, single-score LLM judges conflate \textit{performative persona fabrication} with authentic human writing, while providing zero paragraph-level attribution.
+
+\paragraph{3. Reward Hacking in One-Sided Humanization Rules.}
+Existing humanization prompts \cite{catchme2025} rely on one-sided heuristic rules (e.g., \textit{``forbid transition words, chop long sentences into short ones to increase burstiness, add colloquial fillers''}). Without two-sided distributional bounds, LLMs over-compensate: chopping compound sentences inflates cross-sentence cohesion breaks ($D_2$ rises to $1.79$), while unconstrained filler injection causes colloquial overload ($D_1 = 0.82$).
+
+To resolve these challenges, we present \textbf{\bench{} (v1.2)}, the first auditable, anti-hacking benchmark and diagnostic framework for Chinese long-form AI text detection and humanization. Our contributions are fourfold:
+\begin{itemize}
+    \item \textbf{Zero-Leakage Multi-Author Benchmark (\S\ref{sec:dataset}):} We curate $418$ high-quality Chinese long-form texts ($206$ \texttt{dev}, $212$ \texttt{heldout}), anchored by $107$ authentic essays from six verifiable Chinese technical/commentary authors spanning both Pre-AI (2011--2022) and Contemporary eras, alongside a zero-leakage paired testbed of $10$ long articles ($763$ paragraphs) rewritten across $8$ distinct paradigms.
+    \item \textbf{Four-Lock Anti-Hacking Scorer \& Bipolar Sparse Probe (\S\ref{sec:methodology}):} We formulate a deterministic evaluation suite combining (i) a 4-dimensional mechanistic probe ($D_1$--$D_4$) anchored to two-sided human percentile bands $[P_{10}, P_{90}]$ with four anti-hacking locks, and (ii) an entity-masked bipolar character $n$-gram ElasticNet probe. This ensemble achieves $100.0\%$ recall on both raw AI and adversarial rewrites ($8.3\%$ Pre-AI FPR) and $0.9953$ LOAO AUROC across unseen human bloggers.
+    \item \textbf{Actionable Prescriptions \& Zero-Leakage \gate{} (\S\ref{sec:repair}):} Our evaluator emits paragraph-level evidence spans \texttt{[[...]]} and targeted repair instructions within $50\text{ms}$. Paired with a strictly local, oracle-free \gate{} across $482$ triggered paragraph operations, our 1-pass LLM repair achieves top humanization performance ($74.7 \pm 2.4$, $Z=0.316$) with a minimal $7.5\%$ edit budget and $100.0\%$ factual retention.
+    \item \textbf{Rigorous Empirical Audit (\S\ref{sec:experiments}):} We provide comprehensive comparisons against $10$ detection paradigms and $8$ real-LLM rewriting baselines, establishing clear quantitative evidence against unguarded rule checklists and single-score LLM judges.
+\end{itemize}
+
+\section{Related Work}
+
+\paragraph{Machine-Generated Text Detection.}
+Approaches to detecting LLM-generated text generally fall into three categories: (1) \textit{Zero-shot statistical and curvature methods}, such as DetectGPT \cite{mitchell2023detectgpt}, Fast-DetectGPT \cite{bao2024fastdetectgpt}, and Binoculars \cite{hans2024binoculars}, which measure log-perplexity, burstiness, or local probability curvature under a proxy LM; (2) \textit{Supervised neural classifiers}, typically fine-tuned RoBERTa or Longformer models trained on corpora like HC3 \cite{guo2023hc3} and M4 \cite{wang2024m4}; and (3) \textit{Interpretable sparse probes}, recently exemplified by DeepMind's DetectorScope \cite{detectorscope2026}, which leverages sparse autoencoders and $n$-gram linear probes to attribute predictions to concrete textual spans. Our work extends the sparse attribution philosophy to Chinese long-form prose while addressing a critical blind spot of both RoBERTa and linear $n$-gram probes: their vulnerability to out-of-distribution persona-adversarial rewriting.
+
+\paragraph{Stylistic ``AI Slop'' and Humanization.}
+Recent studies have begun characterizing the stylistic monotony of LLMs beyond binary detection. \citet{slopbench2026} introduced SlopBench to measure structural templating and lexical over-diversification in English generations. In parallel, adversarial humanization methods such as \textit{Catch Me If You Can} \cite{catchme2025}, \textit{Test-Time Matching (TTM)} \cite{ttm2025}, and \textit{IMPersona} \cite{impersona2025} explore multi-round prompting or persona injection to evade detectors. However, prior work evaluates evasion primarily against black-box classifiers or single-score LLM judges, overlooking collateral damage to factual fidelity and discourse coherence. \bench{} bridges this gap by enforcing two-sided human distributional bounds and hard factual anchor redlines.
+
+\section{The \bench{} Dataset}
+\label{sec:dataset}
+
+\begin{table*}[t]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrcrr}
+\toprule
+\textbf{Authentic Author / Corpus} & \textbf{Genre \& Stylistic Profile} & \textbf{Era} & \textbf{Docs} & \textbf{Mean Len} & \textbf{LOAO $Z$} & \textbf{LOAO Sparse} & \textbf{LOAO Ens.\ AUROC$\uparrow$} \\
+\midrule
+Chen Hao (\texttt{coolshell}) & Systems architecture \& engineering culture & Pre-AI (2011--22) & 24 & 4,412 & 0.6861 & \textbf{1.0000} & \textbf{0.9981} (AI Prob: 0.246) \\
+Ruan Yifeng (\texttt{ruanyifeng}) & Tech Lover Weekly editorial essays & Pre-AI (2019--21) & 22 & 823 & 0.8771 & \textbf{1.0000} & \textbf{0.9979} (AI Prob: 0.279) \\
+Yunfeng (\texttt{codingnow}) & Game engine architecture \& 20-yr blog & Authentic Blog & 15 & 4,356 & \textbf{0.9621} & \textbf{1.0000} & \textbf{1.0000} (AI Prob: 0.346) \\
+piglei (\texttt{python\_craftsman}) & Software design philosophy \& tutorials & Authentic Blog & 20 & 4,187 & 0.8261 & \textbf{1.0000} & \textbf{0.9739} (AI Prob: 0.395) \\
+laixintao (\texttt{kawabangga}) & Infrastructure \& debugging postmortems & Authentic Blog & 7 & 3,233 & \textbf{0.9610} & \textbf{1.0000} & \textbf{1.0000} (AI Prob: 0.307) \\
+Kazike (\texttt{kazike}) & Contemporary AI/tech commentary & Post-AI Human & 19 & 3,150 & 0.7135 & \textbf{1.0000} & \textbf{1.0000} (AI Prob: 0.289) \\
+\midrule
+\rowcolor{gray!12}
+\textbf{6-Author Macro Average} & Multi-style authentic human anchors & 2011--2026 & \textbf{107} & \textbf{3,522} & \textbf{0.8377} & \textbf{1.0000} & \textbf{0.9953} (Mean Prob: 0.310) \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Multi-Author Authentic Human Anchors and Leave-One-Author-Out (LOAO) Generalization Audit.} In each fold, all articles by the target blogger are completely excluded from training the \texttt{HumanBand} and Bipolar Sparse Probe. Every unseen human author achieves a mean predicted AI probability well below the $0.50$ threshold, yielding a $0.9953$ macro-average ensemble AUROC.}
+\label{tab:loao}
+\end{table*}
+
+To prevent domain-label confounding, crawler formatting artifacts, and train-test data leakage, \bench{} v1.2 is constructed under three strict curation principles:
+
+\paragraph{1. Multi-Author Authentic Human Anchors.}
+Relying on a single human columnist risks overfitting to individual lexical idiosyncrasies. As detailed in Table~\ref{tab:loao}, we collect $107$ long-form Chinese articles (filtering out non-Chinese texts with CJK character ratio $< 0.38$, such as English job descriptions) from six prominent, identity-verifiable Chinese technical bloggers and essayists. Crucially, $46$ articles from Chen Hao (\textit{CoolShell}) and Ruan Yifeng (\textit{Tech Lover Weekly}) carry verifiable publication timestamps between 2011 and 2022 (\textbf{Pre-AI Golden Anchors}), guaranteeing zero LLM contamination. To provide multi-domain coverage beyond technical blogs, we also incorporate long-form human and machine responses ($\ge 450$ characters, $\ge 6$ sentences) from \texttt{M4-Chinese} (\texttt{m4\_open\_qa}; \citealt{wang2024m4}) and \texttt{HC3-Chinese} (\texttt{hc3\_baike} and \texttt{hc3\_psychology}; \citealt{guo2023hc3}), alongside $89$ native LLM-generated technical deep-dives (\texttt{tech\_media\_ai}).
+
+\paragraph{2. Uniform Structural Normalization.}
+Raw web-scraped articles often contain crawler line-break artifacts (e.g., splitting inline English terms like \texttt{Proact-VL} onto isolated lines or leaving section subheaders unpunctuated). Applying raw text only to one split introduces trivial formatting shortcuts. Our deterministic normalizer (\texttt{normalize\_wx\_original}) merges broken inline ASCII tokens back into their surrounding Chinese clauses while ensuring standalone Chinese subheaders are properly punctuated rather than concatenated into the following sentence, and cleans any double-punctuation artifacts (e.g., ``\zh{。：}'').
+
+\paragraph{3. Zero-Leakage Split \& Paired-10 Humanization Testbed.}
+The $418$ validated articles are partitioned into a \texttt{dev} set ($206$ articles: $112$ human, $94$ machine) and a blind \texttt{heldout} test set ($212$ articles: $115$ human, $97$ machine), maintaining balanced human-to-machine ratios across every domain. Furthermore, we designate $10$ representative long-form AI technical articles (totalling $763$ paragraphs and $\sim 45,000$ characters) as the \textbf{Paired-10 Humanization Benchmark}. All $10$ source articles are strictly locked into \texttt{heldout} ($0\%$ overlap with \texttt{dev}). While $N=10$ at the document level keeps multi-round LLM rewriting and blind judging computationally tractable across $8$ competing methods ($80$ full-length rewritten articles), at the \textit{diagnostic and editing operation level} it encompasses \textbf{$N=763$ paragraphs and $482$ triggered prescription repairs}, providing high statistical power for paragraph-level ablation (\S\ref{sec:exp_ablation}).
+
+\section{Methodology: Four-Lock Anti-Hacking Evaluation}
+\label{sec:methodology}
+
+Single-direction heuristics (e.g., ``more colloquialism = more human'') are trivially gamed by LLMs. \bench{} introduces a hybrid deterministic evaluator consisting of a \textbf{Four-Dimensional Orthogonal Probe ($D_1$--$D_4$)} governed by four anti-hacking locks, paired with an entity-masked \textbf{Bipolar Sparse Probe}.
+
+\subsection{Lock 1: Two-Sided Human Distribution Bands $[P_{10}, P_{90}]$}
+For every continuous linguistic feature $f_k$, we estimate its empirical mean $\mu_k$, standard deviation $\sigma_k$, and $10\text{th}/90\text{th}$ percentiles $[P_{10,k}, P_{90,k}]$ exclusively on long-form human texts ($\ge 1,000$ characters) in the \texttt{dev} split. Rather than rewarding monotonic extremes, we define a two-sided band deviation score $z_{\text{band}}(f_k, v)$:
+\begin{equation}
+\footnotesize
+z_{\text{band}}(f_k, v) = 
+\begin{cases} 
+0.15 \frac{|v - \mu_k|}{\sigma_k}, & v \in [P_{10,k}, P_{90,k}] \\[3pt]
+\frac{P_{10,k} - v}{\sigma_k} + 0.15 \frac{|P_{10,k} - \mu_k|}{\sigma_k}, & v < P_{10,k} \\[3pt]
+\frac{v - P_{90,k}}{\sigma_k} + 0.15 \frac{|P_{90,k} - \mu_k|}{\sigma_k}, & v > P_{90,k}
+\end{cases}
+\label{eq:twosided}
+\end{equation}
+Values inside the human safe band $[P_{10,k}, P_{90,k}]$ incur only a mild centering penalty ($0.15\times$), whereas values falling below $P_{10}$ (e.g., robotic zero-buffer prose) or exceeding $P_{90}$ (e.g., colloquial filler bombing) are penalized linearly by their out-of-band standard deviation distance.
+
+\subsection{Four Orthogonal Mechanistic Dimensions ($D_1$--$D_4$)}
+
+\paragraph{$D_1$: Micro-Level Discourse Buffer \& Punctuation Crutch Conservation.}
+Chinese AI prose simultaneously suffers from a deficit of natural spoken discourse buffers ($f_{\text{buf}}$: e.g., \zh{其实, 说白了, 平心而论}) and an over-reliance on structural punctuation crutches. Crucially, when prompted to remove em-dashes (``\zh{——}''), LLMs compensate by shifting explanations into parentheses ``\zh{（...）}'', inline enumerations ``\zh{（1）}'', or colon-prompt headers ``\zh{总结词：}'' (excluding book-title colons like ``\zh{《...》：}''). We enforce \textbf{Punctuation Crutch Conservation (Lock 2a)} by aggregating all explanatory punctuation into a unified density per $1,000$ characters:
+\begin{multline}
+\small
+f_{\text{crutch}} = \frac{1000}{L_{\text{char}}} \big( 2.0 N_{\text{dash}} + 2.2 N_{\text{paren}} \\
++ 1.3 N_{\text{colon}} + 2.2 N_{\text{enum}} + 2.5 N_{\text{prompt}} \big)
+\end{multline}
+Furthermore, to catch \textit{Persona Hacking}---where adversarial prompts stuff performative slang (\zh{说实话, 有一说一, 人麻了, 干崩}) or fabricated first-person claims (\zh{我那台, 我当时})---we measure $f_{\text{persona}}$ across all methods uniformly. $D_1$ combines buffer band deviation (penalizing both $<0.85$ deficit and $>6.0$ overload), crutch conservation $z_{\text{band}}(f_{\text{crutch}})$, noun-stacking rate $z_{\text{band}}(f_{\text{noun}})$, and persona-hacking deviation $z_{\text{band}}(f_{\text{persona}})$.
+
+\paragraph{$D_2$: Meso-Level Cohesion Chain \& Information Flow.}
+Grounded in the Uniform Information Density (UID) hypothesis \cite{levy2007speakers} and Old-to-New cohesion principles, human writers bridge adjacent sentences by placing familiar concepts at the clause onset before introducing high-surprisal new concepts at the end. Using a reference trigram language model fit on $2.06\text{M}$ characters of HC3 human text, we compute the \textit{Onset-minus-End Surprisal Shock} ($f_{\text{onset}} = \overline{S}_{\text{first-2}} - \overline{S}_{\text{last-2}}$), \textit{Sentence Wave CV} ($f_{\text{wave}}$), \textit{Adjacent Sentence Content-Word Cohesion Break Rate} ($f_{\text{coh}}$), and \textit{Old-to-New Violation Rate} ($f_{\text{o2n}}$). To defeat the common ``sentence-chopping'' hack (splitting compound sentences into fragments to inflate burstiness), we introduce a \textbf{Pairwise Tension Coupling Lock (Lock 2b)} alongside short-paragraph ratio $f_{\text{chop}}$:
+\begin{multline}
+\small
+D_2 = \text{mean}\big(z_{\text{onset}}, z_{\text{wave}}, z_{\text{coh}}, z_{\text{o2n}}, z_{\text{chop}}\big) \\
++ 0.6 \max(0, z_{\text{coh}} - 0.3)\max(0, z_{\text{onset}} - 0.5)
+\end{multline}
+
+\paragraph{$D_3$: Syntactic Skeleton \& Sliding-Window Opener Homogeneity.}
+To detect ``synonym-swapped'' structural templates, we strip surface words and extract part-of-speech (POS) sequences via \texttt{jieba.posseg}. Because longer articles naturally experience more accidental POS collisions under the pigeonhole principle, we compute \textit{Opener Homogeneity} ($f_{\text{opener}}$) within a \textbf{15-paragraph sliding window} (stride $5$, ignoring Markdown list items and metadata headers), combined with paragraph length flatness ($f_{\text{flat}} = 1 / (\text{CV}_{\text{para}} + 0.15)$) and moving-average type-token ratio ($f_{\text{MATTR}}$).
+
+\paragraph{$D_4$: Macro-Level Distant Echo \& Smoothed Mid-Article Slump.}
+LLMs frequently repeat summary statements across distant paragraphs and suffer from ``mid-article concrete slump'' (drifting into abstract filler between $30\%$ and $70\%$ of the article length). We measure distant sentence $8$-gram echo ($f_{\text{echo}}$) and a smoothed mid-to-front concrete anchor ratio $f_{\text{slump}} = \min\!\big(3.0, \frac{\rho_{\text{front}} + 5.0}{\rho_{\text{mid}} + 5.0}\big)$, where $+5.0$ prevents division-by-zero blowup on shorter essays.
+
+The four dimensions average into $\text{Composite } Z = \frac{1}{4}\sum_{i=1}^4 D_i$, which maps to an interpretable $\text{HumanPass} = 100 \cdot \exp(-0.35 \cdot Z) \in [0, 100]$.
+
+\subsection{Lock 3 (Factual Redline) \& Lock 4 (Entity-Masked Bipolar Sparse Probe)}
+\paragraph{Lock 3: Atomic Factual Anchor Gate.}
+Any humanization method can trivially lower perplexity or alter style by deleting technical sentences containing dense experimental numbers. Our deterministic \texttt{factual\_gate} extracts all critical numbers (decimals, percentages, multi-digit quantities, excluding list indices like ``\texttt{(1)}'') and English technical terms ($\ge 3$ characters) from the source text. If a rewrite drops critical numbers or falls below $85\%$ anchor retention ($R_{\text{fact}} < 0.85$), Lock 3 triggers a severe composite penalty $\Delta Z = 2.5 \times (1 - R_{\text{fact}})$.
+
+\paragraph{Lock 4: Bipolar Sparse N-Gram Probe.}
+Complementing the unsupervised 4-Dim $Z$-Score, we train an interpretable $L_1/L_2$-regularized ElasticNet logistic regression classifier over character $2$--$4$ gram TF-IDF features on the \texttt{dev} split ($5$-fold CV $\text{AUROC} = 0.9635$). Crucially, before feature extraction, \texttt{normalize\_for\_sparse} masks all English words/model names to \texttt{E} and all numbers to \texttt{0}. This prevents the probe from memorizing topic keywords, forcing it to learn purely stylistic bipolar features: positive weights capture AI structural habits (e.g., ``\texttt{（E）}'', ``\zh{——}'', ``\zh{：}'', ``\zh{通过}''), while negative weights capture authentic human connectives (e.g., ``\zh{我觉得}'', ``\zh{但是}'', ``\zh{其实}''). The official ranking score combines both pillars:
+\begin{equation}
+\small
+\text{Score} = 0.70 \cdot \text{HumanPass}(Z) + 30.0 \cdot (1 - P_{\text{sparse}})
+\label{eq:total}
+\end{equation}
+
+\section{Prescription-Guided Repair with \gate{}}
+\label{sec:repair}
+
+\begin{table*}[t]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrc}
+\toprule
+\textbf{Detector / Evaluation Paradigm} & \textbf{Heldout AUROC (95\% CI)$\uparrow$} & \textbf{Pre-AI FPR$\downarrow$} & \textbf{Raw AI TPR$\uparrow$} & \textbf{Adv.\ Rewrite TPR$\uparrow$} & \textbf{Diagnostic Attribution?} \\
+\midrule
+1. N-gram Surprisal (\texttt{HC3 Trigram LM}) & 0.3502 \texttt{[0.284, 0.428]} & 4.2\% & 0.0\% & 0.0\% & No (Scalar only) \\
+2. Neural Perplexity (\texttt{Qwen2.5-0.5B} Log-Likelihood) & 0.6787 \texttt{[0.606, 0.750]} & 16.7\% & 10.0\% & 0.0\% & No (Scalar only) \\
+3. \texttt{Fast-DetectGPT} (\texttt{Qwen2.5-0.5B} Curvature) & 0.5253 \texttt{[0.447, 0.609]} & 16.7\% & 10.0\% & 0.0\% & No (Scalar only) \\
+4. Burstiness / Sentence-Length CV (\texttt{GPTZero}-style) & 0.6425 \texttt{[0.564, 0.715]} & 20.8\% & 10.0\% & 10.0\% & No (Scalar only) \\
+5. Classic Cliché Lexicon (Forbidden Transition Words) & 0.4149 \texttt{[0.343, 0.490]} & 12.5\% & 0.0\% & 0.0\% & Word match only \\
+6. Supervised Neural (\texttt{Chinese-RoBERTa-wwm-ext}) & \textbf{0.9714} \texttt{[0.950, 0.989]} & 12.5\% & \textbf{100.0\%} & 10.0\% \textcolor{red}{(Brittle!)} & No (Black-box neural) \\
+7. Single-Score LLM-as-a-Judge (\texttt{hy4}) & 0.6000* \textit{(Paired Subset)} & 5.3\% & 20.0\% & 10.0\% \textcolor{red}{(Fooled!)} & Unlocalized rationale \\
+\midrule
+\rowcolor{cyan!8}
+\textbf{8. \bench{} 4-Dim Anti-Hack $Z$-Score (Ours)} & 0.7905 \texttt{[0.732, 0.850]} & 12.5\% & 70.0\% & \textbf{95.0\%} & \textbf{Yes ($D_1$--$D_4$ + Locks)} \\
+\rowcolor{cyan!8}
+\textbf{9. \bench{} Bipolar Sparse Probe (Ours)} & 0.9632 \texttt{[0.941, 0.982]} & \textbf{4.2\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{Yes (Span $n$-grams)} \\
+\rowcolor{cyan!16}
+\textbf{10. \bench{} Full Ensemble (Ours: $Z$ + Sparse)} & 0.9146 \texttt{[0.868, 0.955]} & 8.3\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{Yes (Paragraph Rx)} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Main Experiment 1 (Table 1): Cross-Domain Detector \& Judge Benchmark} on the zero-leakage \texttt{heldout} split ($N=212$ articles; $1,000$-sample bootstrap $95\%$ CIs in brackets) and the paired/adversarial suite ($10$ Raw AI + $20$ TTM/PA adversarial rewrites). Operating thresholds are calibrated at the $88\text{th}$ percentile of heldout human technical blogs. While supervised \texttt{Chinese-RoBERTa} excels on raw AI ($100.0\%$), its recall collapses to $10.0\%$ under TTM/PA rewriting; our 4-Dim $Z$-Score catches $95.0\%$ of adversarial rewrites, and our Full Ensemble achieves $100.0\%$ on both.}
+\label{tab:exp1}
+\end{table*}
+
+Inspired by evidence-guided rewriting in DetectorScope \cite{detectorscope2026}, our scorer translates document-level diagnostics into an actionable, paragraph-indexed \textbf{Prescription Sheet}. Whenever a paragraph $p_i$ exhibits localized pathologies---such as (i) \texttt{EM\_DASH\_OR\_CRUTCH\_CLUSTER} (multiple em-dashes, parenthetical tags, or ``\zh{小标题：}'' colons), (ii) \texttt{ABRUPT\_ONSET\_BREAK} (zero content-word overlap with $p_{i-1}$ and high onset surprisal), or (iii) \texttt{OPENER\_TEMPLATE\_CLONE}---the diagnostic engine highlights the exact offending span \texttt{[[...]]} and generates a targeted syntactic repair instruction.
+
+\paragraph{Eliminating Oracle Circularity via \gate{}.}
+A critical methodological flaw in iterative style transfer is using the test-time detector itself as an acceptance oracle during generation. To guarantee \textbf{zero metric-method circularity}, our \gate{} never queries the test-set \texttt{HumanBand} or \texttt{Sparse Probe}. Instead, for each candidate paragraph rewrite $\tilde{p}_i$ produced by the LLM (\texttt{hy4flash}), \gate{} enforces four strictly local, self-contained constraints:
+\begin{enumerate}
+    \item \textbf{Paragraph Factual Invariance:} $\tilde{p}_i$ must preserve $100\%$ of the critical numbers and $\ge 98\%$ of the English terms present in the original paragraph $p_i$;
+    \item \textbf{Length Conservation:} $0.60 |p_i| \le |\tilde{p}_i| \le 1.45 |p_i|$, preventing summary truncation or verbose padding;
+    \item \textbf{Local Crutch Reduction \& Anti-Overload:} The local punctuation crutch score of $\tilde{p}_i$ must not exceed that of $p_i$, and $\tilde{p}_i$ may contain at most $1$ colloquial discourse buffer from the prescription vocabulary and at most $1$ appositive ``\zh{也就是}'', preventing repetitive filler stuffing;
+    \item \textbf{Adjacent Opener Deduplication:} The first two characters of $\tilde{p}_i$ must not duplicate those of any of the preceding $3$ paragraphs $\{ \tilde{p}_{i-3}, \tilde{p}_{i-2}, \tilde{p}_{i-1} \}$.
+\end{enumerate}
+Paragraphs failing any check are sent back for a single constrained retry specifying the exact local rejection reason; if the retry still fails, \gate{} safely rolls back to the original paragraph $p_i$.
+
+\section{Experiments and Results}
+\label{sec:experiments}
+
+\subsection{Main Experiment 1: Detector \& Judge Benchmark}
+Table~\ref{tab:exp1} presents the cross-domain evaluation of $10$ detection paradigms across the $212$ heldout articles and $30$ paired/adversarial articles. Three findings stand out:
+
+\paragraph{1. Zero-Shot Perplexity and Curvature Fail on Chinese Long-Form Prose.}
+Classical trigram surprisal ($\text{AUROC} = 0.3502$) is inverted because modern LLMs generate smoother, higher-probability transitions than human bloggers. Even with a modern neural language model (\texttt{Qwen/Qwen2.5-0.5B}), log-likelihood perplexity ($\text{AUROC} = 0.6787$) and \texttt{Fast-DetectGPT} conditional probability curvature ($\text{AUROC} = 0.5253$) achieve only $10.0\%$ recall on raw AI long-form articles and $0.0\%$ on adversarial rewrites.
+
+\paragraph{2. Supervised RoBERTa vs.\ Mechanistic 4-Dim $Z$-Score under Adversarial Evasion.}
+Fine-tuning \texttt{hfl/chinese-roberta-wwm-ext} on the \texttt{dev} split yields the highest static heldout AUROC ($0.9714$) and $100.0\%$ recall on raw Paired-10 AI articles. However, when evaluated on the $20$ multi-round TTM and PA adversarial rewrites, RoBERTa's recall plummets by $90$ percentage points to \textbf{$10.0\%$}, as heavy slang injection perturbs its learned surface token representations. In stark contrast, our unsupervised \textbf{4-Dim Anti-Hack $Z$-Score} increases its detection recall from $70.0\%$ on raw AI to \textbf{$95.0\%$ on adversarial rewrites}, precisely because TTM/PA's extreme stylistic over-compensation violates Lock~1 (persona-hacking upper bound) and Lock~3 (factual anchor loss). Combining our 4-Dim $Z$-Score with the Bipolar Sparse Probe (\textbf{Full Ensemble}) achieves **$100.0\%$ recall on both raw AI and adversarial rewrites** at an $8.3\%$ Pre-AI human false positive rate.
+
+\paragraph{3. Leave-One-Author-Out (LOAO) Generalization.}
+To verify that \bench{} does not overfit to specific bloggers, Table~\ref{tab:loao} reports 6-fold LOAO cross-validation. Even when an author's entire corpus is held out from fitting \texttt{HumanBand} and the sparse probe, the Bipolar Sparse Probe achieves $1.0000$ AUROC across all six authors, and the Full Ensemble achieves a macro-average AUROC of \textbf{$0.9953$}, assigning every unseen human author a mean AI probability between $0.246$ and $0.395$ ($<0.50$). We note transparently that while human blogs are primarily engineering essays and \texttt{tech\_media\_ai} consists of paper deep-dives, entity masking (\texttt{E}/\texttt{0}) strips all topic nouns, and the heldout set simultaneously includes matched Q\&A pairs from \texttt{M4} and \texttt{HC3}.
+
+\subsection{Main Experiment 2: Paired Humanization Leaderboard}
+
+\begin{table*}[t]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+\textbf{Method / Baseline (Paired-10 Benchmark)} & \textbf{Total ($\pm$SD)$\uparrow$} & \textbf{Anti-Hack $Z$$\downarrow$} & \textbf{Sparse AI$\downarrow$} & \textbf{Factual$\uparrow$} & \textbf{Edit\%} & \textbf{LLM Judge*}\textsuperscript{$\dagger$} & \textbf{$D_1$$\downarrow$} & \textbf{$D_2$$\downarrow$} & \textbf{$D_3$$\downarrow$} & \textbf{$D_4$$\downarrow$} \\
+\midrule
+\rowcolor{green!8}
+1. Human Ceiling: Pre-AI Blogs (2011--2022, $N=24$) & \textbf{85.5 $\pm$ 4.3} & 0.324 & 0.237 & 100.0\% & 0.0\% & 100.0\% & 0.41 & 0.25 & 0.43 & 0.21 \\
+\rowcolor{green!8}
+2. Human Ceiling: Contemporary Blogs ($N=31$) & \textbf{84.8 $\pm$ 4.7} & 0.282 & 0.289 & 100.0\% & 0.0\% & 100.0\% & 0.62 & 0.17 & 0.20 & 0.14 \\
+\midrule
+\rowcolor{cyan!14}
+\textbf{3. \bench{} Guided Repair + Gate (Ours, 1-Pass LLM)} & \textbf{74.7 $\pm$ 2.4} & \textbf{0.316} & 0.602 & \textbf{100.0\%} & \textbf{7.5\%} & 0.0\% \textit{(AI*)} & \textbf{0.26} & 0.72 & \textbf{0.22} & \textbf{0.06} \\
+\rowcolor{cyan!6}
+4. \bench{} Guided Repair w/o Gate (Ablation, 1-Pass LLM) & 73.9 $\pm$ 7.1 & 0.455 & 0.544 & 99.9\% & 13.7\% & 0.0\% \textit{(AI*)} & 0.82 & 0.70 & 0.23 & 0.06 \\
+5. Naive Rule-Checklist Rewriting (Single-Sided LLM) & 67.3 $\pm$ 7.7 & 0.710 & 0.589 & 98.8\% & 21.0\% & 0.0\% & 0.76 & \textcolor{red}{\textbf{1.79}} & 0.22 & 0.06 \\
+6. Few-Shot Exemplar Imitation (5-Shot LLM) & 66.2 $\pm$ 6.9 & 0.748 & 0.602 & 93.5\% & 23.6\% & 90.0\% & 1.74 & 0.38 & 0.34 & 0.07 \\
+7. Zero-Shot Generic Prompting (Blind LLM Rewrite) & 66.2 $\pm$ 5.5 & 0.689 & 0.634 & 99.5\% & 17.2\% & 10.0\% & 1.86 & 0.41 & 0.43 & 0.05 \\
+8. Raw LLM Long-Form Baseline (Unedited Paired-10) & 66.1 $\pm$ 5.8 & 0.556 & 0.724 & 100.0\% & 0.0\% & \textcolor{red}{80.0\% \textit{(Miss!)}} & 1.26 & 0.54 & 0.35 & 0.08 \\
+9. Persona-Adversarial Multi-Round (PA 3-Round LLM) & 65.0 $\pm$ 8.3 & 1.023 & 0.492 & \textcolor{red}{\textbf{85.3\%}} & 48.3\% & \textcolor{red}{90.0\% \textit{(Fooled!)}} & \textcolor{red}{\textbf{2.15}} & 0.53 & 0.29 & 0.04 \\
+10. Two-Stage Style Transfer (TTM 3-Round LLM) & 59.6 $\pm$ 8.1 & 1.383 & 0.486 & \textcolor{red}{\textbf{81.9\%}} & 58.8\% & \textcolor{red}{90.0\% \textit{(Fooled!)}} & \textcolor{red}{\textbf{2.58}} & 1.01 & 0.25 & 0.05 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Main Experiment 2 (Table 2): Humanization Leaderboard on the Paired-10 Benchmark ($763$ paragraphs, $100\%$ Real LLM Outputs).} Methods are ranked by Official Total Score (Eq.~\ref{eq:total}). \textsuperscript{$\dagger$}\textit{LLM Judge Pass Rate} (\texttt{hy4}) is shown strictly as a reference column to illustrate judge failure modes: it misses $80\%$ of unedited Raw AI, gets fooled by $90\%$ of fact-destroying TTM/PA rewrites ($D_1 > 2.1$, Factual $\le 85.3\%$), yet rejects $100\%$ of faithful local repairs.}
+\label{tab:exp2}
+\end{table*}
+
+Table~\ref{tab:exp2} compares all $10$ entries on the Paired-10 benchmark, where every rewriting baseline is executed via real LLM calls (\texttt{generate\_real\_llm\_paired10.py}):
+
+\paragraph{1. Prescription-Guided Repair + Gate Achieves SOTA Humanization with Minimal Edits.}
+Our \textbf{Guided Repair + Gate} ranks first among all rewriting methods with a Total Score of \textbf{$74.7 \pm 2.4$}, reducing the 4-Dim Anti-Hack $Z$-Score from $0.556$ (Raw AI) to \textbf{$0.316$}---surpassing the Pre-AI Human Blog mean ($0.324$) and improving over Raw AI on all $10/10$ articles (two-sided Wilcoxon signed-rank $p = 0.0020$). Crucially, it achieves this while modifying only \textbf{$7.5\%$} of characters and preserving \textbf{$100.0\%$} of factual anchors.
+
+\paragraph{2. Exposing the Compensation Traps of Checklist, TTM, and PA Baselines.}
+Each baseline failure validates a specific anti-hacking lock:
+\begin{itemize}
+    \item \textbf{Naive Rule-Checklist (\#5):} Prompting the LLM with standard community rules (forbidding transition clichés, eliminating ``\zh{小标题：}'' colons, and chopping sentences $>25$ characters into fragments to boost burstiness) successfully lowers $D_1$ from $1.26$ to $0.76$, but triggers \textbf{Lock 2b}: $D_2$ (cohesion break and short-fragment coupling) explodes from $0.54$ to \textbf{$1.79$}.
+    \item \textbf{Zero-Shot (\#7) \& Few-Shot (\#6):} Without paragraph-level coordinates, generic LLM rewrites modify $17.2\%$--$23.6\%$ of the text but fail to remove deeply embedded punctuation crutches ($D_1 = 1.86$ and $1.74$), while 5-Shot imitation drops $6.5\%$ of factual anchors.
+    \item \textbf{TTM (\#10) \& Persona-Adversarial (\#9):} Multi-round rewriting against an LLM judge lowers Sparse AI probability below $0.50$ ($0.486$ and $0.492$) and tricks the \texttt{hy4} judge $90.0\%$ of the time. However, our scorer exposes their severe collateral damage: massive rewrites ($48.3\%$--$58.8\%$ edit rate) that lose \textbf{$14.7\%$--$18.1\%$ of factual anchors} (triggering Lock 3) and inflate $D_1$ to \textbf{$2.15$--$2.58$} due to performative slang overload (triggering Lock 1).
+\end{itemize}
+
+\paragraph{3. Why Single-Score LLM Judges Reject Faithful Repairs ($0\%$ Pass Rate).}
+In Table~\ref{tab:exp2}, both \texttt{Ours + Gate} and \texttt{Ours w/o Gate} receive a $0.0\%$ pass rate from the single-score \texttt{hy4} judge, despite achieving zero grammatical errors and raising the judge's internal persona-match subscore up to $80/100$. Inspecting the judge's JSON rationales (\texttt{results/llm\_judge\_ours\_backfill.jsonl}) reveals the exact cause: because our repair modifies only $7.5\%$ of characters, it faithfully preserves the 10-section technical architecture of the original paper summary. The single-score judge penalizes any comprehensive section-by-section technical exposition as ``AI-like,'' demanding instead that the author \textit{invent personal subjective digressions or hardware-debugging stories} (which is precisely how TTM and PA cheat the judge). This dual failure---missing $80\%$ of raw AI while penalizing $100\%$ of faithful technical editing---demonstrates why single-score LLM judges must not be used as primary optimization targets for factual long-form writing.
+
+\subsection{Main Experiment 3: Paragraph-Level Ablation of \gate{}}
+\label{sec:exp_ablation}
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Article ID} & \textbf{Paras} & \textbf{Trig.} & \textbf{Pass} & \textbf{Rev.} & \textbf{Edit\%} & \textbf{Fact\%} \\
+\midrule
+1. \texttt{Proact-VL} & 189 & 122 & 111 & 11 & 8.4\% & 100.0\% \\
+2. \texttt{MM-Zero} & 56 & 33 & 33 & 0 & 6.7\% & 100.0\% \\
+3. \texttt{SFT-DeepRes} & 69 & 44 & 44 & 0 & 7.7\% & 100.0\% \\
+4. \texttt{PixelSmile} & 81 & 37 & 36 & 1 & 7.9\% & 100.0\% \\
+5. \texttt{Trace2Skill} & 91 & 58 & 56 & 2 & 8.2\% & 100.0\% \\
+6. \texttt{Harness-Hbk} & 51 & 27 & 27 & 0 & 4.5\% & 100.0\% \\
+7. \texttt{MemoHarness} & 44 & 34 & 30 & 4 & 7.8\% & 100.0\% \\
+8. \texttt{NYU-Chess} & 46 & 35 & 32 & 3 & 7.1\% & 100.0\% \\
+9. \texttt{ABot-World} & 42 & 35 & 35 & 0 & 10.4\% & 100.0\% \\
+10. \texttt{Article-0523} & 94 & 57 & 56 & 1 & 5.9\% & 100.0\% \\
+\midrule
+\rowcolor{gray!12}
+\textbf{Total / Mean} & \textbf{763} & \textbf{482} & \textbf{460} & \textbf{22} & \textbf{7.5\%} & \textbf{100.0\%} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Main Experiment 3 (Table 3): Per-Article Audit of Prescription Repair \& \gate{}.} Across $763$ paragraphs, $482$ triggered prescriptions: $294$ passed on the first attempt, $188$ failed local gate checks and triggered constrained re-repair ($166$ fixed, $22$ safely rolled back), guaranteeing $100.0\%$ factual retention.}
+\label{tab:exp3}
+\end{table}
+
+Table~\ref{tab:exp3} breaks down the operation of \gate{} across all $763$ paragraphs ($482$ triggered prescriptions). When prescriptions are fed to the LLM without local gate constraints (\texttt{Ours w/o Gate}), the model enthusiastically inserts colloquial discourse buffers into nearly every edited paragraph, pushing the speech buffer rate to $5.66$ per $1,000$ characters (reaching $15.80$ on the $189$-paragraph \texttt{Proact-VL} article) and causing severe tail-risk degradation ($D_1 = 0.82$, $\text{Composite } Z = 0.455 \pm 0.419$).
+
+Enabling \gate{} intercepts $188$ over-edited paragraphs on the first pass, successfully repairing $166$ via local constrained retry and rolling back $22$ recalcitrant paragraphs. This reduces gate violations and speech-buffer overload across all $10/10$ articles (two-sided Wilcoxon $p = 0.0020$), lowers standard human-band $D_1$ deviation ($p = 0.0020$) and composite $Z$ ($p = 0.0049$), cuts the edit budget nearly in half ($13.7\% \to 7.5\%$), and \textbf{suppresses document-level $Z$-Score standard deviation by $77\%$} ($0.419 \to 0.097$).
+
+\section{Conclusion}
+We presented \bench{} (v1.2), an auditable, deterministic, and anti-hacking benchmark for Chinese long-form AI text detection and humanization. By anchoring four orthogonal mechanistic dimensions to two-sided human distribution bands with four physical anti-hacking locks and an entity-masked bipolar sparse probe, \bench{} exposes the severe blind spots of zero-shot perplexity, supervised neural classifiers, and single-score LLM judges, while enabling 1-pass prescription-guided repair that achieves SOTA humanization quality at a $7.5\%$ edit budget with $100.0\%$ factual fidelity.
+
+\section*{Limitations}
+First, while our paired humanization testbed (\texttt{Paired-10}) encompasses $763$ paragraphs and $482$ localized repair operations across $8$ real-LLM rewriting paradigms ($80$ full-length rewritten articles), expanding the document-level paired set to $30$--$50$ articles across additional non-technical genres (e.g., literary essays, financial commentary, and investigative journalism) is an important direction for future releases. Second, in our Leave-One-Author-Out (LOAO) cross-validation, the six authentic human bloggers write primarily engineering architecture essays and tech commentaries, whereas the native AI tech corpus (\texttt{tech\_media\_ai}) consists of in-depth paper summaries. Although our entity-masking protocol (\texttt{E}/\texttt{0}) and topic-agnostic discourse probes mitigate lexical domain shift---and matched Q\&A pairs from \texttt{M4} and \texttt{HC3} are included in the heldout evaluation---collecting human-written paper summaries on identical arXiv preprints would further tighten genre alignment. Third, our current prescription repair operates at the paragraph level ($7.5\%$ edit budget) to guarantee $100\%$ factual invariance; consequently, it does not reorganize macro-level document outlines, which remains an open challenge for structure-aware humanization.
+
+\bibliography{custom}
+
+\end{document}
