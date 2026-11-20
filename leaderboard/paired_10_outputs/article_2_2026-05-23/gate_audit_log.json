@@ -1,11 +1,12 @@
 {
   "article": "article_2_2026-05-23",
-  "total_paras": 88,
-  "prescriptions_triggered": 53,
-  "accepted_edits": 52,
-  "gate_retried_and_fixed": 8,
+  "total_paras": 94,
+  "prescriptions_triggered": 57,
+  "first_pass_accepted": 45,
+  "gate_retried_and_fixed": 11,
+  "accepted_edits": 56,
   "reverted_by_gate": 1,
-  "edit_budget_pct": 2.3,
+  "edit_budget_pct": 5.9,
   "factual_gate_passed": true,
   "anchor_retention": 1.0
 }

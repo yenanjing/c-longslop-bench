@@ -45,14 +45,15 @@ def clean_md_header(t: str) -> str:
 
 def normalize_wx_original(raw_text: str) -> str:
     """
-    统一清理微信公众号爬虫排版伪影（将单词独立成行的碎片还原为正常自然段），
-    保证全库 AI 文本与人类文本在自然段切分粒度上完全一致。
+    统一清理微信公众号爬虫排版伪影：
+    1. 将被换行切断的单个英文术语（如 `Proact-VL`、`delete`）合并回前后中文句子；
+    2. 对独立成行但末尾无标点的中文小标题/列表项，严禁与下一行正文直接无标点黏连，保持独立成段或补齐句号！
     """
     t = clean_md_header(raw_text)
     lines = [ln.strip() for ln in t.split("\n")]
     skip_prefixes = (
         "一句话讲清楚", "论文标题", "论文链接", "项目链接", "开源链接",
-        "代码链接", "作者：", "来源：", "📄", "🌐", "⭐️", "👉🏻"
+        "代码链接", "作者：", "来源：", "📄", "🌐", "⭐️", "👉🏻", "💻", "📊", "🤗"
     )
 
     merged_paras = []
@@ -60,7 +61,7 @@ def normalize_wx_original(raw_text: str) -> str:
     for ln in lines:
         if not ln:
             if buf:
-                if buf[-1] in "。！？!?：:”」』" and len(buf) >= 25:
+                if buf[-1] in "。！？!?：:”」』" and len(buf) >= 18:
                     merged_paras.append(buf)
                     buf = ""
             continue
@@ -71,12 +72,25 @@ def normalize_wx_original(raw_text: str) -> str:
         if not buf:
             buf = ln
         else:
-            if buf[-1] not in "。！？!?" or len(ln) < 18 or re.match(r"^[A-Za-z0-9_\-\.]+$", ln):
-                buf = buf + " " + ln if re.match(r"^[A-Za-z0-9]", ln) else buf + ln
+            is_ascii_frag = bool(re.match(r"^[A-Za-z0-9_\-\.\+/:\s\(\)]{1,35}$", ln))
+            buf_ends_ascii = bool(re.search(r"[A-Za-z0-9_\-\.\+/]$", buf))
+            buf_ends_open = buf[-1] in "，、：（(《「“"
+            # 仅当上一行以逗号/括号/英文结尾，或当前行是纯英文碎片时才拼接到同一句
+            if is_ascii_frag or buf_ends_ascii or buf_ends_open:
+                buf = buf + (" " if re.match(r"^[A-Za-z0-9]", ln) and buf_ends_ascii else "") + ln
+            elif buf[-1] not in "。！？!?" and len(buf) <= 24:
+                # 独立小标题未带标点：补上句号再接正文，严禁无标点黏连！
+                buf = buf + "。" + ln
+            elif buf[-1] not in "。！？!?":
+                # 上一行是未加句号的列表项/长句：先补句号独立成段
+                merged_paras.append(buf + "。")
+                buf = ln
             else:
                 merged_paras.append(buf)
                 buf = ln
     if buf:
+        if buf[-1] not in "。！？!?：:”」』":
+            buf += "。"
         merged_paras.append(buf)
 
     valid_paras = [re.sub(r"\s{2,}", " ", p).strip() for p in merged_paras if len(p.strip()) >= 15]
@@ -85,6 +99,10 @@ def normalize_wx_original(raw_text: str) -> str:
 
 def is_valid_article(t: str) -> bool:
     if len(t) < MIN_LEN:
+        return False
+    # 要求中文汉字占比 >= 38%，过滤纯英文招聘启事 (JD) 与外文文本，同时保留正常夹带代码片段的中文技术博客
+    cjk_cnt = len(re.findall(r"[\u4e00-\u9fff]", t))
+    if cjk_cnt / max(1, len(t)) < 0.38:
         return False
     t2 = re.sub(r"(?<!\d)\.(?!\d)", "。", t)
     sents = [s.strip() for s in re.findall(r"[^。！？!\?\n；;]+[。！？!\?；;]?", t2) if len(s.strip()) >= 6]
@@ -116,8 +134,7 @@ def get_paired_10_prefixes():
     prefixes = []
     for ad in art_dirs:
         name = Path(ad).name
-        # 提取日期+标题前12字作为唯一匹配键
-        prefixes.append(name[:22])
+        prefixes.append(name[:26])
     return prefixes
 
 
@@ -156,12 +173,12 @@ def main():
                     topic_key=f"{auth}_{idx:02d}",
                 )
 
-    # ── 2. 原生 AI 公众号长文 (wx_articles, 90 篇)：Paired-10 强制进 heldout 零泄漏！ ──
+    # ── 2. 原生 AI 公众号长文 (wx_articles, 90 篇)：Paired-10 精准锁入 heldout 零泄漏！ ──
     wx_files = sorted(glob.glob(str(RAW / "wx_articles/article_*.md")))
     paired_wx, other_wx = [], []
     for fp in wx_files:
         stem = Path(fp).stem
-        if any(stem.startswith(pref[:18]) or pref[:18] in stem for pref in paired10_prefixes):
+        if any(stem.startswith(pref) for pref in paired10_prefixes):
             paired_wx.append(fp)
         else:
             other_wx.append(fp)
@@ -179,7 +196,7 @@ def main():
         add_sample(rows, "tech_media_ai", "wx_articles", "wx_llm_pipeline", "post_ai_machine", "heldout", "machine", t,
                    topic_key=f"wx_paired10_{i:02d}", normalize_wx=True)
 
-    # ── 3. M4-Chinese (qazh_chatgpt + qazh_davinci 同题长文对半切分) ──
+    # ── 3. M4-Chinese (qazh_chatgpt + qazh_davinci 同题长文对半切分，统一 domain=m4_open_qa) ──
     for fn, model_tag in [("qazh_chatgpt.jsonl", "chatgpt"), ("qazh_davinci.jsonl", "davinci")]:
         m4_path = RAW / f"m4_chinese/{fn}"
         if not m4_path.exists():
@@ -196,13 +213,13 @@ def main():
                     ai_list.append((f"m4_{model_tag}_{idx:04d}", a))
         random.shuffle(hu_list)
         random.shuffle(ai_list)
-        hu_sub = hu_list[:50]
+        hu_sub = hu_list[:60]
         ai_sub = ai_list[:45]
         for i, (tk, h) in enumerate(hu_sub):
             add_sample(rows, "m4_open_qa", "m4_chinese", "m4_human", "pre_ai",
                        "dev" if i < len(hu_sub) // 2 else "heldout", "human", h, topic_key=tk)
         for i, (tk, a) in enumerate(ai_sub):
-            add_sample(rows, f"m4_{model_tag}", "m4_chinese", model_tag, "post_ai_machine",
+            add_sample(rows, "m4_open_qa", "m4_chinese", model_tag, "post_ai_machine",
                        "dev" if i < len(ai_sub) // 2 else "heldout", "machine", a, topic_key=tk)
 
     # ── 4. HC3-Chinese 多领域长文：按每个子集实际可用对数 1:1 严格五五切分 dev / heldout ──

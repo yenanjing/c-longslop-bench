@@ -187,7 +187,8 @@ def run_main_experiment_1(rows, band: AHS.HumanBand, vec, clf, lm: ChineseRefere
     a_ng, a_burst, a_cliche, a_z4, a_sparse, a_ens = extract_stat_scores(adv_20, adv_refs)
 
     y_true = [1 if r["track"] == "machine" else 0 for r in heldout]
-    pre_ai_mask = [r["track"] == "human" and r["era"] == "pre_ai" for r in heldout]
+    pre_ai_blog_mask = [r["track"] == "human" and r["domain"] == "tech_blog_human" and r["author"] in ("chenhao_coolshell", "ruanyifeng") for r in heldout]
+    blog_human_mask = [r["track"] == "human" and r["domain"] == "tech_blog_human" for r in heldout]
 
     detectors = [
         ("1. N-gram Surprisal Baseline (HC3 Trigram LM)", h_ng, r_ng, a_ng),
@@ -209,10 +210,10 @@ def run_main_experiment_1(rows, band: AHS.HumanBand, vec, clf, lm: ChineseRefere
         if h_sc is not None:
             auc = roc_auc_score(y_true, h_sc)
             ci_lo, ci_hi = bootstrap_auc_ci(y_true, h_sc)
-            # 统一在 Heldout 人类分布 P90（10% 标称 FPR 工作点）下实测 Pre-AI 真人误杀率、Raw-10 检出率与 Adv-20 检出率
-            hu_scores = sorted([sc for sc, y in zip(h_sc, y_true) if y == 0])
-            thr = hu_scores[int(len(hu_scores) * 0.90)]
-            pre_ai_scores = [sc for sc, is_pre in zip(h_sc, pre_ai_mask) if is_pre]
+            # 统一在 Heldout 55 篇真人技术博客长文 P88 分位数下实测 Pre-AI 博客误杀率、Raw-10 与 Adv-20 检出率
+            blog_scores = sorted([sc for sc, is_b in zip(h_sc, blog_human_mask) if is_b])
+            thr = blog_scores[int(len(blog_scores) * 0.88)]
+            pre_ai_scores = [sc for sc, is_pre in zip(h_sc, pre_ai_blog_mask) if is_pre]
             fpr_pre_ai = sum(1 for sc in pre_ai_scores if sc > thr) / max(1, len(pre_ai_scores))
             raw_ai_tpr = sum(1 for sc in r_sc if sc > thr) / len(r_sc)
             adv_tpr = sum(1 for sc in a_sc if sc > thr) / len(a_sc)

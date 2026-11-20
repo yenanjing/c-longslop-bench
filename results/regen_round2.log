@@ -1,0 +1,18 @@
+/Users/wenweili/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/wx/kmr3r34d69dbxq4723f424b80000gn/T/jieba.cache
+Loading model cost 0.297 seconds.
+Prefix dict has been built successfully.
+运行完整可复现 Paired-10 生成管线 (mode=update_checklist_and_ours, N=10)...
+  ✅ [article_2026-03-13_英伟达等团队发布MM-Zero] (117.6s) | 触发=33 首轮过=24 门禁重修=9 回滚=0 保真=100.0%
+  ✅ [article_2026-03-18_仅SFT超越Tongyi De] (181.6s) | 触发=44 首轮过=19 门禁重修=25 回滚=0 保真=100.0%
+  ✅ [article_2026-03-30_复旦&阶跃星辰开源PixelS] (147.4s) | 触发=37 首轮过=27 门禁重修=9 回滚=1 保真=100.0%
+  ✅ [article_2026-07-17_腾讯混元提出Harness H] (109.7s) | 触发=27 首轮过=24 门禁重修=3 回滚=0 保真=100.0%
+  ✅ [article_2026-03-31_千问团队发布Trace2Ski] (236.1s) | 触发=58 首轮过=38 门禁重修=18 回滚=2 保真=100.0%
+  ✅ [article_2026-07-20_圣母大学提出 MemoHarn] (153.2s) | 触发=34 首轮过=23 门禁重修=7 回滚=4 保真=100.0%
+  ✅ [article_2026-03-07_微软推出Proact-VL_让] (550.3s) | 触发=122 首轮过=38 门禁重修=73 回滚=11 保真=100.0%
+  ✅ [article_2026-07-23_纽约大学团队用国际象棋测试,发] (155.9s) | 触发=35 首轮过=25 门禁重修=7 回滚=3 保真=100.0%
+  ✅ [article_2026-07-26_高德地图开源ABot-Worl] (158.9s) | 触发=35 首轮过=31 门禁重修=4 回滚=0 保真=100.0%
+  ✅ [article_2_2026-05-23              ] (182.9s) | 触发=57 首轮过=45 门禁重修=11 回滚=1 保真=100.0%
+全部完成并落盘！

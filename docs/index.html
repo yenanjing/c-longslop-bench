@@ -414,7 +414,7 @@
     <div class="nav-inner">
       <a href="#" class="brand">
         <span>🧭 C-LongSlopBench</span>
-        <span class="brand-badge">v1.1 Release</span>
+        <span class="brand-badge">v1.2 Release</span>
       </a>
       <div class="nav-links">
         <a href="#leaderboard">Leaderboard (Table 2)</a>
@@ -443,20 +443,20 @@
 
       <div class="stat-grid">
         <div class="stat-card">
-          <div class="stat-val">549 篇</div>
-          <div class="stat-label">标准跨领域长文集（含陈皓 CoolShell、阮一峰等 6 大真人博主 109 篇黄金锚点）</div>
+          <div class="stat-val">418 篇</div>
+          <div class="stat-label">零泄漏跨领域长文集（含陈皓 CoolShell、阮一峰等 6 大真人博主 107 篇黄金锚点）</div>
         </div>
         <div class="stat-card">
-          <div class="stat-val">0.9697</div>
-          <div class="stat-label">留一博主交叉验证 (LOAO) 平均 AUROC — 零样本泛化至未知真人作者</div>
+          <div class="stat-val">0.9953</div>
+          <div class="stat-label">留一博主交叉验证 (LOAO) 联合判据平均 AUROC — 零样本泛化至未知真人作者</div>
         </div>
         <div class="stat-card">
-          <div class="stat-val">0.9494</div>
-          <div class="stat-label">Heldout 全集判别 AUROC（单分数 LLM 裁判仅 0.6000，Perplexity 仅 0.2407）</div>
+          <div class="stat-val">0.9632</div>
+          <div class="stat-label">Heldout 全集判别 AUROC（单分数 LLM 裁判仅 0.6000，Fast-DetectGPT 仅 0.5253）</div>
         </div>
         <div class="stat-card">
-          <div class="stat-val">3.2% 改动</div>
-          <div class="stat-label">处方引导 + 段落门禁微修预算，100% 事实保真并夺得改写组第一 (Z=0.358)</div>
+          <div class="stat-val">7.5% 改动</div>
+          <div class="stat-label">处方引导 + 局部自洽门禁微修预算，100% 事实保真并夺得改写组第一 (Z=0.316)</div>
         </div>
       </div>
     </header>
@@ -467,7 +467,7 @@
         <div class="section-tag">Main Experiment 2 · Table 2</div>
         <h2 class="section-title">🏆 中文长文去 AI 味公共方法排行榜 (Humanization Leaderboard)</h2>
         <p class="section-desc">
-          在完全相同的 10 篇配对科技长文（566 个自然段）上同场评测。点击表头可按任意指标排序；方法名上的<sup class="fn">①</sup>为出处角标，<strong>指标算法与全部论文链接见表格下方备注</strong>。注意观察传统 <strong>LLM 盲判通过率</strong>与 <strong>四维防刷 Z / 事实保真率</strong>之间的剪刀差：多轮口癖对抗改写（TTM / PA）虽骗过了 LLM 裁判（90% 通过），但因改写近半篇幅、丢失 15%–18% 事实，被防刷锁精准拦截。
+          在完全相同的 10 篇配对科技长文（763 个自然段，100% 位于 Heldout 测试集零泄漏）上同场评测。点击表头可按任意指标排序；方法名上的<sup class="fn">①</sup>为出处角标，<strong>指标算法与全部论文链接见表格下方备注</strong>。注意观察传统 <strong>LLM 盲判通过率</strong>与 <strong>四维防刷 Z / 事实保真率</strong>之间的剪刀差：多轮口癖对抗改写（TTM / PA）虽骗过了 LLM 裁判（90% 通过），但因改写近半篇幅、丢失 15%–18% 事实，被防刷锁精准拦截。
         </p>
       </div>
 
@@ -497,134 +497,134 @@
           </thead>
           <tbody>
             <tr class="row-human" data-cat="human">
-              <td>🌟 <strong>当代真人锚</strong><sup class="fn"><a href="#lb-fn-2">②</a></sup></td>
-              <td class="num"><strong>83.7 ± 10.1</strong></td>
-              <td class="num">0.343</td>
-              <td class="num">0.298</td>
+              <td>🌟 <strong>Pre-AI 真人锚</strong><sup class="fn"><a href="#lb-fn-1">①</a></sup></td>
+              <td class="num"><strong>85.5 ± 4.3</strong></td>
+              <td class="num">0.324</td>
+              <td class="num">0.237</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
               <td class="num">100.0%</td>
-              <td class="num">0.33</td>
-              <td class="num">0.17</td>
-              <td class="num">0.73</td>
-              <td class="num">0.14</td>
+              <td class="num">0.41</td>
+              <td class="num">0.25</td>
+              <td class="num">0.43</td>
+              <td class="num">0.21</td>
             </tr>
             <tr class="row-human" data-cat="human">
-              <td>🌟 <strong>Pre-AI 真人锚</strong><sup class="fn"><a href="#lb-fn-1">①</a></sup></td>
-              <td class="num"><strong>82.6 ± 9.7</strong></td>
-              <td class="num">0.497</td>
-              <td class="num">0.244</td>
+              <td>🌟 <strong>当代真人锚</strong><sup class="fn"><a href="#lb-fn-2">②</a></sup></td>
+              <td class="num"><strong>84.8 ± 4.7</strong></td>
+              <td class="num">0.282</td>
+              <td class="num">0.289</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
               <td class="num">100.0%</td>
-              <td class="num">0.27</td>
-              <td class="num">0.18</td>
-              <td class="num">0.84</td>
-              <td class="num">0.69</td>
+              <td class="num">0.62</td>
+              <td class="num">0.17</td>
+              <td class="num">0.20</td>
+              <td class="num">0.14</td>
             </tr>
             <tr class="row-highlight" data-cat="ours">
               <td>🛠️ <strong>Ours + Gate</strong><sup class="fn"><a href="#lb-fn-3">③</a></sup></td>
-              <td class="num"><strong>74.0 ± 2.3</strong></td>
-              <td class="num"><strong>0.327</strong></td>
-              <td class="num">0.615</td>
+              <td class="num"><strong>74.7 ± 2.4</strong></td>
+              <td class="num"><strong>0.316</strong></td>
+              <td class="num">0.602</td>
               <td class="num"><strong>100.0%</strong></td>
-              <td class="num"><strong>5.4%</strong></td>
+              <td class="num"><strong>7.5%</strong></td>
               <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
-              <td class="num"><strong>0.11</strong></td>
-              <td class="num"><strong>0.12</strong></td>
-              <td class="num"><strong>1.00</strong></td>
-              <td class="num"><strong>0.08</strong></td>
+              <td class="num"><strong>0.26</strong></td>
+              <td class="num">0.72</td>
+              <td class="num"><strong>0.22</strong></td>
+              <td class="num"><strong>0.06</strong></td>
             </tr>
             <tr data-cat="ours">
               <td>🧪 <strong>Ours w/o Gate</strong><sup class="fn"><a href="#lb-fn-5">⑤</a></sup></td>
-              <td class="num">73.8 ± 2.3</td>
-              <td class="num">0.333</td>
-              <td class="num">0.618</td>
+              <td class="num">73.9 ± 7.1</td>
+              <td class="num">0.455</td>
+              <td class="num">0.544</td>
               <td class="num">99.9%</td>
-              <td class="num">5.8%</td>
+              <td class="num">13.7%</td>
               <td class="num">0.0% <span class="badge badge-rose">判AI*</span><sup class="fn-metric"><a href="#fn-ours-judge">*</a></sup></td>
-              <td class="num">0.12</td>
-              <td class="num">0.12</td>
-              <td class="num">1.02</td>
+              <td class="num">0.82</td>
+              <td class="num">0.70</td>
+              <td class="num">0.23</td>
+              <td class="num">0.06</td>
+            </tr>
+            <tr class="row-hacked" data-cat="baseline">
+              <td>📋 <strong>Checklist 规则</strong><sup class="fn"><a href="#lb-fn-10">⑩</a></sup></td>
+              <td class="num">67.3 ± 7.7</td>
+              <td class="num">0.710</td>
+              <td class="num">0.589</td>
+              <td class="num">98.8%</td>
+              <td class="num">21.0%</td>
+              <td class="num">0.0%</td>
+              <td class="num">0.76</td>
+              <td class="num">1.79 🚨</td>
+              <td class="num">0.22</td>
+              <td class="num">0.06</td>
+            </tr>
+            <tr data-cat="baseline">
+              <td>📝 <strong>Few-Shot 模仿</strong><sup class="fn"><a href="#lb-fn-4">④</a></sup></td>
+              <td class="num">66.2 ± 6.9</td>
+              <td class="num">0.748</td>
+              <td class="num">0.602</td>
+              <td class="num">93.5%</td>
+              <td class="num">23.6%</td>
+              <td class="num">90.0%</td>
+              <td class="num">1.74</td>
+              <td class="num">0.38</td>
+              <td class="num">0.34</td>
               <td class="num">0.07</td>
             </tr>
             <tr data-cat="baseline">
+              <td>💬 <strong>Zero-Shot 盲改</strong><sup class="fn"><a href="#lb-fn-7">⑦</a></sup></td>
+              <td class="num">66.2 ± 5.5</td>
+              <td class="num">0.689</td>
+              <td class="num">0.634</td>
+              <td class="num">99.5%</td>
+              <td class="num">17.2%</td>
+              <td class="num">10.0%</td>
+              <td class="num">1.86</td>
+              <td class="num">0.41</td>
+              <td class="num">0.43</td>
+              <td class="num">0.05</td>
+            </tr>
+            <tr data-cat="baseline">
               <td>🤖 <strong>原生 AI 基线</strong><sup class="fn"><a href="#lb-fn-6">⑥</a></sup></td>
-              <td class="num">67.9 ± 5.2</td>
-              <td class="num">0.481</td>
-              <td class="num">0.712</td>
+              <td class="num">66.1 ± 5.8</td>
+              <td class="num">0.556</td>
+              <td class="num">0.724</td>
               <td class="num">100.0%</td>
               <td class="num">0.0%</td>
               <td class="num">80.0% <span class="badge badge-rose">漏检</span></td>
-              <td class="num">0.64</td>
-              <td class="num">0.13</td>
-              <td class="num">1.07</td>
+              <td class="num">1.26</td>
+              <td class="num">0.54</td>
+              <td class="num">0.35</td>
               <td class="num">0.08</td>
             </tr>
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>PA 人设对抗</strong><sup class="fn"><a href="#lb-fn-9">⑨</a></sup></td>
-              <td class="num">67.6 ± 7.3</td>
-              <td class="num">0.878</td>
-              <td class="num">0.485</td>
+              <td class="num">65.0 ± 8.3</td>
+              <td class="num">1.023</td>
+              <td class="num">0.492</td>
               <td class="num">85.3% 🚨</td>
-              <td class="num">48.1%</td>
+              <td class="num">48.3%</td>
               <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
-              <td class="num">1.13</td>
-              <td class="num">0.21</td>
-              <td class="num">1.03</td>
-              <td class="num">0.06</td>
-            </tr>
-            <tr data-cat="baseline">
-              <td>💬 <strong>Zero-Shot 盲改</strong><sup class="fn"><a href="#lb-fn-7">⑦</a></sup></td>
-              <td class="num">67.3 ± 3.9</td>
-              <td class="num">0.610</td>
-              <td class="num">0.643</td>
-              <td class="num">99.5%</td>
-              <td class="num">16.6%</td>
-              <td class="num">10.0%</td>
-              <td class="num">1.09</td>
-              <td class="num">0.14</td>
-              <td class="num">1.14</td>
-              <td class="num">0.08</td>
-            </tr>
-            <tr data-cat="baseline">
-              <td>📝 <strong>Few-Shot 模仿</strong><sup class="fn"><a href="#lb-fn-4">④</a></sup></td>
-              <td class="num">66.9 ± 5.5</td>
-              <td class="num">0.685</td>
-              <td class="num">0.614</td>
-              <td class="num">93.5%</td>
-              <td class="num">22.9%</td>
-              <td class="num">90.0%</td>
-              <td class="num">0.88</td>
-              <td class="num">0.15</td>
-              <td class="num">1.14</td>
-              <td class="num">0.10</td>
+              <td class="num">2.15 🚨</td>
+              <td class="num">0.53</td>
+              <td class="num">0.29</td>
+              <td class="num">0.04</td>
             </tr>
             <tr class="row-hacked" data-cat="baseline">
               <td>🎭 <strong>TTM 两阶段</strong><sup class="fn"><a href="#lb-fn-8">⑧</a></sup></td>
-              <td class="num">65.8 ± 5.7</td>
-              <td class="num">0.981</td>
-              <td class="num">0.478</td>
+              <td class="num">59.6 ± 8.1</td>
+              <td class="num">1.383</td>
+              <td class="num">0.486</td>
               <td class="num">81.9% 🚨</td>
-              <td class="num">58.7%</td>
+              <td class="num">58.8%</td>
               <td class="num">90.0% <span class="badge badge-rose">被骗</span></td>
-              <td class="num">1.12</td>
-              <td class="num">0.28</td>
-              <td class="num">0.80</td>
-              <td class="num">0.08</td>
-            </tr>
-            <tr class="row-hacked" data-cat="baseline">
-              <td>📋 <strong>Checklist 规则</strong><sup class="fn"><a href="#lb-fn-10">⑩</a></sup></td>
-              <td class="num">51.6 ± 5.6</td>
-              <td class="num">1.459</td>
-              <td class="num">0.687</td>
-              <td class="num">99.4%</td>
-              <td class="num">11.2%</td>
-              <td class="num">0.0%</td>
-              <td class="num">4.28 🚨</td>
-              <td class="num">0.36</td>
-              <td class="num">1.11</td>
-              <td class="num">0.09</td>
+              <td class="num">2.58 🚨</td>
+              <td class="num">1.01</td>
+              <td class="num">0.25</td>
+              <td class="num">0.05</td>
             </tr>
           </tbody>
         </table>
@@ -658,7 +658,7 @@
         <div class="fn-title">📎 参照指标（不参与排名）</div>
         <ul>
           <li><strong>LLM 盲判通过率</strong>：单分数 LLM-as-a-Judge（<code>hy4</code>）对每篇文本独立盲判 HUMAN/AI，通过率 = 判 HUMAN 篇数 / 总篇数。<sup class="fn">①②</sup> 真人锚与 <sup class="fn">⑥</sup> AI 基线各 24/32/10 篇，改写基线为 10 篇配对产物。该裁判单独检测 AUROC 仅 0.6000（见下表 Table 1），且可被毁灭式洗稿欺骗，因此仅作参照，不参与排名。</li>
-          <li id="fn-ours-judge"><strong>* 关于 Ours 两个方法（+Gate / w/o Gate）的 0% 盲判通过率</strong>：补跑实测（裁判 <code>hy4</code>，与全部基线同一协议；逐篇记录见仓库 <code>results/llm_judge_ours_backfill.jsonl</code> 与 <code>results/llm_judge_ours_nogate.jsonl</code>，两组均为 10/10 全判 AI，置信度 80–98）。这一「反直觉」结果恰恰是本基准核心论点的双面铁证：① 处方微修仅改 3.2%–7.2% 字符、宏观段落骨架与原文一致，而单分数裁判主要依赖宏观结构信号——它连<strong>保真 100% 的真人参考改写都判 AI</strong>，说明其判断层系统性失灵（重结构轻表层，对 TTM/PA 这类「结构乱但表层像人」的毁灭式洗稿反而放行 90%）；② 反过来，它能被 48%–59% 的大改写骗过、却给不出任何可归因证据。这正是为什么本基准的官方排名指标是防刷 Z + 稀疏探针 + 事实保真，而非 LLM 裁判意见（裁判意见仅作参照列展示）。</li>
+          <li id="fn-ours-judge"><strong>* 关于 Ours 两个方法（+Gate / w/o Gate）的 0% 盲判通过率</strong>：补跑实测（裁判 <code>hy4</code>，与全部基线同一协议；逐篇记录见仓库 <code>results/llm_judge_ours_backfill.jsonl</code> 与 <code>results/llm_judge_ours_nogate.jsonl</code>，两组均为 10/10 全判 AI）。这一「反直觉」结果恰恰是本基准核心论点的双面铁证：① 处方微修仅改 7.5%–13.7% 字符、宏观段落骨架与原文一致，而单分数裁判在评语中明确指出其因「按论文各节面面俱到铺陈、未捏造个人跑卡经历」而判 AI——它连<strong>保真 100% 的自然微修都判 AI</strong>，说明其判断层系统性失灵（对 TTM/PA 这类「捏造虚假人设经历、丢 15%–18% 事实」的毁灭式洗稿反而放行 90%）；② 反过来，它能被 48%–59% 的大改写骗过、却给不出任何可归因证据。这正是为什么本基准的官方排名指标是防刷 Z + 稀疏探针 + 事实保真，而非 LLM 裁判意见（裁判意见仅作参照列展示）。</li>
         </ul>
       </div>
     </section>
@@ -669,7 +669,7 @@
         <div class="section-tag">Main Experiment 1 · Table 1</div>
         <h2 class="section-title">🧭 检测器与 LLM 裁判跨领域对抗横评 (Evaluator Benchmark)</h2>
         <p class="section-desc">
-          在 Heldout 盲测集（248 篇长文，含 6 位真人博主与多领域 AI）及 10 篇配对改写对抗集上，对比经典困惑度、句长方差（Burstiness）、传统套话词表、单分数 LLM 裁判与 C-LongSlopBench 探针。
+          在零泄漏 Heldout 盲测集（212 篇长文，含 6 位真人博主与多领域 AI）及 30 篇配对/改写对抗集上，对比统计困惑度、现代神经语言模型（<code>Qwen2.5-0.5B</code> Neural PPL / <code>Fast-DetectGPT</code>）、监督微调神经分类器（<code>Chinese-RoBERTa-wwm-ext</code>）、单分数 LLM 裁判与 C-LongSlopBench 探针。
         </p>
       </div>
 
@@ -688,51 +688,51 @@
           <tbody>
             <tr>
               <td>1. N-gram Surprisal 统计基线<sup class="fn"><a href="#ev-fn-a">A</a></sup></td>
-              <td class="num">0.3002 <small>[0.23, 0.38]</small></td>
-              <td class="num">13.4%</td>
+              <td class="num">0.3502 <small>[0.28, 0.43]</small></td>
+              <td class="num">4.2%</td>
               <td class="num">0.0%</td>
               <td class="num">0.0%</td>
               <td><span class="badge badge-rose">方向倒置</span> 现代 LLM 长文比人类更平滑，传统困惑度彻底失效</td>
             </tr>
             <tr>
               <td>2. Neural Perplexity (<code>Qwen2.5-0.5B</code>)<sup class="fn"><a href="#ev-fn-a">A</a></sup></td>
-              <td class="num">0.6731 <small>[0.60, 0.74]</small></td>
-              <td class="num">13.4%</td>
-              <td class="num">0.0%</td>
+              <td class="num">0.6787 <small>[0.61, 0.75]</small></td>
+              <td class="num">16.7%</td>
+              <td class="num">10.0%</td>
               <td class="num">0.0%</td>
               <td><span class="badge badge-amber">长文失灵</span> 真实神经语言模型对数似然在长文对抗改写下检出率为 0%</td>
             </tr>
             <tr>
               <td>3. Fast-DetectGPT (<code>Qwen2.5-0.5B</code>)<sup class="fn"><a href="#ev-fn-a">A</a></sup></td>
-              <td class="num">0.4604 <small>[0.38, 0.54]</small></td>
-              <td class="num">12.2%</td>
+              <td class="num">0.5253 <small>[0.45, 0.61]</small></td>
+              <td class="num">16.7%</td>
               <td class="num">10.0%</td>
               <td class="num">0.0%</td>
               <td><span class="badge badge-rose">跨模型失效</span> 零样本条件概率曲率在跨源中文长文上退化为随机猜测</td>
             </tr>
             <tr>
               <td>4. Burstiness 句长方差<sup class="fn"><a href="#ev-fn-b">B</a></sup></td>
-              <td class="num">0.4575 <small>[0.38, 0.53]</small></td>
-              <td class="num">13.4%</td>
-              <td class="num">0.0%</td>
-              <td class="num">5.0%</td>
-              <td><span class="badge badge-amber">易被绕过</span> 剁碎短句即可刷高句长方差，对抗改写检出率仅 5.0%</td>
+              <td class="num">0.6425 <small>[0.56, 0.72]</small></td>
+              <td class="num">20.8%</td>
+              <td class="num">10.0%</td>
+              <td class="num">10.0%</td>
+              <td><span class="badge badge-amber">易被绕过</span> 剁碎短句即可刷高句长方差，对抗改写检出率仅 10.0%</td>
             </tr>
             <tr>
               <td>5. 禁用套话词表<sup class="fn"><a href="#ev-fn-c">C</a></sup></td>
-              <td class="num">0.4245 <small>[0.35, 0.49]</small></td>
-              <td class="num">12.2%</td>
+              <td class="num">0.4149 <small>[0.34, 0.49]</small></td>
+              <td class="num">12.5%</td>
               <td class="num">0.0%</td>
               <td class="num">0.0%</td>
               <td><span class="badge badge-rose">词表过时</span> 前沿大模型早已规避「首先/综上所述」等浅层套话</td>
             </tr>
             <tr>
               <td>6. 监督神经分类器 (<code>Chinese-RoBERTa-wwm-ext</code>)<sup class="fn"><a href="#ev-fn-c">C</a></sup></td>
-              <td class="num"><strong>0.9660</strong> <small>[0.94, 0.98]</small></td>
-              <td class="num">12.2%</td>
+              <td class="num"><strong>0.9714</strong> <small>[0.95, 0.99]</small></td>
+              <td class="num">12.5%</td>
               <td class="num"><strong>100.0%</strong></td>
-              <td class="num">5.0%</td>
-              <td><span class="badge badge-amber">对抗脆弱</span> 原生 AI 检出 100%，但在 TTM/PA 多轮人味洗稿下检出率暴跌至 5.0%</td>
+              <td class="num">10.0%</td>
+              <td><span class="badge badge-amber">对抗脆弱</span> 原生 AI 检出 100%，但在 TTM/PA 多轮人味洗稿下检出率暴跌至 10.0%</td>
             </tr>
             <tr>
               <td>7. 单分数 LLM 裁判<sup class="fn"><a href="#ev-fn-d">D</a></sup></td>
@@ -744,27 +744,27 @@
             </tr>
             <tr class="row-highlight">
               <td><strong>8. 四维防刷 Z-Score (Ours)</strong><sup class="fn"><a href="#ev-fn-e">E</a></sup></td>
-              <td class="num"><strong>0.7554</strong> <small>[0.69, 0.82]</small></td>
-              <td class="num">12.2%</td>
-              <td class="num">0.0%</td>
-              <td class="num"><strong>35.0%</strong></td>
-              <td><span class="badge badge-cyan">结构防刷</span> 专抓口癖过载与事实失真，在 RoBERTa 失效的洗稿样本上检出率提升 7 倍</td>
+              <td class="num"><strong>0.7905</strong> <small>[0.73, 0.85]</small></td>
+              <td class="num">12.5%</td>
+              <td class="num"><strong>70.0%</strong></td>
+              <td class="num"><strong>95.0%</strong></td>
+              <td><span class="badge badge-cyan">结构防刷</span> 专抓冒号枚举、句首惊奇冲击与口癖过载，对抗洗稿检出率达 95.0%</td>
             </tr>
             <tr class="row-highlight">
               <td><strong>9. 双极稀疏探针 (Ours)</strong><sup class="fn"><a href="#ev-fn-f">F</a></sup></td>
-              <td class="num"><strong>0.9623</strong> <small>[0.94, 0.98]</small></td>
-              <td class="num">12.2%</td>
+              <td class="num"><strong>0.9632</strong> <small>[0.94, 0.98]</small></td>
+              <td class="num"><strong>4.2%</strong></td>
               <td class="num"><strong>100.0%</strong></td>
-              <td class="num"><strong>40.0%</strong></td>
-              <td><span class="badge badge-cyan">可解释归因</span> 专名/数字掩码后毫秒级定位触发特征，精度媲美 RoBERTa 且抗洗稿强 8 倍</td>
+              <td class="num"><strong>100.0%</strong></td>
+              <td><span class="badge badge-cyan">可解释归因</span> 专名/数字掩码后毫秒级定位触发特征，Pre-AI 真人误杀率仅 4.2%</td>
             </tr>
             <tr class="row-highlight">
               <td><strong>10. Full Ensemble (Ours)</strong><sup class="fn"><a href="#ev-fn-g">G</a></sup></td>
-              <td class="num"><strong>0.9316</strong> <small>[0.89, 0.97]</small></td>
-              <td class="num">12.2%</td>
+              <td class="num"><strong>0.9146</strong> <small>[0.87, 0.96]</small></td>
+              <td class="num">8.3%</td>
               <td class="num"><strong>100.0%</strong></td>
-              <td class="num"><strong>90.0%</strong></td>
-              <td><span class="badge badge-green">SOTA 综合</span> 原生 AI 100% 检出，同时抓出 90.0% 骗过 RoBERTa 与 LLM 裁判的对抗洗稿</td>
+              <td class="num"><strong>100.0%</strong></td>
+              <td><span class="badge badge-green">SOTA 综合</span> 原生 AI 与对抗改写双 100% 检出，完美弥补神经黑盒分类器的抗洗稿盲区</td>
             </tr>
           </tbody>
         </table>
@@ -772,9 +772,9 @@
       <div class="table-footnotes">
         <div class="fn-title">📋 检测器出处（Provenance）</div>
         <ol>
-          <li id="ev-fn-a">A. Perplexity / Surprisal：经典统计基线（<a href="https://arxiv.org/pdf/2609.33905" target="_blank">SlopBench</a> 等论文的标准复现协议）。</li>
+          <li id="ev-fn-a">A. Perplexity / Fast-DetectGPT：含 HC3 Trigram 统计基线、开源模型 <code>Qwen/Qwen2.5-0.5B</code> 真实神经对数似然及 ICLR 2024 <code>Fast-DetectGPT</code> 解析条件概率曲率。</li>
           <li id="ev-fn-b">B. Burstiness / 句长变异系数：经典统计基线，<a href="https://gptzero.me" target="_blank">GPTZero</a> 核心特征的开源复现。</li>
-          <li id="ev-fn-c">C. Classic Cliche Lexicon：传统禁用套话词表匹配（英文词表整理自 Slop 风格研究，中文词表为本基准自建校准）。</li>
+          <li id="ev-fn-c">C. 禁用套话词表 &amp; 监督神经分类器：传统套话词表匹配，以及在相同 Dev 训练集上监督训练的 <code>hfl/chinese-roberta-wwm-ext</code> 深度分类器。</li>
           <li id="ev-fn-d">D. Single-Score LLM-as-a-Judge：<code>hy4</code>，输出 HUMAN/AI 单标签 + 置信度（打分方式见下方说明）。</li>
           <li id="ev-fn-e">E. 四维防刷 Z-Score：<strong>本工作提出</strong>（四维正交探针 + 双边人类分布带 + 四道防刷锁，见下节）。</li>
           <li id="ev-fn-f">F. 双极稀疏探针：<strong>本工作实现</strong>——方法配方源自 DeepMind <a href="https://arxiv.org/pdf/2610.30006" target="_blank">DetectorScope</a> 稀疏特征检测范式，中文侧以 TF-IDF 字符 n-gram + ElasticNet 自训。</li>
@@ -782,10 +782,10 @@
         </ol>
         <div class="fn-title">📐 指标定义 · 传统 LLM 裁判是怎么打分的？</div>
         <ul>
-          <li><strong>Heldout AUROC</strong>：在 248 篇 Heldout 盲测集（6 位真人博主 + 多领域 AI 长文）上，以「AI/人类二分类」计算 ROC 曲线下面积；0.5 = 瞎猜，越高越好。</li>
-          <li><strong>真人误杀率 (FPR)</strong>：把 Pre-AI 真人长文（陈皓/阮一峰等）误判为 AI 的比例——对检测器而言是硬红线。</li>
-          <li><strong>原生 AI 检出 / 对抗改写检出</strong>：在 10 篇同题配对集上，正确判出「未编辑 AI 长文」与「经过人味化改写的 AI 长文」的比例。</li>
-          <li><strong>LLM 裁判打分方式</strong>：单分数盲判协议——裁判模型（<code>hy4</code>，判据经 87 篇校准集校准，F1≈0.895）只见文本本身，不署名不比对，输出 <code>{verdict: HUMAN/AI, confidence: 0-100, ai_tells: [...], human_tells: [...]}</code> 单一 JSON；考察点为口语化程度、个人色彩、情绪波动、模板化结构、均匀节奏、升华式金句收尾等。它不做逐段归因、不输出可解释特征，因此对结构性 AI 味天然失明——这正是上表第 4 行 0.6000 与第 5–7 行的差距来源，也是本基准存在的理由。</li>
+          <li><strong>Heldout AUROC</strong>：在 212 篇零泄漏 Heldout 盲测集（6 位真人博主 + 多领域 AI 长文）上，以「AI/人类二分类」计算 ROC 曲线下面积及 1,000 次 Bootstrap 95% 置信区间；0.5 = 瞎猜，越高越好。</li>
+          <li><strong>真人误杀率 (FPR)</strong>：在 Heldout 真人博客长文 P88 标准阈值下，把 Pre-AI 真人长文（陈皓/阮一峰等）误判为 AI 的比例。</li>
+          <li><strong>原生 AI 检出 / 对抗改写检出</strong>：在同题配对集上，正确判出「10 篇未编辑 AI 长文」与「20 篇 TTM/PA 多轮人味洗稿长文」的比例。</li>
+          <li><strong>LLM 裁判打分方式</strong>：单分数盲判协议——裁判模型（<code>hy4</code>，判据经 87 篇校准集校准，F1≈0.895）只见文本本身，不署名不比对，输出 <code>{verdict: HUMAN/AI, confidence: 0-100, ai_tells: [...], human_tells: [...]}</code> 单一 JSON；考察点为口语化程度、个人色彩、情绪波动、模板化结构、均匀节奏、升华式金句收尾等。它不做逐段归因、不输出可解释特征，因此对结构性 AI 味天然失明——这正是上表第 7 行 0.6000 与第 8–10 行的差距来源，也是本基准存在的理由。</li>
         </ul>
       </div>
     </section>
@@ -901,7 +901,7 @@
         <div class="section-tag">Generalization Audit · Leave-One-Author-Out (LOAO)</div>
         <h2 class="section-title">👥 多博主真实人类锚点与留一交叉验证（告别单一博主口癖偏置）</h2>
         <p class="section-desc">
-          每次将 1 位真人博主的全部文章从训练集和分布带拟合中<strong>彻底剔除（Zero-Shot Unseen Blogger）</strong>，仅用其余作者训练探针，验证评测器对从未见过的真人写作者是否依然零误杀。6 位未知博主平均联合 AUROC 达 <strong>0.9697</strong>。
+          每次将 1 位真人博主的全部文章从训练集和分布带拟合中<strong>彻底剔除（Zero-Shot Unseen Blogger）</strong>，仅用其余作者训练探针，验证评测器对从未见过的真人写作者是否依然零误杀。6 位未知博主平均联合 AUROC 达 <strong>0.9953</strong>（双极稀疏探针达 <strong>1.0000</strong>）。
         </p>
       </div>
 
@@ -923,72 +923,72 @@
             <tr>
               <td><strong>陈皓 (<code>chenhao_coolshell</code>)</strong></td>
               <td>左耳朵耗子·酷壳博客（<strong>2011–2022 Pre-AI 黄金锚</strong>）</td>
-              <td class="num">25</td>
+              <td class="num">24</td>
               <td class="num">4,412</td>
-              <td class="num">0.7768</td>
+              <td class="num">0.6861</td>
               <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><span class="badge badge-green">0.252 (稳居人类区)</span></td>
+              <td class="num"><strong>0.9981</strong></td>
+              <td class="num"><span class="badge badge-green">0.246 (稳居人类区)</span></td>
             </tr>
             <tr>
               <td><strong>阮一峰 (<code>ruanyifeng</code>)</strong></td>
               <td>《科技爱好者周刊》刊首语随笔（<strong>2019–2021 Pre-AI 黄金锚</strong>）</td>
               <td class="num">22</td>
               <td class="num">823</td>
-              <td class="num">0.8812</td>
+              <td class="num"><strong>0.8771</strong></td>
               <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><strong>0.9545</strong></td>
-              <td class="num"><span class="badge badge-green">0.231 (稳居人类区)</span></td>
+              <td class="num"><strong>0.9979</strong></td>
+              <td class="num"><span class="badge badge-green">0.279 (稳居人类区)</span></td>
             </tr>
             <tr>
               <td><strong>云风 (<code>yunfeng</code>)</strong></td>
               <td>吴云洋·中国游戏引擎泰斗（CodingNow 20 年独立博客）</td>
               <td class="num">15</td>
               <td class="num">4,356</td>
+              <td class="num"><strong>0.9621</strong></td>
               <td class="num"><strong>1.0000</strong></td>
               <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><span class="badge badge-green">0.288 (稳居人类区)</span></td>
+              <td class="num"><span class="badge badge-green">0.346 (稳居人类区)</span></td>
             </tr>
             <tr>
               <td><strong>piglei (<code>piglei</code>)</strong></td>
               <td>《Python 工匠》作者（软件工程哲学独立博客）</td>
               <td class="num">20</td>
               <td class="num">4,187</td>
-              <td class="num">0.7415</td>
+              <td class="num"><strong>0.8261</strong></td>
               <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><strong>0.9886</strong></td>
-              <td class="num"><span class="badge badge-green">0.363 (稳居人类区)</span></td>
+              <td class="num"><strong>0.9739</strong></td>
+              <td class="num"><span class="badge badge-green">0.395 (稳居人类区)</span></td>
             </tr>
             <tr>
               <td><strong>laixintao (<code>kawabangga</code>)</strong></td>
               <td>知名基础设施工程师（「卡瓦邦噶！」独立博客）</td>
-              <td class="num">8</td>
+              <td class="num">7</td>
               <td class="num">3,233</td>
-              <td class="num">0.8295</td>
-              <td class="num"><strong>0.8750</strong></td>
-              <td class="num"><strong>0.8750</strong></td>
-              <td class="num"><span class="badge badge-green">0.324 (稳居人类区)</span></td>
+              <td class="num"><strong>0.9610</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><span class="badge badge-green">0.307 (稳居人类区)</span></td>
             </tr>
             <tr>
               <td><strong>数字生命卡兹克 (<code>kazike</code>)</strong></td>
               <td>头部科技公众号亲笔长文</td>
               <td class="num">19</td>
               <td class="num">3,150</td>
-              <td class="num"><strong>0.9952</strong></td>
+              <td class="num">0.7135</td>
               <td class="num"><strong>1.0000</strong></td>
               <td class="num"><strong>1.0000</strong></td>
-              <td class="num"><span class="badge badge-green">0.203 (稳居人类区)</span></td>
+              <td class="num"><span class="badge badge-green">0.289 (稳居人类区)</span></td>
             </tr>
             <tr class="row-highlight">
               <td><strong>6 大真人博主 LOAO 宏平均 (Macro Average)</strong></td>
               <td>跨越 2011–2026 年、涵盖硬核架构/科技评论/随笔多文风</td>
-              <td class="num"><strong>109</strong></td>
+              <td class="num"><strong>107</strong></td>
               <td class="num"><strong>3,522</strong></td>
-              <td class="num"><strong>0.8707</strong></td>
-              <td class="num"><strong>0.9792</strong></td>
-              <td class="num"><strong>0.9697</strong></td>
-              <td class="num"><span class="badge badge-cyan">0.277 (&lt;0.50 全员通过)</span></td>
+              <td class="num"><strong>0.8377</strong></td>
+              <td class="num"><strong>1.0000</strong></td>
+              <td class="num"><strong>0.9953</strong></td>
+              <td class="num"><span class="badge badge-cyan">0.310 (&lt;0.50 全员通过)</span></td>
             </tr>
           </tbody>
         </table>
@@ -1051,7 +1051,7 @@
         <div>
           <div class="section-tag">Quick Start</div>
           <h3 style="margin-bottom: 10px;">⚡ 3 行命令运行评测与处方生成</h3>
-          <pre class="BibTeX"># 1. 重建可复现的多博主标准数据集 (549 篇, seed=42)
+          <pre class="BibTeX"># 1. 重建可复现的零泄漏多博主标准数据集 (418 篇, seed=42)
 python3 build_bench_dataset.py
 
 # 2. 运行官方四锁防刷评测器并输出句段级处方单
@@ -1078,7 +1078,7 @@ python3 run_main_bench_experiments.py</pre>
     </section>
 
     <footer>
-      C-LongSlopBench v1.1 · Built by <a href="https://yenanjing.github.io/" style="color: var(--accent-cyan); text-decoration: none;">Wenwei Li (@yenanjing)</a> · 100% Deterministic & Reproducible Evaluation
+      C-LongSlopBench v1.2 · Built by <a href="https://yenanjing.github.io/" style="color: var(--accent-cyan); text-decoration: none;">Wenwei Li (@yenanjing)</a> · 100% Deterministic & Reproducible Evaluation
     </footer>
   </div>
 
@@ -1146,7 +1146,7 @@ python3 run_main_bench_experiments.py</pre>
         before: `<span class="tell-mark">[[六维并不正交：]]</span>开了检索，提示要多留证据位<span class="tell-mark">[[（D1）]]</span>，预算得加长<span class="tell-mark">[[（D3）]]</span>，步骤变多轮<span class="tell-mark">[[（D4）]]</span>，结尾校验也得改成抽字段<span class="tell-mark">[[（D6）]]</span>。每次必须同时记主失败维度和连带维度。`,
         rx: `<strong>📋 自动生成的定向修复处方：</strong><br/>1. 稀疏探针检出高频中文 AI 括号注释特征 <code>（E）(+0.376)</code>；人类写文章不会在每个分句尾巴挂机器索引号；<br/>2. 删除句内密集挂载的 <code>（D1）（D3）（D4）（D6）</code>，让中文词语「提示、预算、多轮、结尾校验」自然承担指代。`,
         gain: "稀疏探针 AI 概率 -0.18 · 零信息损失",
-        after: `<span class="fix-mark">其实，但是这六个维度本来就不正交，</span>开了检索，提示要多留证据位，预算得加长，步骤变多轮，结尾校验也得改成抽字段。每次必须同时记主失败维度和连带维度。`,
+        after: `<span class="fix-mark">说白了，这六个维度本来就不正交，</span>开了检索，提示要多留证据位，预算得加长，步骤变多轮，结尾校验也得改成抽字段。每次必须同时记主失败维度和连带维度。`,
         audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 4 处冗余机器括号标签全部摘除，中文语义 100% 完整保留<br/>• 稀疏探针 logit 贡献净降 <code>-0.612</code>，成功越过 0.50 人类决策边界。`
       },
       {

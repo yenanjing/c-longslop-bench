@@ -51,10 +51,13 @@ from sklearn.metrics import roc_auc_score  # noqa: E402
 # ──────────────────────────── 人类分布带（Lock 1） ────────────────────────────
 
 class HumanBand:
-    """从 dev 集人类样本计算每个指标的 [mean, std, P10, P90]，锚定人类分布。"""
+    """从 dev 集人类长文样本计算每个指标的 [mean, std, P10, P90]，锚定人类分布。"""
 
     def __init__(self, human_texts: List[str], lm: ChineseReferenceLM):
-        feats = [self._extract(t) for t in human_texts]
+        # 优先使用 >=1000 字的深度人类长文拟合长文分布带（避免百字短问答撑宽方差掩盖长文 AI 味）
+        long_texts = [t for t in human_texts if len(t) >= 1000]
+        use_texts = long_texts if len(long_texts) >= 20 else human_texts
+        feats = [self._extract(t) for t in use_texts]
         feats = [f for f in feats if f]
         self.keys = list(feats[0].keys())
         self.band = {}
@@ -77,7 +80,11 @@ class HumanBand:
         paren = len(re.findall(r"[（(][^）)]{1,25}[）)]", text))
         colon = len(re.findall(r"[^0-9][：:]", text))
         em = text.count("——")
-        crutch = (em * 2.0 + paren * 2.2 + colon * 1.2) / n * 1000.0
+        enum_hits = len(re.findall(r"(?:[（(]\s*\d{1,2}\s*[）)]|[•■◆]|[一二三四五六七八九十]+、)", text))
+        colon_prompt = len(re.findall(r"(?:^|[。！？\n])[^，。！？\n：:《》]{2,14}[：:]", text))
+        crutch = (em * 2.0 + paren * 2.2 + colon * 1.3 + enum_hits * 2.2 + colon_prompt * 2.5) / n * 1000.0
+        paras = [p.strip() for p in text.split("\n\n") if p.strip()]
+        short_para_ratio = sum(1 for p in paras if len(p) <= 22) / max(1, len(paras))
         # 表演性元话语与强行第一人称自述密度（抓 Persona Hacking / 过度网感注入，对所有方法一视同仁计算双边 Z）
         perf_words = (
             "说实话", "老实说", "坦率讲", "讲道理", "有一说一", "我个人觉得",
@@ -86,22 +93,24 @@ class HumanBand:
             "诈尸", "装死", "干崩", "眼前一黑", "真香", "吓尿", "笑蒙", "邪修"
         )
         perf_hits = sum(text.count(w) for w in perf_words)
-        ego_hits = len(re.findall(r"我(?:个人)?(?:觉得|认为|当时|之前|那台|上周|真有点|挺爱|最烦)", text))
-        persona_hack_rate = (perf_hits * 1.5 + ego_hits) / n * 1000.0
+        ego_hits = len(re.findall(r"我(?:个人)?(?:当时|之前|那台|上周|真有点|挺爱|最烦|烧了|搓了)", text))
+        persona_hack_rate = (perf_hits * 1.5 + ego_hits * 1.5) / n * 1000.0
         return {
             **p1, **p2,
             "M1_punct_crutch_total": round(crutch, 3),
+            "M1_colon_prompt_rate": round(colon_prompt / n * 1000.0, 3),
             "M1_persona_hacking_rate": round(persona_hack_rate, 3),
+            "M2_short_para_ratio": round(short_para_ratio, 3),
         }
 
     def two_sided_z(self, key: str, val: float) -> float:
-        """双边惩罚：带内仅 0.2 倍软化惩罚，越出 [P10,P90] 后按标准差距离全额惩罚。"""
+        """双边惩罚：带内仅 0.15 倍软化惩罚，越出 [P10,P90] 后按标准差距离全额惩罚。"""
         b = self.band[key]
         if b["p10"] <= val <= b["p90"]:
-            return 0.2 * abs(val - b["mean"]) / b["std"]
+            return 0.15 * abs(val - b["mean"]) / b["std"]
         if val < b["p10"]:
-            return (b["p10"] - val) / b["std"] + 0.2 * abs(b["p10"] - b["mean"]) / b["std"]
-        return (val - b["p90"]) / b["std"] + 0.2 * abs(b["p90"] - b["mean"]) / b["std"]
+            return (b["p10"] - val) / b["std"] + 0.15 * abs(b["p10"] - b["mean"]) / b["std"]
+        return (val - b["p90"]) / b["std"] + 0.15 * abs(b["p90"] - b["mean"]) / b["std"]
 
 
 lm_global = None  # 模块级引用，供 HumanBand 内部调用
@@ -132,27 +141,41 @@ def factual_gate(orig: str, cand: str) -> Dict[str, Any]:
 # ──────────────────────────── 四维防刷 Z 评分 ────────────────────────────
 
 def score_four_dims(feats: Dict[str, float], band: HumanBand) -> Dict[str, float]:
-    # D1 微观：气口双边带 + 标点拐杖守恒 + 表演性口癖越界双边带 + 词汇多样性双边带
-    z_buf = band.two_sided_z("M1_speech_buffer_rate", feats["M1_speech_buffer_rate"])
-    z_crutch = band.two_sided_z("M1_punct_crutch_total", feats["M1_punct_crutch_total"]) + feats["M1_em_dash_rate"] * 0.8
+    # D1 微观：气口缓冲双边带(零气口赤字与 >6.0/千字过载均重罚) + 标点/冒号提示体拐杖 + 名词堆叠 + 表演性口癖越界
+    z_buf = (
+        max(0.0, 0.85 - feats["M1_speech_buffer_rate"]) * 1.15
+        + max(0.0, feats["M1_speech_buffer_rate"] - 6.0) * 1.5
+    )
+    z_crutch = (
+        band.two_sided_z("M1_punct_crutch_total", feats["M1_punct_crutch_total"])
+        + band.two_sided_z("M1_colon_prompt_rate", feats.get("M1_colon_prompt_rate", 0.0)) * 0.9
+        + feats["M1_em_dash_rate"] * 0.8
+    )
+    z_noun = band.two_sided_z("M1_noun_stack_rate", feats["M1_noun_stack_rate"])
     z_persona = band.two_sided_z("M1_persona_hacking_rate", feats.get("M1_persona_hacking_rate", 0.0))
-    z_mattr = band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"])
-    d1 = (z_buf + z_crutch + z_persona * 0.55 + z_mattr * 0.6) / 3.0
+    d1 = (z_buf + z_crutch * 1.3 + z_noun * 0.7 + z_persona * 0.8) / 2.8
 
-    # D2 中观：跨句搭扣 + 句首惊奇冲击 + 生硬换题率，且耦合惩罚剁碎句子刷节奏
+    # D2 中观：句首惊奇冲击 + 句内信息波动赤字 + 跨句搭扣 + 以旧带新违规 + 剁碎短句/短段耦合锁
+    z_onset = band.two_sided_z("UID_onset_minus_end_surp", feats["UID_onset_minus_end_surp"]) + max(0.0, feats["UID_onset_minus_end_surp"] - 1.75) * 1.1
+    z_wave = max(0.0, 0.072 - feats["UID_sentence_wave_cv"]) * 14.0 + band.two_sided_z("UID_sentence_wave_cv", feats["UID_sentence_wave_cv"]) * 0.5
     z_coh = band.two_sided_z("M2_cohesion_break_rate", feats["M2_cohesion_break_rate"])
-    z_onset = band.two_sided_z("UID_onset_minus_end_surp", feats["UID_onset_minus_end_surp"])
-    z_abrupt = band.two_sided_z("M2_new_topic_abrupt_rate", feats["M2_new_topic_abrupt_rate"])
-    coupling = 0.5 * max(0.0, z_coh - 1.0) * max(0.0, z_onset - 1.0)
-    d2 = statistics.mean([z_coh, z_onset, z_abrupt]) + coupling
+    z_o2n = band.two_sided_z("M2_old_to_new_violation", feats["M2_old_to_new_violation"])
+    z_chop = band.two_sided_z("M2_short_para_ratio", feats.get("M2_short_para_ratio", 0.0))
+    coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
+    d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
 
-    # D3 句式骨架：段首起手式同质化 + 词性模板复读
-    d3 = statistics.mean([feats["M3_opener_homogeneity"] * 4.5,
-                          band.two_sided_z("M2_pos_template_rep", feats["M2_pos_template_rep"])])
+    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带
+    d3 = statistics.mean([
+        band.two_sided_z("M3_opener_homogeneity", feats["M3_opener_homogeneity"]) + feats["M3_opener_homogeneity"] * 2.0,
+        band.two_sided_z("M2_para_flatness", feats["M2_para_flatness"]),
+        band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"]),
+    ])
 
-    # D4 宏观：跨段回环复述 + 中段具象塌陷
-    d4 = statistics.mean([band.two_sided_z("M3_macro_redundancy", feats["M3_macro_redundancy"]),
-                          band.two_sided_z("M3_mid_concrete_slump", feats["M3_mid_concrete_slump"])])
+    # D4 宏观：跨段远距回环复述 + 远距回声均值
+    d4 = statistics.mean([
+        band.two_sided_z("M3_macro_redundancy", feats["M3_macro_redundancy"]),
+        band.two_sided_z("M3_mean_distant_echo", feats["M3_mean_distant_echo"]),
+    ])
 
     comp = statistics.mean([d1, d2, d3, d4])
     return {"D1": round(d1, 3), "D2": round(d2, 3), "D3": round(d3, 3), "D4": round(d4, 3),

@@ -1,11 +1,12 @@
 {
   "article": "article_2026-03-07_微软推出Proact-VL_让你的AI搭子主动和你视频聊天",
-  "total_paras": 87,
-  "prescriptions_triggered": 74,
-  "accepted_edits": 74,
-  "gate_retried_and_fixed": 14,
-  "reverted_by_gate": 0,
-  "edit_budget_pct": 12.8,
+  "total_paras": 189,
+  "prescriptions_triggered": 122,
+  "first_pass_accepted": 38,
+  "gate_retried_and_fixed": 73,
+  "accepted_edits": 111,
+  "reverted_by_gate": 11,
+  "edit_budget_pct": 8.4,
   "factual_gate_passed": true,
   "anchor_retention": 1.0
 }
