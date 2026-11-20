@@ -662,6 +662,7 @@
           <thead>
             <tr>
               <th>检测 / 评价范式 (Detector / Evaluation Paradigm)</th>
+              <th class="src-cell">出处 / Provenance</th>
               <th class="num">Heldout 全集 AUROC↑</th>
               <th class="num">Pre-AI 真人误杀率 (FPR)↓</th>
               <th class="num">原生 AI 检出率 (TPR)↑</th>
@@ -672,6 +673,7 @@
           <tbody>
             <tr>
               <td>1. Perplexity / Surprisal Baseline</td>
+              <td class="src-cell">经典统计基线（<a href="https://arxiv.org/pdf/2609.33905" target="_blank">SlopBench</a> 等论文的标准复现协议）</td>
               <td class="num">0.2407</td>
               <td class="num">16.7%</td>
               <td class="num">30.0%</td>
@@ -680,6 +682,7 @@
             </tr>
             <tr>
               <td>2. Burstiness / Sent-Length CV (GPTZero-style)</td>
+              <td class="src-cell">经典统计基线，<a href="https://gptzero.me" target="_blank">GPTZero</a> 核心句长方差特征的开源复现</td>
               <td class="num">0.6522</td>
               <td class="num">15.2%</td>
               <td class="num">40.0%</td>
@@ -688,6 +691,7 @@
             </tr>
             <tr>
               <td>3. Classic Cliche Lexicon (Forbidden Words)</td>
+              <td class="src-cell">传统禁用套话词表匹配（词表整理自 Slop 风格研究，中文清单为本基准自建校准）</td>
               <td class="num">0.3814</td>
               <td class="num">15.2%</td>
               <td class="num">50.0%</td>
@@ -696,6 +700,7 @@
             </tr>
             <tr>
               <td>4. Single-Score LLM-as-a-Judge (<code>hy3-ioa</code>)</td>
+              <td class="src-cell">单分数 LLM 盲判裁判（内部模型 hy3-ioa，输出 HUMAN/AI 单标签）</td>
               <td class="num">0.6000</td>
               <td class="num"><strong>5.3%</strong></td>
               <td class="num">20.0%</td>
@@ -704,6 +709,7 @@
             </tr>
             <tr class="row-highlight">
               <td><strong>5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)</strong></td>
+              <td class="src-cell"><strong>本工作提出</strong>（四维正交探针 + 双边人类分布带 + 四道防刷锁，见下节）</td>
               <td class="num"><strong>0.8336</strong></td>
               <td class="num">13.6%</td>
               <td class="num"><strong>90.0%</strong></td>
@@ -712,6 +718,7 @@
             </tr>
             <tr class="row-highlight">
               <td><strong>6. C-LongSlop Bipolar Sparse Probe (Ours)</strong></td>
+              <td class="src-cell"><strong>本工作实现</strong>（方法配方源自 DeepMind <a href="https://arxiv.org/pdf/2610.30006" target="_blank">DetectorScope</a> 稀疏特征检测范式，中文 TF-IDF 字符 n-gram + ElasticNet 自训）</td>
               <td class="num"><strong>0.9702</strong></td>
               <td class="num"><strong>10.6%</strong></td>
               <td class="num"><strong>100.0%</strong></td>
@@ -720,6 +727,7 @@
             </tr>
             <tr class="row-highlight">
               <td><strong>7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)</strong></td>
+              <td class="src-cell"><strong>本工作提出</strong>（四维防刷 Z 与稀疏探针的联合集成判据）</td>
               <td class="num"><strong>0.9494</strong></td>
               <td class="num">13.6%</td>
               <td class="num"><strong>100.0%</strong></td>
