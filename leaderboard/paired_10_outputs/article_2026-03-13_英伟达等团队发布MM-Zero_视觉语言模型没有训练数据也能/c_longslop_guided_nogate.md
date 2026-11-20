@@ -8,9 +8,7 @@
 
 2026年3月，Zongxia Li、Hongyang Du、Chengsong Huang 等研究者在 arXiv 发表了论文。
 
-"MM-Zero: Self-Evolving Multi-Model Vision Language Models From Zero Data"。
-
-，给出了答案：让模型自己画图。。
+"MM-Zero: Self-Evolving Multi-Model Vision Language Models From Zero Data"，给出了答案：让模型自己画图。
 
 这项研究延续了 R-Zero 团队在 LLM 自进化领域的工作，扩展到了多模态领域。
 

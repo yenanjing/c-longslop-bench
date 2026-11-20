@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C-LongSlopBench | 中文长文 AI 味可归因与防刷分评测基准</title>
-  <meta name="description" content="C-LongSlopBench (v1.1): Auditable, Anti-Hacking, and Actionable Benchmark for Chinese Long-Form AI Slop Detection and Humanization." />
+  <meta name="description" content="C-LongSlopBench (v1.2): Auditable, Anti-Hacking, and Actionable Benchmark for Chinese Long-Form AI Slop Detection and Humanization." />
   <style>
     :root {
       --bg-base: #070b14;
@@ -633,7 +633,7 @@
         <div class="fn-title">📋 方法出处（Provenance）</div>
         <ol>
           <li id="lb-fn-1">① Pre-AI 真人锚（24 篇）：本基准自建语料，陈皓 CoolShell / 阮一峰科技爱好者周刊等 2011–2022 Pre-AI 归档。</li>
-          <li id="lb-fn-2">② 当代真人锚（32 篇）：本基准自建语料，云风 CodingNow / piglei / laixintao「卡瓦邦噶！」等当代独立技术博客。</li>
+          <li id="lb-fn-2">② 当代真人锚（31 篇）：本基准自建语料，云风 CodingNow / piglei / laixintao「卡瓦邦噶！」等当代独立技术博客。</li>
           <li id="lb-fn-3">③ <strong>Ours + Gate</strong>：本工作提出的「句段级处方单引导微修 + ParagraphQualityGate 段落门禁」（1-Pass）。处方协议参照 DeepMind <a href="https://arxiv.org/pdf/2610.30006" target="_blank">DetectorScope (arXiv 2610.30006)</a> 的 evidence-block 定向改写设计；门禁消融见下方 Table 3。</li>
           <li id="lb-fn-4">④ Few-Shot 模仿（5-Shot）：公共基线，复现 <a href="https://arxiv.org/abs/2509.14543" target="_blank">Catch Me If You Can? (EMNLP 2025 Findings)</a> 的范文风格模仿改写协议。</li>
           <li id="lb-fn-5">⑤ <strong>Ours w/o Gate</strong>：本工作消融组——移除段落门禁、对所有处方段落一刀切微修，用于证明门禁必要性。</li>
@@ -646,7 +646,7 @@
         <div class="fn-title">📐 指标定义与计算方式</div>
         <ul>
           <li><strong>总分（官方排名指标）</strong> = <code>0.7 × HumanPass(四维防刷) + 0.3 × (1 − 稀疏 AI 率)</code>，其中 <code>HumanPass = 100·exp(−0.35·防刷Z)</code>。排行榜按总分排序。</li>
-          <li><strong>防刷 Z</strong>：四维正交探针（D1–D4）对多博主真人分布的双边偏离 Z-Score（锚定 <code>[P10, P90]</code> 区间，越界按超标距离重罚；含成对张力锁与事实红线）。越低越好，真人均值约 0.41–0.47。</li>
+          <li><strong>防刷 Z</strong>：四维正交探针（D1–D4）对多博主真人长文分布的双边偏离 Z-Score（锚定 <code>[P10, P90]</code> 区间，越界按超标距离重罚；含成对张力锁与事实红线）。越低越好，真人博客均值约 0.28–0.32。</li>
           <li><strong>稀疏 AI 率</strong>：DetectorScope 式双极稀疏探针（中文 TF-IDF 字符 n-gram + ElasticNet，专名/数字掩码后训练）输出的 AI 概率。0.50 为决策边界。</li>
           <li><strong>事实保真率</strong>：原子事实锚点（数字、专名、因果链）在改写后的保留比例；由确定性脚本抽验。</li>
           <li><strong>改动%</strong>：改写产物的字符级 diff 比例（相对原文）。</li>

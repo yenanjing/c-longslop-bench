@@ -94,7 +94,10 @@ def normalize_wx_original(raw_text: str) -> str:
         merged_paras.append(buf)
 
     valid_paras = [re.sub(r"\s{2,}", " ", p).strip() for p in merged_paras if len(p.strip()) >= 15]
-    return "\n\n".join(valid_paras)
+    out_text = "\n\n".join(valid_paras)
+    out_text = re.sub(r"。\s*([：:，,。！？!?；;])", r"\1", out_text)
+    out_text = re.sub(r"\n\n([，,：:。！？!?；;])", r"\1", out_text)
+    return out_text
 
 
 def is_valid_article(t: str) -> bool:
