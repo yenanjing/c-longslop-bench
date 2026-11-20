@@ -642,7 +642,7 @@
         </ol>
         <div class="fn-title">📐 指标定义与计算方式</div>
         <ul>
-          <li><strong>LLM 盲判通过率</strong>：单分数 LLM-as-a-Judge（内部模型 <code>hy3/hy4-ioa</code>）对每篇文本独立盲判 HUMAN/AI，通过率 = 判 HUMAN 篇数 / 总篇数。<sup class="fn">①②</sup> 真人锚与 <sup class="fn">⑥</sup> AI 基线各 24/32/10 篇，改写基线为 10 篇配对产物。该裁判单独检测 AUROC 仅 0.6000（见下表 Table 1），因此其通过率仅作参照，不作排名依据。</li>
+          <li><strong>LLM 盲判通过率</strong>：单分数 LLM-as-a-Judge（<code>hy4</code>）对每篇文本独立盲判 HUMAN/AI，通过率 = 判 HUMAN 篇数 / 总篇数。<sup class="fn">①②</sup> 真人锚与 <sup class="fn">⑥</sup> AI 基线各 24/32/10 篇，改写基线为 10 篇配对产物。该裁判单独检测 AUROC 仅 0.6000（见下表 Table 1），因此其通过率仅作参照，不作排名依据。</li>
           <li id="fn-ours-judge"><strong>* 关于 Ours + Gate 的 0% 盲判通过率</strong>：补跑实测（裁判 <code>hy4-ioa</code>，与全部基线同一协议，逐篇记录见仓库 <code>results/llm_judge_ours_backfill.jsonl</code>）。这一「反直觉」结果恰恰是本基准核心论点的双面铁证：① 处方微修仅改 3.2% 字符、宏观段落骨架与原文一致，而单分数裁判主要依赖宏观结构信号——它连<strong>保真 100% 的真人参考改写都判 AI</strong>，说明其判断层系统性失灵（重结构轻表层，对 TTM/PA 这类「结构乱但表层像人」的毁灭式洗稿反而放行 90%）；② 反过来，它能被 48%–59% 的大改写骗过、却给不出任何可归因证据。这正是为什么本基准的官方排名指标是防刷 Z + 稀疏探针 + 事实保真，而非 LLM 裁判意见（裁判意见仅作参照列展示）。</li>
           <li><strong>总分</strong> = <code>0.7 × HumanPass(四维防刷) + 0.3 × (1 − 稀疏 AI 率)</code>，其中 <code>HumanPass = 100·exp(−0.35·防刷Z)</code>。这是本基准的官方排名指标。</li>
           <li><strong>防刷 Z</strong>：四维正交探针（D1–D4）对多博主真人分布的双边偏离 Z-Score（锚定 <code>[P10, P90]</code> 区间，越界按超标距离重罚；含成对张力锁与事实红线）。越低越好，真人均值约 0.41–0.47。</li>
@@ -745,7 +745,7 @@
           <li>A. Perplexity / Surprisal：经典统计基线（<a href="https://arxiv.org/pdf/2609.33905" target="_blank">SlopBench</a> 等论文的标准复现协议）。</li>
           <li>B. Burstiness / 句长变异系数：经典统计基线，<a href="https://gptzero.me" target="_blank">GPTZero</a> 核心特征的开源复现。</li>
           <li>C. Classic Cliche Lexicon：传统禁用套话词表匹配（英文词表整理自 Slop 风格研究，中文词表为本基准自建校准）。</li>
-          <li>D. Single-Score LLM-as-a-Judge：内部模型 <code>hy3/hy4-ioa</code>，输出 HUMAN/AI 单标签 + 置信度（打分方式见下方说明）。</li>
+          <li>D. Single-Score LLM-as-a-Judge：<code>hy4</code>，输出 HUMAN/AI 单标签 + 置信度（打分方式见下方说明）。</li>
           <li>E. 四维防刷 Z-Score：<strong>本工作提出</strong>（四维正交探针 + 双边人类分布带 + 四道防刷锁，见下节）。</li>
           <li>F. 双极稀疏探针：<strong>本工作实现</strong>——方法配方源自 DeepMind <a href="https://arxiv.org/pdf/2610.30006" target="_blank">DetectorScope</a> 稀疏特征检测范式，中文侧以 TF-IDF 字符 n-gram + ElasticNet 自训。</li>
           <li>G. Full Ensemble：<strong>本工作提出</strong>，四维防刷 Z 与稀疏探针的线性集成判据。</li>
@@ -755,7 +755,7 @@
           <li><strong>Heldout AUROC</strong>：在 248 篇 Heldout 盲测集（6 位真人博主 + 多领域 AI 长文）上，以「AI/人类二分类」计算 ROC 曲线下面积；0.5 = 瞎猜，越高越好。</li>
           <li><strong>真人误杀率 (FPR)</strong>：把 Pre-AI 真人长文（陈皓/阮一峰等）误判为 AI 的比例——对检测器而言是硬红线。</li>
           <li><strong>原生 AI 检出 / 对抗改写检出</strong>：在 10 篇同题配对集上，正确判出「未编辑 AI 长文」与「经过人味化改写的 AI 长文」的比例。</li>
-          <li><strong>LLM 裁判打分方式</strong>：单分数盲判协议——裁判模型（<code>hy3/hy4-ioa</code>，判据经 87 篇校准集校准，F1≈0.895）只见文本本身，不署名不比对，输出 <code>{verdict: HUMAN/AI, confidence: 0-100, ai_tells: [...], human_tells: [...]}</code> 单一 JSON；考察点为口语化程度、个人色彩、情绪波动、模板化结构、均匀节奏、升华式金句收尾等。它不做逐段归因、不输出可解释特征，因此对结构性 AI 味天然失明——这正是上表第 4 行 0.6000 与第 5–7 行的差距来源，也是本基准存在的理由。</li>
+          <li><strong>LLM 裁判打分方式</strong>：单分数盲判协议——裁判模型（<code>hy4</code>，判据经 87 篇校准集校准，F1≈0.895）只见文本本身，不署名不比对，输出 <code>{verdict: HUMAN/AI, confidence: 0-100, ai_tells: [...], human_tells: [...]}</code> 单一 JSON；考察点为口语化程度、个人色彩、情绪波动、模板化结构、均匀节奏、升华式金句收尾等。它不做逐段归因、不输出可解释特征，因此对结构性 AI 味天然失明——这正是上表第 4 行 0.6000 与第 5–7 行的差距来源，也是本基准存在的理由。</li>
         </ul>
       </div>
     </section>

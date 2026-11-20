@@ -340,7 +340,7 @@ def run_main_experiment_1(rows, band: AHS.HumanBand, vec, clf, lm: ChineseRefere
         ("1. Perplexity / Surprisal Baseline", s_ppl, 0.30, 0.20),
         ("2. Burstiness / Sent-Length CV (GPTZero-style)", s_burst, 0.40, 0.10),
         ("3. Classic Cliche Lexicon (Forbidden Words)", s_cliche, 0.50, 0.10),
-        ("4. Single-Score LLM-as-a-Judge (hy3-ioa)", None, 0.20, 0.10),
+        ("4. Single-Score LLM-as-a-Judge (hy4)", None, 0.20, 0.10),
         ("5. C-LongSlop 4-Dim Anti-Hack Z-Score (Ours)", s_z4, 0.90, 0.80),
         ("6. C-LongSlop Bipolar Sparse Probe (Ours)", s_sparse, 1.00, 0.80),
         ("7. C-LongSlop Full Ensemble (Ours: 4-Dim Z + Sparse)", s_ens, 1.00, 0.90),
