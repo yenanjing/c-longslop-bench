@@ -51,14 +51,28 @@ from sklearn.metrics import roc_auc_score  # noqa: E402
 # ──────────────────────────── 人类分布带（Lock 1） ────────────────────────────
 
 class HumanBand:
-    """从 dev 集人类长文样本计算每个指标的 [mean, std, P10, P90]，锚定人类分布。"""
+    """从 dev 集人类长文样本计算每个指标的 [mean, std, P10, P90]，锚定人类分布。支持传入原文或预计算特征字典。"""
 
-    def __init__(self, human_texts: List[str], lm: ChineseReferenceLM):
-        # 优先使用 >=1000 字的深度人类长文拟合长文分布带（避免百字短问答撑宽方差掩盖长文 AI 味）
-        long_texts = [t for t in human_texts if len(t) >= 1000]
-        use_texts = long_texts if len(long_texts) >= 20 else human_texts
-        feats = [self._extract(t) for t in use_texts]
-        feats = [f for f in feats if f]
+    def __init__(self, human_texts: List[Any], lm: ChineseReferenceLM):
+        # 优先使用 >=1000 字的深度人类长文拟合长文分布带（支持 str 或含 precomputed_4dim_features 的 dict）
+        feats = []
+        long_items = [
+            it for it in human_texts
+            if (isinstance(it, str) and len(it) >= 1000)
+            or (isinstance(it, dict) and it.get("char_len", 0) >= 1000)
+        ]
+        use_items = long_items if len(long_items) >= 20 else human_texts
+        for it in use_items:
+            if isinstance(it, dict) and it.get("precomputed_4dim_features"):
+                feats.append(it["precomputed_4dim_features"])
+            elif isinstance(it, dict) and it.get("text"):
+                f = self._extract(it["text"])
+                if f:
+                    feats.append(f)
+            elif isinstance(it, str):
+                f = self._extract(it)
+                if f:
+                    feats.append(f)
         self.keys = list(feats[0].keys())
         self.band = {}
         for k in self.keys:
@@ -287,20 +301,20 @@ def main():
     base = Path(__file__).resolve().parent.parent
     rows = [json.loads(l) for l in open(base / args.input, encoding="utf-8")]
 
-    # 1. 用 dev 集人类样本拟合人类分布带（heldout 永不参与）
-    dev_human = [r["text"] for r in rows if r["split"] == "dev" and r["track"] == "human"]
-    dev_ai = [r["text"] for r in rows if r["split"] == "dev" and r["track"] == "machine"]
+    # 1. 用 dev 集人类样本拟合人类分布带（heldout 永不参与，兼容含完整 text 或仅含预计算特征的合规公开版 JSONL）
+    dev_human_rows = [r for r in rows if r["split"] == "dev" and r["track"] == "human"]
+    dev_ai_rows = [r for r in rows if r["split"] == "dev" and r["track"] == "machine"]
 
     lm_global = ChineseReferenceLM()
     lm_global.fit_hc3_human()
     globals()["lm_global"] = lm_global
 
     print("[1/4] 拟合人类分布带 (dev human) ...")
-    band = HumanBand(dev_human, lm_global)
+    band = HumanBand(dev_human_rows, lm_global)
 
     print("[2/4] 拟合双极稀疏探针 (dev human vs dev machine, 5-Fold CV) ...")
-    hn = [normalize_for_sparse(t) for t in dev_human]
-    an = [normalize_for_sparse(t) for t in dev_ai]
+    hn = [r.get("masked_sparse_text") or normalize_for_sparse(r["text"]) for r in dev_human_rows]
+    an = [r.get("masked_sparse_text") or normalize_for_sparse(r["text"]) for r in dev_ai_rows]
     cv_auc = sparse_cross_val(hn, an)
     vec, clf = fit_sparse_probe(hn, an)
 
@@ -309,13 +323,14 @@ def main():
     for r in rows:
         if r["split"] != args.split:
             continue
-        feats_all = band._extract(r["text"])
+        feats_all = r.get("precomputed_4dim_features") or (band._extract(r["text"]) if r.get("text") else None)
         if not feats_all:
             continue
         dims = score_four_dims(feats_all, band)
-        x = vec.transform([normalize_for_sparse(r["text"])])
+        masked_s = r.get("masked_sparse_text") or normalize_for_sparse(r["text"])
+        x = vec.transform([masked_s])
         ai_prob = round(float(clf.predict_proba(x)[0, 1]), 3)
-        rx = generate_prescriptions(r["text"]) if args.with_prescriptions else None
+        rx = generate_prescriptions(r["text"]) if (args.with_prescriptions and r.get("text")) else None
         verdict = "HUMANLIKE" if (dims["composite_z"] < 0.6 and ai_prob < 0.5) else (
             "AI_FLAVOR" if (dims["composite_z"] > 1.2 or ai_prob > 0.6) else "GRAY_ZONE")
         per_sample.append({
