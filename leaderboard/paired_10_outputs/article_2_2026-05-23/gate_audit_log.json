@@ -1,0 +1,11 @@
+{
+  "article": "article_2_2026-05-23",
+  "total_paras": 88,
+  "prescriptions_triggered": 53,
+  "accepted_edits": 52,
+  "gate_retried_and_fixed": 8,
+  "reverted_by_gate": 1,
+  "edit_budget_pct": 2.3,
+  "factual_gate_passed": true,
+  "anchor_retention": 1.0
+}

@@ -78,7 +78,21 @@ class HumanBand:
         colon = len(re.findall(r"[^0-9][：:]", text))
         em = text.count("——")
         crutch = (em * 2.0 + paren * 2.2 + colon * 1.2) / n * 1000.0
-        return {**p1, **p2, "M1_punct_crutch_total": round(crutch, 3)}
+        # 表演性元话语与强行第一人称自述密度（抓 Persona Hacking / 过度网感注入，对所有方法一视同仁计算双边 Z）
+        perf_words = (
+            "说实话", "老实说", "坦率讲", "讲道理", "有一说一", "我个人觉得",
+            "我是真", "这里插一句", "顺便提一嘴", "哦对了", "说句实在话", "不夸张地说",
+            "人麻了", "有点麻", "一坨", "神之一手", "简单粗暴", "巴拉巴拉", "碎碎念",
+            "诈尸", "装死", "干崩", "眼前一黑", "真香", "吓尿", "笑蒙", "邪修"
+        )
+        perf_hits = sum(text.count(w) for w in perf_words)
+        ego_hits = len(re.findall(r"我(?:个人)?(?:觉得|认为|当时|之前|那台|上周|真有点|挺爱|最烦)", text))
+        persona_hack_rate = (perf_hits * 1.5 + ego_hits) / n * 1000.0
+        return {
+            **p1, **p2,
+            "M1_punct_crutch_total": round(crutch, 3),
+            "M1_persona_hacking_rate": round(persona_hack_rate, 3),
+        }
 
     def two_sided_z(self, key: str, val: float) -> float:
         """双边惩罚：带内仅 0.2 倍软化惩罚，越出 [P10,P90] 后按标准差距离全额惩罚。"""
@@ -97,6 +111,8 @@ lm_global = None  # 模块级引用，供 HumanBand 内部调用
 
 def extract_factual_anchors(text: str) -> Dict[str, set]:
     t = clean_markdown_header(text)
+    # 剥离列表编号括号如 (1) (2) （1） （2），避免将排版序号误判为实验事实数字
+    t = re.sub(r"[（(]\s*\d{1,2}\s*[）)]", " ", t)
     numbers = set(re.findall(r"\d+(?:\.\d+)?%?", t))
     eng_terms = set(w.lower() for w in re.findall(r"[A-Za-z][A-Za-z0-9_\-\.]{2,}", t))
     return {"numbers": numbers, "eng_terms": eng_terms}
@@ -116,11 +132,12 @@ def factual_gate(orig: str, cand: str) -> Dict[str, Any]:
 # ──────────────────────────── 四维防刷 Z 评分 ────────────────────────────
 
 def score_four_dims(feats: Dict[str, float], band: HumanBand) -> Dict[str, float]:
-    # D1 微观：气口双边带 + 标点拐杖守恒 + 词汇多样性双边带
+    # D1 微观：气口双边带 + 标点拐杖守恒 + 表演性口癖越界双边带 + 词汇多样性双边带
     z_buf = band.two_sided_z("M1_speech_buffer_rate", feats["M1_speech_buffer_rate"])
     z_crutch = band.two_sided_z("M1_punct_crutch_total", feats["M1_punct_crutch_total"]) + feats["M1_em_dash_rate"] * 0.8
+    z_persona = band.two_sided_z("M1_persona_hacking_rate", feats.get("M1_persona_hacking_rate", 0.0))
     z_mattr = band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"])
-    d1 = (z_buf + z_crutch + z_mattr * 0.6) / 2.6
+    d1 = (z_buf + z_crutch + z_persona * 0.55 + z_mattr * 0.6) / 3.0
 
     # D2 中观：跨句搭扣 + 句首惊奇冲击 + 生硬换题率，且耦合惩罚剁碎句子刷节奏
     z_coh = band.two_sided_z("M2_cohesion_break_rate", feats["M2_cohesion_break_rate"])
@@ -146,11 +163,12 @@ def score_four_dims(feats: Dict[str, float], band: HumanBand) -> Dict[str, float
 # ──────────────────── 中文版 DetectorScope 双极稀疏探针（Lock 4） ────────────────────
 
 def normalize_for_sparse(raw: str) -> str:
-    """净化：英文数字掩码为 E，去空白，统一引号 —— 屏蔽话题泄漏，只留文风骨架。"""
+    """净化：英文数字串合并掩码为单个 E，去空白，统一引号 —— 屏蔽专名与数字泄漏。"""
     t = clean_markdown_header(raw)
     t = re.sub(r"[A-Za-z0-9_\-\.%]+", "E", t)
+    t = re.sub(r"E{2,}", "E", t)
     t = re.sub(r"\s+", "", t)
-    t = re.sub(r"[\"“”『』]", "「", t)
+    t = re.sub(r"[\"“”『』*#`]", "「", t)
     return t
 
 

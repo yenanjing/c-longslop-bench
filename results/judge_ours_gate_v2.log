@@ -1,0 +1,14 @@
+共 10 篇待盲判（method=clongslop_gate, 裁判=hy4-preview-ioa）
+  article_2026-03-07_微软推出Proact-VL_让你的   -> AI conf=88
+  article_2026-03-13_英伟达等团队发布MM-Zero_视   -> AI conf=90
+  article_2026-03-30_复旦&阶跃星辰开源PixelSmi   -> AI conf=85
+  article_2026-03-18_仅SFT超越Tongyi Deep   -> AI conf=92
+  article_2026-03-31_千问团队发布Trace2Skill   -> AI conf=84
+  article_2026-07-17_腾讯混元提出Harness Han   -> AI conf=70
+  article_2026-07-20_圣母大学提出 MemoHarnes   -> AI conf=73
+  article_2026-07-26_高德地图开源ABot-World-   -> AI conf=68
+  article_2026-07-23_纽约大学团队用国际象棋测试,发现模   -> AI conf=67
+  article_2_2026-05-23                   -> AI conf=82
+
+盲判完成: 10/10 成功, HUMAN 通过率 = 0%
+落盘: /Users/wenweili/PycharmProjects/Auto-claude-code-research-in-sleep/ai-writing-research/c_longslop_bench/results/llm_judge_ours_backfill.jsonl

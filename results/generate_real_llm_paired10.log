@@ -1,0 +1,19 @@
+/Users/wenweili/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/wx/kmr3r34d69dbxq4723f424b80000gn/T/jieba.cache
+Loading model cost 0.298 seconds.
+Prefix dict has been built successfully.
+开始为 10 篇配对长文生成真实 LLM 基线 (Zero-Shot / Checklist) 与 C-LongSlop 处方微修产物...
+  ✅ [article_2026-03-18_仅SFT超越Tongyi De] 完成 (82.8s) | 触发=28 放行=25 回滚=3 保真=100.0%
+  ✅ [article_2026-03-13_英伟达等团队发布MM-Zero] 完成 (125.9s) | 触发=26 放行=26 回滚=0 保真=100.0%
+  ✅ [article_2026-03-30_复旦&阶跃星辰开源PixelS] 完成 (135.4s) | 触发=35 放行=30 回滚=5 保真=100.0%
+  ✅ [article_2026-03-07_微软推出Proact-VL_让] 完成 (326.4s) | 触发=74 放行=60 回滚=14 保真=100.0%
+  ✅ [article_2026-07-17_腾讯混元提出Harness H] 完成 (137.2s) | 触发=26 放行=26 回滚=0 保真=100.0%
+  ✅ [article_2026-03-31_千问团队发布Trace2Ski] 完成 (250.1s) | 触发=51 放行=49 回滚=2 保真=100.0%
+  ✅ [article_2026-07-20_圣母大学提出 MemoHarn] 完成 (158.6s) | 触发=35 放行=34 回滚=1 保真=100.0%
+  ✅ [article_2026-07-23_纽约大学团队用国际象棋测试,发] 完成 (143.2s) | 触发=30 放行=30 回滚=0 保真=100.0%
+  ✅ [article_2026-07-26_高德地图开源ABot-Worl] 完成 (158.7s) | 触发=32 放行=32 回滚=0 保真=100.0%
+  ✅ [article_2_2026-05-23              ] 完成 (247.1s) | 触发=53 放行=53 回滚=0 保真=100.0%
+
+全部 10 篇配对长文的真实 LLM 改写产物已落盘至 leaderboard/paired_10_outputs/！

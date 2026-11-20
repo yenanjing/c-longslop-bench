@@ -1,0 +1,20 @@
+/Users/wenweili/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/wx/kmr3r34d69dbxq4723f424b80000gn/T/jieba.cache
+Loading model cost 0.266 seconds.
+Prefix dict has been built successfully.
+已落盘 10 篇 w/o Gate 消融产物，开始盲判（裁判=hy4-preview-ioa，与全部基线同一协议）
+  article_2026-03-13_英伟达等团队发布MM-Zero_视   -> AI conf=94
+  article_2026-03-07_微软推出Proact-VL_让你的   -> AI conf=93
+  article_2026-03-18_仅SFT超越Tongyi Deep   -> AI conf=95
+  article_2026-03-30_复旦&阶跃星辰开源PixelSmi   -> AI conf=92
+  article_2026-03-31_千问团队发布Trace2Skill   -> AI conf=98
+  article_2026-07-17_腾讯混元提出Harness Han   -> AI conf=93
+  article_2026-07-20_圣母大学提出 MemoHarnes   -> AI conf=93
+  article_2026-07-23_纽约大学团队用国际象棋测试,发现模   -> AI conf=90
+  article_2026-07-26_高德地图开源ABot-World-   -> AI conf=90
+  article_2_2026-05-23                   -> AI conf=93
+
+盲判完成: 10/10 成功, HUMAN 通过率 = 0%
+落盘: /Users/wenweili/PycharmProjects/Auto-claude-code-research-in-sleep/ai-writing-research/c_longslop_bench/results/llm_judge_ours_nogate.jsonl

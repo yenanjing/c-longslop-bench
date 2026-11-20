@@ -1,0 +1,11 @@
+{
+  "article": "article_2026-03-30_复旦&阶跃星辰开源PixelSmile_连续情感标注打破表情",
+  "total_paras": 63,
+  "prescriptions_triggered": 35,
+  "accepted_edits": 35,
+  "gate_retried_and_fixed": 5,
+  "reverted_by_gate": 0,
+  "edit_budget_pct": 3.8,
+  "factual_gate_passed": true,
+  "anchor_retention": 1.0
+}

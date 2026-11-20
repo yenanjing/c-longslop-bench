@@ -77,5 +77,3 @@ LongForcing 与同设定下的 Causal Forcing 风格基线对比连续生成 60 
 对想本地试的人：官方给出 Ubuntu 22.04 、 CUDA 13.3 、 RTX 5090 的验证环境；权重可从 Hugging Face acvlab/ABot-World-0-5B-LF或 ModelScope amap_cvlab/ABot-World-0-5B-LF拉取， Apache-2.0 许可。
 
 接下来一两年，交互世界模型的公开竞争大概会拆成三条线：榜单单项分数、本机可玩延迟与显存、以及带准动作的数据是否开放。 ABot-World-0 明显押在后两条。少步蒸馏只是实时的前提；数据会跟着弱点补、长程生成被教师拉住分布、推理链路整段一起省显存，才共同决定键盘按下之后，这个世界还能稳多久。
-
-⭐️关注我，实时跟进 AI 最新进展⭐️

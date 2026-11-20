@@ -1,0 +1,11 @@
+{
+  "article": "article_2026-03-13_英伟达等团队发布MM-Zero_视觉语言模型没有训练数据也能",
+  "total_paras": 41,
+  "prescriptions_triggered": 26,
+  "accepted_edits": 26,
+  "gate_retried_and_fixed": 3,
+  "reverted_by_gate": 0,
+  "edit_budget_pct": 3.5,
+  "factual_gate_passed": true,
+  "anchor_retention": 1.0
+}
