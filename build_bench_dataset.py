@@ -38,10 +38,10 @@ def clean_md_header(t: str) -> str:
             t = "\n".join(lines[idx + 1:]).strip()
             break
     t = re.sub(r"^#.*\n", "", t)
+    t = re.sub(r"<center>.*?</center>", "", t, flags=re.S | re.I)
     t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", t)
     t = re.sub(r"https?://\S+", "", t)
     return t.strip()
-
 
 def normalize_wx_original(raw_text: str) -> str:
     """
@@ -52,7 +52,7 @@ def normalize_wx_original(raw_text: str) -> str:
     t = clean_md_header(raw_text)
     lines = [ln.strip() for ln in t.split("\n")]
     skip_prefixes = (
-        "一句话讲清楚", "论文标题", "论文链接", "项目链接", "开源链接",
+        "一句话讲清楚", "论文标题", "论文题目", "论文链接", "项目链接", "开源链接",
         "代码链接", "作者：", "来源：", "📄", "🌐", "⭐️", "👉🏻", "💻", "📊", "🤗"
     )
 
@@ -65,7 +65,8 @@ def normalize_wx_original(raw_text: str) -> str:
                     merged_paras.append(buf)
                     buf = ""
             continue
-        if any(ln.startswith(p) for p in skip_prefixes):
+        ln_clean = re.sub(r"^[·•\-\*\s]+", "", ln)
+        if any(ln.startswith(p) or ln_clean.startswith(p) for p in skip_prefixes):
             continue
         if re.match(r"^Figure\s*\d+", ln, re.I) or re.match(r"^表\s*\d+", ln):
             continue
