@@ -35,13 +35,13 @@ import jieba
 import jieba.posseg as pseg
 import numpy as np
 
-# ── 复用 pilot 阶段已固化的探针实现 ──
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from pilot_longslop_experiment import (  # noqa: E402
+# ── 自包含核心探针导入（零外部父目录依赖） ──
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from probes_core import (  # noqa: E402
     clean_markdown_header, split_paragraphs, split_sentences,
     compute_probes, SPEECH_BUFFERS, MODAL_PARTICLES,
+    ChineseReferenceLM, compute_uid_and_pmi_probes,
 )
-from pilot_longslop_part2 import ChineseReferenceLM, compute_uid_and_pmi_probes  # noqa: E402
 from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
 from sklearn.linear_model import LogisticRegression  # noqa: E402
 from sklearn.model_selection import StratifiedKFold, cross_val_predict  # noqa: E402
@@ -240,11 +240,31 @@ PRONOUN_HOOKS = ("这", "那", "他", "她", "它", "其", "该", "此", "但", 
                  "结果", "毕竟", "也", "而且", "再", "于是", "反过来", "说白了", "其实")
 
 
+def is_structural_or_meta_para(p: str) -> bool:
+    """判断段落是否为 Markdown 标题、图注 (<center>)、公式块 ($$)、代码块、表格或论文元信息行。"""
+    s = p.strip()
+    if not s or len(s) < 18:
+        return True
+    if s.startswith(("#", "![", "<center", "<img", "<div", "$$", "```", "|", ">", "---")):
+        return True
+    if re.match(
+        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)[：:]",
+        s,
+        re.I,
+    ):
+        return True
+    if re.match(r"^(?:Figure|Fig\.|Table|图|表)\s*\d+", s, re.I):
+        return True
+    return False
+
+
 def generate_prescriptions(raw: str) -> List[Dict[str, Any]]:
     text = clean_markdown_header(raw)
     paras = [p.strip() for p in text.split("\n\n") if p.strip()]
     rx, seen = [], set()
     for p_idx, p in enumerate(paras):
+        if is_structural_or_meta_para(p):
+            continue
         sents = split_sentences(p)
         issues = []
         if "——" in p:
@@ -252,16 +272,22 @@ def generate_prescriptions(raw: str) -> List[Dict[str, Any]]:
                 if "——" in s:
                     issues.append({"type": "EM_DASH_CRUTCH", "sent_idx": si,
                                    "evidence": s.replace("——", "[[——]]"),
-                                   "instruction": "去破折号，用逗号分句或口语顺承词把解释顺下来；严禁换成括号或冒号。"})
-        parens = re.findall(r"（[A-Za-z0-9_\-]+）|\([A-Za-z0-9_\-]+\)", p)
+                                   "instruction": "去破折号，用逗号分句或自然动词（「说白了就是」「相当于」）把解释顺下来；严禁换成括号或冒号。"})
+        parens = re.findall(r"（[A-Za-z0-9_\-\s]{2,30}）|\([A-Za-z0-9_\-\s]{2,30}\)", p)
         if len(parens) >= 2:
             issues.append({"type": "PARENTHETICAL_ENUM_TIC", "sent_idx": 0,
-                           "evidence": re.sub(r"(（[A-Za-z0-9_\-]+）|\([A-Za-z0-9_\-]+\))", r"[[\1]]", p),
-                           "instruction": f"删除句内机器编号括号 {parens[:6]}，让中文词本身承担指代。"})
-        if p.count("：") >= 1 and len(p) >= 35:
+                           "evidence": re.sub(r"(（[A-Za-z0-9_\-\s]{2,30}）|\([A-Za-z0-9_\-\s]{2,30}\))", r"[[\1]]", p),
+                           "instruction": f"删除句内多余的英文缩写/编号括号 {parens[:5]}，首次出现保留即可，后续直接用中文简称指代。"})
+        if re.search(r"(?:^|[。！？\n])[^，。！？\n：:《》]{2,14}：", p) and len(p) >= 35:
             issues.append({"type": "COLON_PROMPT_TIC", "sent_idx": 0,
                            "evidence": p.replace("：", "[[：]]", 1),
-                           "instruction": "消除『总结词：展开』冒号提示体，改为自然动词衔接（『说的是』『也就是』），句末可补『了。』或『，但是』。"})
+                           "instruction": "消除『总结词：展开』冒号提示体，改为自然主谓宾陈述句（用『核心在于』『说的是』『做法是』衔接）。"})
+        # 抓句号后直接用英文模型名/术语硬起手（稀疏探针高权重的 `。E` 病灶）
+        abrupt_eng = re.findall(r"[。！？]\s*([A-Za-z][A-Za-z0-9_\-]{2,18})\s*[\u4e00-\u9fff]", p)
+        if len(abrupt_eng) >= 1:
+            issues.append({"type": "ABRUPT_ENGLISH_SUBJECT_ONSET", "sent_idx": 0,
+                           "evidence": f"[[。{abrupt_eng[0]}...]]",
+                           "instruction": f"消除句号后直接拿英文名『{abrupt_eng[0]}』硬顶句首的机器感：在句首垫一个承接上句的指代或顺承短语（如『在此基础上，{abrupt_eng[0]}』『为了做到这一点，它』）。"})
         if sents and p_idx >= 2:
             s0 = sents[0]
             cw0 = [w for w, pos in pseg.cut(s0) if pos.startswith("n") and len(w) >= 2]
@@ -270,14 +296,14 @@ def generate_prescriptions(raw: str) -> List[Dict[str, Any]]:
             if not has_old and not has_hook and len(s0) <= 35:
                 issues.append({"type": "ABRUPT_ONSET_BREAK", "sent_idx": 0,
                                "evidence": f"[[{s0}]]",
-                               "instruction": "段首硬抛新概念。句首补承接上一段末尾概念的搭扣，遵循『句首接旧知、句尾抛新知』。"})
-        if int(len(paras) * 0.35) <= p_idx <= int(len(paras) * 0.65):
+                               "instruction": "段首硬抛新概念（违反以旧带新律）。句首补承接上一段末尾概念的过渡词或代词搭扣，遵循『句首接旧知、句尾抛新知』。"})
+        if int(len(paras) * 0.30) <= p_idx <= int(len(paras) * 0.70):
             has_num = bool(re.search(r"\d+|[「」“”]", p))
             has_buf = any(b in p for b in SPEECH_BUFFERS) or any(mp in p for mp in MODAL_PARTICLES)
             if not has_num and not has_buf and len(p) >= 70:
                 issues.append({"type": "MID_SECTION_ABSTRACT_DRIFT", "sent_idx": 0,
                                "evidence": f"[[{p[:35]}...]]",
-                               "instruction": "中段全抽象机制名词且无气口。拆开堆叠名词，加 1 处自然讲课语气，补指代承接。"})
+                               "instruction": "中段全抽象机制名词堆叠且无气口。拆开连续名词定语，补一句直白的『人话降维解释』或指代承接。"})
         for s in sents:
             for w, pos in pseg.cut(s):
                 if pos.startswith("n") and len(w) >= 2:
