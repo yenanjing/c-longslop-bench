@@ -155,7 +155,7 @@ def factual_gate(orig: str, cand: str) -> Dict[str, Any]:
 # ──────────────────────────── 四维防刷 Z 评分 ────────────────────────────
 
 def extract_compensatory_probes(raw: str) -> Dict[str, float]:
-    """提取技术长文从零生成中的三类隐蔽代偿特征：一逗到底粘连长句、平均句长膨胀、第三人称论文汇报腔。"""
+    """提取技术长文从零生成中的隐蔽代偿特征：一逗到底粘连长句、平均句长膨胀、第三人称论文汇报腔、单一口语词刷分、缩写倾倒与谜语小标题。"""
     t = clean_markdown_header(raw)
     t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", t)
     n = max(1, len(t))
@@ -166,6 +166,9 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
             "M2_mean_sent_len": 0.0,
             "M1_reportese_rate": 0.0,
             "M1_reader_hook_rate": 0.0,
+            "M1_single_filler_max_rate": 0.0,
+            "M2_acronym_dump_paras": 0.0,
+            "M3_riddle_heading_count": 0.0,
         }
     sent_lens = [len(s) for s in sents]
     overlong_cnt = sum(
@@ -178,13 +181,41 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         1 for s in sents if re.match(r"^(?:作者|论文|研究者|研究团队|本文|这项工作|该工作)", s)
     )
     rep_rate = (rep_hits + author_starts * 1.5) / n * 1000.0
-    reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么")
+    reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么", "比如", "相当于", "说白了")
     hook_hits = sum(t.count(w) for w in reader_hooks) + t.count("？")
+
+    # 单一口语词高频复读检测（防靠狂塞「其实」刷气口指标）
+    filler_candidates = ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "老实说", "坦率讲", "事实上")
+    max_filler_cnt = max((t.count(w) for w in filler_candidates), default=0)
+    single_filler_max_rate = (max_filler_cnt / n * 1000.0) if max_filler_cnt >= 4 else 0.0
+
+    # 单段大写英文缩写倾倒检测（Info-Dumping：单段 >=5 个不同大写缩写/专名）
+    paras = [p.strip() for p in t.split("\n\n") if p.strip()]
+    acronym_dump_paras = 0
+    riddle_heading_count = 0
+    for p in paras:
+        if p.startswith("## "):
+            hd = p[3:].strip()
+            if re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次)$", hd):
+                riddle_heading_count += 1
+            continue
+        if is_structural_or_meta_para(p):
+            continue
+        acronyms = {
+            w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{1,15}\b", p)
+            if sum(1 for c in w if c.isupper()) >= 2
+        }
+        if len(acronyms) >= 5:
+            acronym_dump_paras += 1
+
     return {
         "M2_overlong_sent_ratio": round(overlong_cnt / len(sents), 3),
         "M2_mean_sent_len": round(statistics.mean(sent_lens), 2),
         "M1_reportese_rate": round(rep_rate, 3),
         "M1_reader_hook_rate": round(hook_hits / n * 1000.0, 3),
+        "M1_single_filler_max_rate": round(single_filler_max_rate, 3),
+        "M2_acronym_dump_paras": float(acronym_dump_paras),
+        "M3_riddle_heading_count": float(riddle_heading_count),
     }
 
 
@@ -216,21 +247,23 @@ def score_four_dims(
     coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
     d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
 
-    # 长文生成代偿防刷锁（Lock 1 气口赤字与汇报腔越界 + Lock 2b 右半边「一逗到底粘连长句锁」）
+    # 长文生成代偿防刷锁（Lock 1 气口赤字/单一口语词刷分/汇报腔 + Lock 2b 粘连长句与缩写倾倒锁）
     if compensatory_lock or "M2_overlong_sent_ratio" in feats:
         z_buf_def = max(0.0, (feats.get("M1_buffer_deficit", 1.0) - 2.0) / 1.2)
         z_rep = max(0.0, (feats.get("M1_reportese_rate", 0.0) - 0.90) / 0.65)
-        d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40) / 2.8
+        z_filler_spam = max(0.0, (feats.get("M1_single_filler_max_rate", 0.0) - 0.85) / 0.45)
+        d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40 + z_filler_spam * 0.65) / 2.8
         z_overlong = max(0.0, (feats.get("M2_overlong_sent_ratio", 0.0) - 0.18) / 0.07)
         z_mslen = max(0.0, (feats.get("M2_mean_sent_len", 38.0) - 48.5) / 5.5)
-        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen
+        z_info_dump = feats.get("M2_acronym_dump_paras", 0.0) * 0.45
+        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + z_info_dump
 
-    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带
+    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带 + 谜语小标题惩罚
     d3 = statistics.mean([
         band.two_sided_z("M3_opener_homogeneity", feats["M3_opener_homogeneity"]) + feats["M3_opener_homogeneity"] * 2.0,
         band.two_sided_z("M2_para_flatness", feats["M2_para_flatness"]),
         band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"]),
-    ])
+    ]) + feats.get("M3_riddle_heading_count", 0.0) * 0.35
 
     # D4 宏观：跨段远距回环复述 + 远距回声均值
     d4 = statistics.mean([
@@ -283,8 +316,14 @@ def sparse_cross_val(human_norms: List[str], ai_norms: List[str]) -> float:
 
 # ──────────────────── 自动处方单生成（Prescription Engine） ────────────────────
 
-PRONOUN_HOOKS = ("这", "那", "他", "她", "它", "其", "该", "此", "但", "可", "而", "所以",
-                 "结果", "毕竟", "也", "而且", "再", "于是", "反过来", "说白了", "其实")
+PRONOUN_HOOKS = (
+    "这", "那", "他", "她", "它", "其", "该", "此", "但", "可", "而", "所以",
+    "结果", "毕竟", "也", "而且", "再", "于是", "反过来", "说白了", "其实",
+    "更", "同时", "此外", "另外", "如果", "一旦", "既然", "至于", "除了",
+    "不过", "然而", "相反", "第一", "第二", "第三", "第四", "首先", "其次", "最后",
+    "先", "回到", "落到", "拆开", "算下", "对比", "为什么", "怎么",
+    "拿", "把", "在", "当", "从", "按", "单看", "换到", "哪怕", "就算", "比如",
+)
 
 
 def is_structural_or_meta_para(p: str) -> bool:
@@ -310,7 +349,23 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
     paras = [p.strip() for p in text.split("\n\n") if p.strip()]
     rx, seen = [], set()
     no_buf_run = 0
+    filler_counts: Dict[str, int] = {}
     for p_idx, p in enumerate(paras):
+        # 优先检查小标题是否命中「半截疑问/谜语式 AI 小标题」
+        if p.startswith("## ") and include_compensatory:
+            hd = p[3:].strip()
+            if re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次)$", hd):
+                rx.append({
+                    "para_idx": p_idx,
+                    "issues": [{
+                        "type": "RIDDLE_HEADING",
+                        "sent_idx": 0,
+                        "evidence": f"[[{p}]]",
+                        "instruction": "消除半截疑问/谜语式小标题（违反 RST 主核结构）：直接把本节最核心的结论写成完整大白话判断句（如『单靠编译器开关只能拿 5.3 分，真正的差距在改算法』）。",
+                    }],
+                    "prev_para_tail": paras[p_idx - 1][-40:] if p_idx else "",
+                })
+            continue
         if is_structural_or_meta_para(p):
             continue
         sents = split_sentences(p)
@@ -337,9 +392,9 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                            "evidence": f"[[。{abrupt_eng[0]}...]]",
                            "instruction": f"消除句号后直接拿英文名『{abrupt_eng[0]}』硬顶句首的机器感：在句首垫一个承接上句的指代或顺承短语（如『在此基础上，{abrupt_eng[0]}』『为了做到这一点，它』）。"})
         if sents and p_idx >= 2:
-            s0 = sents[0]
-            cw0 = [w for w, pos in pseg.cut(s0) if pos.startswith("n") and len(w) >= 2]
-            has_old = any(w in seen for w in cw0[:2])
+            s0 = re.sub(r"^\*\*|\*\*$", "", sents[0].strip())
+            cw0 = [w for w, pos in pseg.cut(s0) if (pos.startswith("n") or pos.startswith("v") or pos.startswith("a")) and len(w) >= 2]
+            has_old = any(w in seen for w in cw0[:3])
             has_hook = s0.startswith(PRONOUN_HOOKS)
             if not has_old and not has_hook and len(s0) <= 35:
                 issues.append({"type": "ABRUPT_ONSET_BREAK", "sent_idx": 0,
@@ -375,9 +430,44 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "evidence": f"[[{ev}]]",
                     "instruction": "消除『作者做了…/论文指出…』的审稿汇报腔：直接把机制、任务或实验现象本身作为主语（如把『作者在两个任务上做了 14 组对照』改为『拿两个任务上的 14 组预设对照来看』）。",
                 })
-            # 代偿病灶 3：连续多段零气口赤字（每满 4 段触发一次定位，避免连续刷屏）
+            # 代偿病灶 3：单一口语缓冲词全篇高频复读（如全篇狂塞 15 个「其实」）
+            for fw in ("其实", "说白了", "换句话说", "说到底", "也就是", "你看"):
+                c = p.count(fw)
+                if c > 0:
+                    filler_counts[fw] = filler_counts.get(fw, 0) + c
+                    if filler_counts[fw] >= 4:
+                        issues.append({
+                            "type": "SINGLE_FILLER_SPAM",
+                            "sent_idx": 0,
+                            "evidence": f"[[全篇第 {filler_counts[fw]} 次出现『{fw}』: {p[:36]}...]]",
+                            "instruction": f"消除单一口语词『{fw}』高频复读刷分（全篇已累计 {filler_counts[fw]} 次，上限 ≤3 次）：直接删掉『{fw}』，或改用具体的因果/对比/举例衔接。",
+                        })
+            # 代偿病灶 4：单段陌生大写英文缩写倾倒（Info-Dumping）
+            acronyms = sorted({
+                w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{1,15}\b", p)
+                if sum(1 for ch in w if ch.isupper()) >= 2
+            })
+            if len(acronyms) >= 5:
+                issues.append({
+                    "type": "ACRONYM_INFO_DUMPING",
+                    "sent_idx": 0,
+                    "evidence": f"[[单段堆砌 {len(acronyms)} 个英文缩写: {', '.join(acronyms[:8])}]]",
+                    "instruction": "消除单段英文缩写倾倒（Info-Dumping）：将次要/并列缩写合并为中文统称（如『国内外六大超算竞赛』『多款主流基准』），每段最多保留 2–3 个核心专名，且首次出现的专业软件/术语必须紧跟半句大白话内嵌解释（如『用来模拟分子运动的开源软件 GROMACS』）。",
+                })
+            # 代偿病灶 5：公文状语胶水起手
+            if re.match(r"^(?:为了搭起这套|在具体执行上|从资源预算看|在评测设计上|在实验设置上|从整体结果看|在具体实现上)", p):
+                issues.append({
+                    "type": "BUREAUCRATIC_GLUE_ONSET",
+                    "sent_idx": 0,
+                    "evidence": f"[[{p[:24]}...]]",
+                    "instruction": "消除生硬的公文状语起手胶水：直接用具体主语和动作开篇，或承接上一段的核心问题。",
+                })
+            # 代偿病灶 6：连续多段零气口赤字（每满 4 段触发一次定位，认可自然举例与对比词）
             has_any_buf = (
-                any(w in p for w in ("其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了", "你看"))
+                any(w in p for w in (
+                    "其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了", "你看",
+                    "比如", "相当于", "好比", "哪怕", "就算", "反过来", "原因很简单", "问题在于", "难点在于",
+                ))
                 or ("？" in p)
                 or ("你" in p)
             )
@@ -388,7 +478,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                         "type": "PARAGRAPH_BUFFER_DEFICIT",
                         "sent_idx": 0,
                         "evidence": f"[[连续 {no_buf_run} 段零气口: {p[:32]}...]]",
-                        "instruction": "连续多段零讲课气口，读感干瘪机械：在句中解释或转折处自然补入 1 处气口词（如『其实』『换句话说』『说到底』『也就是』），放在句中不要放段首。",
+                        "instruction": "连续多段零讲课气口，读感干瘪机械：在句中解释或转折处自然补入 1 处气口或类比词（如『比如』『相当于』『换句话说』『说到底』），切勿全篇重复塞同一个词。",
                     })
                     no_buf_run = 0
             else:
@@ -396,7 +486,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
 
         for s in sents:
             for w, pos in pseg.cut(s):
-                if pos.startswith("n") and len(w) >= 2:
+                if (pos.startswith("n") or pos.startswith("v") or pos.startswith("a")) and len(w) >= 2:
                     seen.add(w)
         if issues:
             rx.append({"para_idx": p_idx, "issues": issues,
