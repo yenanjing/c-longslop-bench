@@ -33,7 +33,8 @@ def clean_markdown_header(text: str) -> str:
     避免排版标签被误计入正文自然语言探针。
     """
     lines = text.strip().split("\n")
-    for idx in range(min(12, len(lines))):
+    start_search = 1 if (lines and lines[0].strip() == "---") else 0
+    for idx in range(start_search, min(15, len(lines))):
         if lines[idx].strip() == "---":
             text = "\n".join(lines[idx + 1:]).strip()
             break
@@ -81,9 +82,8 @@ def split_sentences(text: str) -> List[str]:
 # ── 2. 四维确定性探针计算 (M1 - M3) ───────────────────────────────────
 
 SPEECH_BUFFERS = [
-    "其实", "说白了", "坦率讲", "老实说", "说实话", "你看", "你想", "换句话说",
-    "有意思的是", "好玩的是", "说到底", "某种意义上", "讲真", "平心而论", "顺便说",
-    "更要命的是", "扎心的是", "不得不说", "怎么说呢", "简单讲", "直白点"
+    "比如", "例如", "拿", "相当于", "也就是", "换句话说", "反过来", "哪怕",
+    "就算", "既然", "一旦", "其实", "说白了", "简单讲", "直白点", "说到底"
 ]
 MODAL_PARTICLES = list("吧呢啊嘛哈哎哦呀噢嗯罢")
 MECHANICAL_CONNECTORS = [
@@ -103,7 +103,7 @@ CONTRAST_TEMPLATES = [
     r"与其[^，。；]{1,20}不如",
     r"并非[^，。；]{1,20}而是",
 ]
-CONTENT_POS_PREFIX = ("n", "v", "a", "i", "l")
+CONTENT_POS_PREFIX = ("n", "v", "a", "i", "l", "eng")
 
 
 def tokenize_pos(text: str) -> List[Tuple[str, str]]:
@@ -139,7 +139,7 @@ def compute_probes(raw_text: str) -> Dict[str, float]:
         for w, pos in toks:
             if pos.startswith("n") and len(w) >= 2:
                 run += 1
-                if run == 3:
+                if run == 4:
                     noun_stacks += 1
             else:
                 run = 0

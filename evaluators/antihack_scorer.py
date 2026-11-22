@@ -28,6 +28,7 @@ import math
 import re
 import statistics
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 
@@ -160,16 +161,57 @@ COMMON_ENG_WHITELIST = {
     "python", "numpy", "openmp", "git", "api", "gib", "mib", "kib", "gb", "mb", "kb",
     "score", "table", "figure", "fig", "avx", "avx2", "simd", "io", "ml", "nan", "json",
     "flash", "preview", "pro", "max", "mini", "sol", "terra", "astra", "luna", "hy3", "hy4",
-    "swe", "perf", "gso", "kernel", "kernels", "harness", "profiler",
+    "swe", "perf", "gso", "kernel", "kernels", "harness", "profiler", "code", "accelerate",
+    "bench", "epyc", "amd", "intel", "nvidia", "linux", "docker", "gcc", "clang", "cmake",
+    "smollm", "smollm2", "thundersvm",
 }
 
+
+def is_known_eng_term(w: str) -> bool:
+    wl = w.lower()
+    if wl in COMMON_ENG_WHITELIST:
+        return True
+    parts = [p for p in re.split(r"[_\-\.]", wl) if p and not p.isdigit() and not re.match(r"^v?\d+$", p)]
+    return bool(parts) and any(p in COMMON_ENG_WHITELIST for p in parts)
+
+
 GLOSS_ANCHOR_RE = re.compile(
-    r"(?:软件|程序|工具|系统|框架|基准|算法|模型|库|函数|指令|套件|项目|竞赛|赛题|方程|用来|用于|负责|指的是|也就是|模拟|求解|计算|拼接|组装|搜索)"
+    r"(?:软件|程序|工具|系统|框架|基准|算法|模型|库|函数|指令|套件|项目|竞赛|方程|求解器|模拟器|算例|算子|格式|测试|代码|分解|压缩|用来|用于|负责|指的是|也就是|模拟|求解|计算|拼接|组装|搜索|搜寻|生成|重构|稀疏)"
 )
 
 TRANSLATIONESE_WORDS = (
     "受控重放", "失败信号", "起始程序", "未改程序", "未改源码", "正确候选",
     "无效变体", "参照验证解", "有界化", "全因子实验", "私有输入", "私有工作负载",
+    "参测", "计算契约", "得到了完整保留", "被压到了合理区间", "软件工程 Agent", "编码 Agent",
+    "旗舰款", "顶配款", "满血版", "第一点是", "第二点是", "第三点是", "另外一方面",
+)
+
+AI_CLICHE_PHRASES = (
+    "才会登场", "隆重登场", "登场同台竞技", "同台竞技", "撞上了红线", "非常值得玩味",
+    "值得玩味", "稳如泰山", "遥遥领先", "天壤之别", "低得惊人", "费尽心思",
+    "无一漏网", "统统被判为", "硬骨头", "王牌手段", "降维打击", "老实说",
+    "坦率讲", "说实话", "平心而论", "这个原因其实不难理解", "显眼的结论",
+    "交出了", "正确答卷", "交卷",
+)
+
+REDUNDANT_PREFIX_RE = re.compile(
+    r"(?:工具框架|智能体框架|代理框架|外层框架)\s*(?:Claude\s*Code|Codex)"
+    r"|(?:大模型|语言模型|基座模型|模型|系统)\s*(?:Claude|GPT-\d|DeepSeek|Kimi|Grok|Qwen|Gemini|Hy[34])"
+    r"|(?:早期的基准|评测基准|基准)\s*(?:SWE-Perf|GSO|SWE-bench)"
+    r"|(?:记为|设为|定义为|写为)?(?:符号|函数|变量|常数)\s*\$[A-Za-z]"
+)
+
+STIFF_PREP_FRAME_RE = re.compile(
+    r"在(?:那类|这类|这个|这套|这项)(?:赛题|基准|评测|任务|赛题集合|任务集合|工作)里"
+)
+
+GRANDSTANDING_RE = re.compile(
+    r"(?:顺着|站在)[^，。]{1,18}(?:演进脉络|发展脉络|历史脉络)[^，。]{0,6}看"
+    r"|最(?:有价值|大的价值|核心的价值|重要的意义)的地方，就是把[^。]{2,35}从「[^」]+」拉回了"
+    r"|写得出[^，。]{2,15}只是(?:入场券|第一步|及格线)"
+    r"|(?:你)?能不能[^，。]{3,20}，能不能[^，。]{3,25}，才决定了"
+    r"|带[^，。、]{1,8}、带[^，。、]{1,8}、带[^，。、]{1,12}的"
+    r"|埋下的[^，。]{1,6}暗雷"
 )
 
 
@@ -206,23 +248,51 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么", "比如", "相当于", "说白了")
     hook_hits = sum(t.count(w) for w in reader_hooks) + t.count("？")
 
-    # 1. 单一口语词高频复读检测（防靠狂塞「其实」刷气口指标）
-    filler_candidates = ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "老实说", "坦率讲", "事实上")
+    # 1. 单一口语词高频复读检测（防靠狂塞「其实」「还有」刷气口指标）
+    filler_candidates = ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "老实说", "坦率讲", "事实上", "还有")
     max_filler_cnt = max((t.count(w) for w in filler_candidates), default=0)
     single_filler_max_rate = (max_filler_cnt / n * 1000.0) if max_filler_cnt >= 4 else 0.0
 
-    # 2. 翻译腔黑话、句法压缩饼干与论文内部代号泄漏检测
+    # 2. 翻译腔黑话、句法压缩饼干、公文简写（参测/赛题泛滥）、贴标签赘词、戏剧化套话与拔高金句检测
     trans_hits = sum(t.count(w) for w in TRANSLATIONESE_WORDS)
+    # 抓漏字语病：动词/名词短语后缺「的」硬接「时候」（如「修 Bug 时候」「看这张榜单时候」「单线程时候」）
+    missing_de_shihou = re.findall(r"(?<![的之那这何啥每当有个些候\s，。！？；：、])时候", t)
+    trans_hits += len(missing_de_shihou) * 2
+    # 抓图注里用口语「还有」（如 `<center>图 1｜...，还有...</center>`）
+    caption_haiyou = re.findall(r"<center>[^<]*还有[^<]*</center>", raw)
+    trans_hits += len(caption_haiyou) * 2
     workload_cnt = t.count("工作负载")
     if workload_cnt >= 3:
         trans_hits += workload_cnt
+    saiti_cnt = t.count("赛题")
+    if saiti_cnt >= 4:
+        trans_hits += (saiti_cnt - 2)
+    cliche_hits = sum(t.count(w) for w in AI_CLICHE_PHRASES)
+    redundant_prefix_hits = len(REDUNDANT_PREFIX_RE.findall(t))
+    # 同一专名的「中文类别标签 + 英文名」（如「评测基准 Accelerate Bench」「模拟程序 SU2」「求解程序 HPCG」）重复出现 >=2 次
+    repeated_gloss_en = Counter(re.findall(r"(?:评测基准|模拟程序|求解程序|开源软件|语言模型|指令集)\s+[A-Za-z][A-Za-z0-9_\-\s]{1,18}", t))
+    redundant_prefix_hits += sum(c - 1 for c in repeated_gloss_en.values() if c >= 2)
+    # 全篇反复套用「用来…的程序/软件/计算库」同位语模板 >=3 次
+    yonglai_templates = re.findall(r"用来[^，。；\n]{1,18}的(?:程序|软件|算法|工具|计算库|程序库|系统|框架)", t)
+    if len(yonglai_templates) >= 3:
+        redundant_prefix_hits += (len(yonglai_templates) - 1)
+    stiff_prep_hits = len(STIFF_PREP_FRAME_RE.findall(t))
+    grandstanding_hits = len(GRANDSTANDING_RE.findall(t))
     # 疑问词三字诀压缩饼干（如「算什么、要多快、能改哪里」「允许改哪些目录、计时从哪到哪、产出什么、怎么判对错」）
     compressed_wh = len(re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", t))
     # 论文内部单字母/编号代号直接做主语（如 R1 打开... R2 叠加... R3 把... / B 是... R 是... L 是...）
     internal_codes = len(re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", t))
-    translationese_rate = (trans_hits * 1.5 + compressed_wh * 3.0 + internal_codes * 2.5) / n * 1000.0
+    translationese_rate = (
+        trans_hits * 1.5
+        + cliche_hits * 1.5
+        + redundant_prefix_hits * 2.0
+        + stiff_prep_hits * 2.0
+        + grandstanding_hits * 3.0
+        + compressed_wh * 3.0
+        + internal_codes * 2.5
+    ) / n * 1000.0
 
-    # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题
+    # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题、单句残段与超长墙段
     paras = [p.strip() for p in t.split("\n\n") if p.strip()]
     acronym_dump_paras = 0
     unexplained_jargon_paras = 0
@@ -242,19 +312,24 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
             continue
         if is_structural_or_meta_para(p):
             continue
+        p_sents = split_sentences(p)
+        if not p.startswith("**一句话讲清楚") and (
+            (len(p_sents) == 1 and len(p) < 75) or len(p) > 330
+        ):
+            riddle_heading_count += 1
         acronyms = {
             w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{1,15}\b", p)
-            if sum(1 for c in w if c.isupper()) >= 2
+            if sum(1 for c in w if c.isupper()) >= 2 and not is_known_eng_term(w)
         }
         if len(acronyms) >= 5:
             acronym_dump_paras += 1
 
         # 检查本段首次出场的非常识专业术语是否带内嵌解释锚点
         p_unexplained = 0
-        for s in split_sentences(p):
+        for s in p_sents:
             terms = [
                 w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{2,15}\b", s)
-                if w.lower() not in COMMON_ENG_WHITELIST and any(c.isupper() for c in w)
+                if not is_known_eng_term(w) and any(c.isupper() for c in w)
             ]
             new_terms = [w for w in terms if w.lower() not in seen_jargon]
             for w in terms:
@@ -332,10 +407,17 @@ def score_four_dims(
         z_num_dump = max(0.0, feats.get("M2_numeric_overload_paras", 0.0) - 1.0) * 0.25
         d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + z_info_dump + z_jargon + z_num_dump
 
-    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带 + 谜语小标题惩罚
+    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度（容忍自然均衡段落 para_cv in [0.20, 0.80]，严禁靠切碎单句短段刷 CV）+ 词汇多样性双边带 + 谜语小标题/单句残段惩罚
+    pf = feats["M2_para_flatness"]
+    if 1.10 <= pf <= 3.30:
+        z_para_flat = 0.12 * abs(pf - 2.10) / 0.65
+    elif pf < 1.10:
+        z_para_flat = (1.10 - pf) / 0.35 + 0.18
+    else:
+        z_para_flat = (pf - 3.30) / 0.55 + 0.22
     d3 = statistics.mean([
         band.two_sided_z("M3_opener_homogeneity", feats["M3_opener_homogeneity"]) + feats["M3_opener_homogeneity"] * 2.0,
-        band.two_sided_z("M2_para_flatness", feats["M2_para_flatness"]),
+        z_para_flat,
         band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"]),
     ]) + feats.get("M3_riddle_heading_count", 0.0) * 0.35
 
@@ -425,6 +507,9 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
     no_buf_run = 0
     filler_counts: Dict[str, int] = {}
     seen_jargon_rx: set = set()
+    seen_gloss_en: Dict[str, int] = {}
+    saiti_running = 0
+    yonglai_running = 0
     for p_idx, p in enumerate(paras):
         # 优先检查小标题是否命中「半截疑问/谜语式 AI 小标题」
         if p.startswith("## ") and include_compensatory:
@@ -471,7 +556,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                            "instruction": f"消除句号后直接拿英文名『{abrupt_eng[0]}』硬顶句首的机器感：在句首垫一个承接上句的指代或顺承短语（如『在此基础上，{abrupt_eng[0]}』『为了做到这一点，它』）。"})
         if sents and p_idx >= 2:
             s0 = re.sub(r"^\*\*|\*\*$", "", sents[0].strip())
-            cw0 = [w for w, pos in pseg.cut(s0) if (pos.startswith("n") or pos.startswith("v") or pos.startswith("a")) and len(w) >= 2]
+            cw0 = [w for w, pos in pseg.cut(s0) if pos.startswith(("n", "v", "a", "eng")) and len(w) >= 2]
             has_old = any(w in seen for w in cw0[:3])
             has_hook = s0.startswith(PRONOUN_HOOKS)
             if not has_old and not has_hook and len(s0) <= 35:
@@ -508,8 +593,8 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "evidence": f"[[{ev}]]",
                     "instruction": "消除『作者做了…/论文指出…』的审稿汇报腔：直接把机制、任务或实验现象本身作为主语（如把『作者在两个任务上做了 14 组对照』改为『拿两个任务上的 14 组预设对照来看』）。",
                 })
-            # 代偿病灶 3：单一口语缓冲词全篇高频复读（如全篇狂塞 15 个「其实」）
-            for fw in ("其实", "说白了", "换句话说", "说到底", "也就是", "你看"):
+            # 代偿病灶 3：单一口语缓冲词全篇高频复读（如全篇狂塞 15 个「其实」或 7 个「还有」）
+            for fw in ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "还有"):
                 c = p.count(fw)
                 if c > 0:
                     filler_counts[fw] = filler_counts.get(fw, 0) + c
@@ -518,34 +603,36 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                             "type": "SINGLE_FILLER_SPAM",
                             "sent_idx": 0,
                             "evidence": f"[[全篇第 {filler_counts[fw]} 次出现『{fw}』: {p[:36]}...]]",
-                            "instruction": f"消除单一口语词『{fw}』高频复读刷分（全篇已累计 {filler_counts[fw]} 次，上限 ≤3 次）：直接删掉『{fw}』，或改用具体的因果/对比/举例衔接。",
+                            "instruction": f"消除单一口语词『{fw}』高频复读刷分（全篇已累计 {filler_counts[fw]} 次，上限 ≤3 次）：直接删掉『{fw}』，或改用『与/及/以及/、』和自然因果对比衔接。",
                         })
-            # 代偿病灶 4：单段陌生大写英文缩写倾倒（Info-Dumping）
+            # 代偿病灶 4：单段陌生大写英文缩写倾倒（Info-Dumping，排除熟知 AI 模型名与基础词）
             acronyms = sorted({
                 w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{1,15}\b", p)
-                if sum(1 for ch in w if ch.isupper()) >= 2
+                if sum(1 for ch in w if ch.isupper()) >= 2 and not is_known_eng_term(w)
             })
             if len(acronyms) >= 5:
                 issues.append({
                     "type": "ACRONYM_INFO_DUMPING",
                     "sent_idx": 0,
                     "evidence": f"[[单段堆砌 {len(acronyms)} 个英文缩写: {', '.join(acronyms[:8])}]]",
-                    "instruction": "消除单段英文缩写倾倒（Info-Dumping）：将次要/并列缩写合并为中文统称（如『国内外六大超算竞赛』『多款主流基准』），每段最多保留 2–3 个核心专名，且首次出现的专业软件/术语必须紧跟半句大白话内嵌解释（如『用来模拟分子运动的开源软件 GROMACS』）。",
+                    "instruction": "消除单段英文缩写倾倒（Info-Dumping）：将次要/并列缩写合并为中文统称（如『国内外六大超算竞赛』『多款主流基准』），每段最多保留 2–3 个核心专名，且首次出现的专业软件/术语必须紧跟简明中文功能同位语（如『分子动力学模拟软件 GROMACS』）。",
                 })
-            # 代偿病灶 5：公文状语胶水起手
-            if re.match(r"^(?:为了搭起这套|在具体执行上|从资源预算看|在评测设计上|在实验设置上|从整体结果看|在具体实现上)", p):
+            # 代偿病灶 5：公文状语胶水起手与生硬介词框起手（如「在那类赛题里」「在这个基准里」）
+            stiff_prep = STIFF_PREP_FRAME_RE.findall(p)
+            if re.match(r"^(?:为了搭起这套|在具体执行上|从资源预算看|在评测设计上|在实验设置上|从整体结果看|在具体实现上|通过系统化改造)", p) or stiff_prep:
+                ev = stiff_prep[0] if stiff_prep else p[:24]
                 issues.append({
                     "type": "BUREAUCRATIC_GLUE_ONSET",
                     "sent_idx": 0,
-                    "evidence": f"[[{p[:24]}...]]",
-                    "instruction": "消除生硬的公文状语起手胶水：直接用具体主语和动作开篇，或承接上一段的核心问题。",
+                    "evidence": f"[[{ev}...]]",
+                    "instruction": "消除生硬的公文状语或介词框起手（如『在那类赛题里』『在这个基准里』『在这个集合里』『在这项评测里』）：直接用具体主语和动作开篇，不用套『在…里』介词外壳。",
                 })
             # 代偿病灶 6：专业术语首次出场裸奔（Google LearnLM 第一原则：缺少内嵌大白话解释）
             unexplained_terms = []
             for s in sents:
                 terms = [
                     w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{2,15}\b", s)
-                    if w.lower() not in COMMON_ENG_WHITELIST and any(c.isupper() for c in w)
+                    if not is_known_eng_term(w) and any(c.isupper() for c in w)
                 ]
                 new_terms = [w for w in terms if w.lower() not in seen_jargon_rx]
                 for w in terms:
@@ -560,7 +647,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "type": "UNEXPLAINED_JARGON_ON_FIRST_USE",
                     "sent_idx": 0,
                     "evidence": f"[[专业术语首次出场未解释: {', '.join(unexplained_terms[:5])}]]",
-                    "instruction": f"消除专业术语裸奔（{', '.join(unexplained_terms[:5])}）：首次出场必须在紧邻前方加上半句大白话功能定语（如『用来模拟分子运动的开源软件 GROMACS』），或将次要并列缩写合并为中文统称。",
+                    "instruction": f"消除专业术语裸奔（{', '.join(unexplained_terms[:5])}）：首次出场必须在紧邻前方加上简明中文功能同位语（如『分子动力学模拟软件 GROMACS』『流体力学求解器 SU2』），或将次要并列缩写合并为中文统称。",
                 })
             # 代偿病灶 7：查账式数字与冗余小数区间倾倒
             nums_in_p = re.findall(r"\d+(?:\.\d+)?%?", p)
@@ -572,8 +659,14 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "evidence": f"[[单段 {len(nums_in_p)} 个数字 / {len(decimal_ranges)} 处小数区间: {p[:36]}...]]",
                     "instruction": "消除查账式数字倾倒：单段数字或冗余小数范围（如『75.98 到 76.01 秒』）过多，读者无法消化。只保留支撑核心结论的 2–4 个关键数字，把微小的测量噪声区间化整为大白话（如『约 76 秒』），删掉附录式的四舍五入核账过程。",
                 })
-            # 代偿病灶 8：翻译腔黑话、句法压缩饼干与论文内部单字母代号泄漏
+            # 代偿病灶 8：翻译腔黑话、公文简写（参测/赛题泛滥）、漏「的」硬接「时候」、模糊代称（旗舰款）与论文内部代号泄漏
             hit_trans = [w for w in TRANSLATIONESE_WORDS if w in p]
+            for m_sh in re.finditer(r"(.{2,8}?)(?<![的之那这何啥每当有个些候\s，。！？；：、])时候", p):
+                hit_trans.append(f"漏字语病:{m_sh.group(0)}(应为『…的时候』或『…时』)")
+            if "赛题" in p:
+                saiti_running += p.count("赛题")
+                if saiti_running >= 3:
+                    hit_trans.append(f"赛题(全篇第{saiti_running}次)")
             hit_wh = re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", p)
             hit_codes = re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", p)
             if hit_trans or hit_wh or hit_codes:
@@ -581,14 +674,49 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                 issues.append({
                     "type": "TRANSLATIONESE_COMPRESSION",
                     "sent_idx": 0,
-                    "evidence": f"[[翻译腔/压缩饼干/内部代号: {', '.join(ev_parts[:4])}]]",
-                    "instruction": "消除直译黑话、疑问词三连压缩饼干与论文内部代号（R1/R2/R3/B/R/L）：把『受控重放/失败信号/起始程序/未改程序/正确候选』换成人话，把『算什么、要多快、能改哪里』展开为完整主谓宾句，禁止直接拿 R1/B/L 代号当主语推导。",
+                    "evidence": f"[[生硬简写/语病/模糊代称/翻译腔: {', '.join(ev_parts[:4])}]]",
+                    "instruction": "消除公文生造简写、漏字语病与翻译腔：『参测』改为『参与评测/测试的』，『旗舰款』直呼具体模型名，『软件工程 Agent』改为『Coding Agent』，『修 Bug 时候/看榜单时候』补全为『…的时候』或『…时』，『第一点是…另外一方面』改为自然叙述，基准里的 task 统称『任务/题目/程序』（勿满篇叫『赛题』）。",
                 })
-            # 代偿病灶 6：连续多段零气口赤字（每满 4 段触发一次定位，认可自然举例与对比词）
+            # 代偿病灶 9：贴标签式冗余类别前缀（如「工具框架 Claude Code」「模型 DeepSeek-V4-Flash」「符号 $B_t$」）、定语二次复读与「用来…的程序」机械套用
+            red_prefixes = REDUNDANT_PREFIX_RE.findall(p)
+            for g_match in re.findall(r"(?:评测基准|模拟程序|求解程序|开源软件|语言模型|指令集)\s+[A-Za-z][A-Za-z0-9_\-\s]{1,18}", p):
+                key = g_match.strip()
+                seen_gloss_en[key] = seen_gloss_en.get(key, 0) + 1
+                if seen_gloss_en[key] >= 2:
+                    red_prefixes.append(f"{key}(二次复读定语)")
+            for yl_match in re.findall(r"用来[^，。；\n]{1,18}的(?:程序|软件|算法|工具|计算库|程序库|系统|框架)", p):
+                yonglai_running += 1
+                if yonglai_running >= 3:
+                    red_prefixes.append(f"{yl_match}(全篇第{yonglai_running}次套用『用来…的』模板)")
+            if red_prefixes:
+                issues.append({
+                    "type": "REDUNDANT_CLASSIFIER_PREFIX",
+                    "sent_idx": 0,
+                    "evidence": f"[[冗余类别前缀/二次复读定语/同位语模板刷屏: {', '.join(red_prefixes[:4])}]]",
+                    "instruction": "消除 AI 贴标签赘词与机械同位语模板：熟知模型/框架/数学符号前直接删掉『工具框架/大模型/模型/系统/基准/符号/函数』；首次解释领域软件时直接用简洁名词同位语（如『流体力学求解器 SU2』『分子动力学模拟软件 GROMACS』『脉冲星搜寻工具 PRESTO』『电子结构计算软件 SIESTA』），严禁全篇重复写『用来做…的程序/软件』；后文再次出场直接写英文简称。",
+                })
+            # 代偿病灶 10：单句残段/报幕短段（<75字单句段）、超长墙段（>330字）、假坦诚口头禅与结尾宏大叙事拔高金句
+            hit_cliches = [w for w in AI_CLICHE_PHRASES if w in p]
+            hit_grand = GRANDSTANDING_RE.findall(p)
+            is_stub_para = (not p.startswith("**一句话讲清楚") and len(sents) == 1 and len(p) < 75)
+            is_wall_para = (len(p) > 330)
+            if hit_cliches or hit_grand or is_stub_para or is_wall_para:
+                ev_c = list(hit_grand) + list(hit_cliches)
+                if is_stub_para:
+                    ev_c.append(f"单句残段({len(p)}字): {p}")
+                if is_wall_para:
+                    ev_c.append(f"超长墙段({len(p)}字): {p[:32]}...")
+                issues.append({
+                    "type": "THEATRICAL_DRUMROLL_OR_CLICHE",
+                    "sent_idx": 0,
+                    "evidence": f"[[单句残段/超长墙段/AI套话/拔高金句: {', '.join(ev_c[:4])}]]",
+                    "instruction": "消除单句残段、超长墙段与 AI 套话：严禁把单句话（<75字，无论含不含数字）拆成独立段落（必须并入上下段组成 2–4 句、100–260 字的完整段落）；单段超过 330 字的墙段必须按逻辑拆成两段；删掉『老实说/坦率讲/说实话/才会登场/撞上了红线』与结尾拔高排比金句。",
+                })
+            # 代偿病灶 11：连续多段零气口赤字（每满 4 段触发一次定位，认可自然举例与对比词）
             has_any_buf = (
                 any(w in p for w in (
-                    "其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了", "你看",
-                    "比如", "相当于", "好比", "哪怕", "就算", "反过来", "原因很简单", "问题在于", "难点在于",
+                    "其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了",
+                    "比如", "例如", "拿", "相当于", "好比", "哪怕", "就算", "反过来", "一旦", "既然",
                 ))
                 or ("？" in p)
                 or ("你" in p)
@@ -608,7 +736,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
 
         for s in sents:
             for w, pos in pseg.cut(s):
-                if (pos.startswith("n") or pos.startswith("v") or pos.startswith("a")) and len(w) >= 2:
+                if pos.startswith(("n", "v", "a", "eng")) and len(w) >= 2:
                     seen.add(w)
         if issues:
             rx.append({"para_idx": p_idx, "issues": issues,
