@@ -154,7 +154,45 @@ def factual_gate(orig: str, cand: str) -> Dict[str, Any]:
 
 # ──────────────────────────── 四维防刷 Z 评分 ────────────────────────────
 
-def score_four_dims(feats: Dict[str, float], band: HumanBand) -> Dict[str, float]:
+def extract_compensatory_probes(raw: str) -> Dict[str, float]:
+    """提取技术长文从零生成中的三类隐蔽代偿特征：一逗到底粘连长句、平均句长膨胀、第三人称论文汇报腔。"""
+    t = clean_markdown_header(raw)
+    t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", t)
+    n = max(1, len(t))
+    sents = split_sentences(t)
+    if not sents:
+        return {
+            "M2_overlong_sent_ratio": 0.0,
+            "M2_mean_sent_len": 0.0,
+            "M1_reportese_rate": 0.0,
+            "M1_reader_hook_rate": 0.0,
+        }
+    sent_lens = [len(s) for s in sents]
+    overlong_cnt = sum(
+        1 for s in sents
+        if len(s) >= 85 or (len(s) >= 65 and (s.count("，") >= 4 or s.count("、") >= 2))
+    )
+    rep_words = ("作者", "论文中", "原论文", "研究者", "该研究", "研究团队", "实验结果", "实验表明", "结果表明")
+    rep_hits = sum(t.count(w) for w in rep_words)
+    author_starts = sum(
+        1 for s in sents if re.match(r"^(?:作者|论文|研究者|研究团队|本文|这项工作|该工作)", s)
+    )
+    rep_rate = (rep_hits + author_starts * 1.5) / n * 1000.0
+    reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么")
+    hook_hits = sum(t.count(w) for w in reader_hooks) + t.count("？")
+    return {
+        "M2_overlong_sent_ratio": round(overlong_cnt / len(sents), 3),
+        "M2_mean_sent_len": round(statistics.mean(sent_lens), 2),
+        "M1_reportese_rate": round(rep_rate, 3),
+        "M1_reader_hook_rate": round(hook_hits / n * 1000.0, 3),
+    }
+
+
+def score_four_dims(
+    feats: Dict[str, float],
+    band: HumanBand,
+    compensatory_lock: bool = False,
+) -> Dict[str, float]:
     # D1 微观：气口缓冲双边带(零气口赤字与 >6.0/千字过载均重罚) + 标点/冒号提示体拐杖 + 名词堆叠 + 表演性口癖越界
     z_buf = (
         max(0.0, 0.85 - feats["M1_speech_buffer_rate"]) * 1.15
@@ -177,6 +215,15 @@ def score_four_dims(feats: Dict[str, float], band: HumanBand) -> Dict[str, float
     z_chop = band.two_sided_z("M2_short_para_ratio", feats.get("M2_short_para_ratio", 0.0))
     coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
     d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
+
+    # 长文生成代偿防刷锁（Lock 1 气口赤字与汇报腔越界 + Lock 2b 右半边「一逗到底粘连长句锁」）
+    if compensatory_lock or "M2_overlong_sent_ratio" in feats:
+        z_buf_def = max(0.0, (feats.get("M1_buffer_deficit", 1.0) - 2.0) / 1.2)
+        z_rep = max(0.0, (feats.get("M1_reportese_rate", 0.0) - 0.90) / 0.65)
+        d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40) / 2.8
+        z_overlong = max(0.0, (feats.get("M2_overlong_sent_ratio", 0.0) - 0.18) / 0.07)
+        z_mslen = max(0.0, (feats.get("M2_mean_sent_len", 38.0) - 48.5) / 5.5)
+        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen
 
     # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带
     d3 = statistics.mean([
@@ -248,7 +295,7 @@ def is_structural_or_meta_para(p: str) -> bool:
     if s.startswith(("#", "![", "<center", "<img", "<div", "$$", "```", "|", ">", "---")):
         return True
     if re.match(
-        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)[：:]",
+        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)",
         s,
         re.I,
     ):
@@ -258,10 +305,11 @@ def is_structural_or_meta_para(p: str) -> bool:
     return False
 
 
-def generate_prescriptions(raw: str) -> List[Dict[str, Any]]:
+def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[Dict[str, Any]]:
     text = clean_markdown_header(raw)
     paras = [p.strip() for p in text.split("\n\n") if p.strip()]
     rx, seen = [], set()
+    no_buf_run = 0
     for p_idx, p in enumerate(paras):
         if is_structural_or_meta_para(p):
             continue
@@ -304,6 +352,48 @@ def generate_prescriptions(raw: str) -> List[Dict[str, Any]]:
                 issues.append({"type": "MID_SECTION_ABSTRACT_DRIFT", "sent_idx": 0,
                                "evidence": f"[[{p[:35]}...]]",
                                "instruction": "中段全抽象机制名词堆叠且无气口。拆开连续名词定语，补一句直白的『人话降维解释』或指代承接。"})
+
+        if include_compensatory:
+            # 代偿病灶 1：用逗号把多句独立意思粘成 >=92 字超长流水句（或 >=78 字且逗号 >=4）以逃避句号/冒号检测
+            for si, s in enumerate(sents):
+                if len(s) >= 92 or (len(s) >= 78 and s.count("，") >= 4):
+                    issues.append({
+                        "type": "COMMA_SPLICE_OVERLONG",
+                        "sent_idx": si,
+                        "evidence": f"[[({len(s)}字/{s.count('，')}逗) {s[:42]}...]]",
+                        "instruction": f"消除『一逗到底』粘连长句（本句长达 {len(s)} 字，含 {s.count('，')} 个逗号）：在语义转折或新分句处改打句号，拆成 2–3 个 30–50 字的短句；新句句首用自然指代或动作承接，禁止靠不打句号来逃避 `。E` 检测。",
+                    })
+                    break
+            # 代偿病灶 2：第三人称论文汇报腔（句首硬顶「作者/论文/研究者」或单段密集出现）
+            rep_hits = re.findall(r"(?:作者|论文中|原论文|研究者|研究团队|实验表明|结果表明)", p)
+            author_starts = [s for s in sents if re.match(r"^(?:作者|论文|研究者|研究团队|本文)", s)]
+            if len(rep_hits) >= 2 or author_starts:
+                ev = author_starts[0][:36] if author_starts else f"段内汇报词 {rep_hits}"
+                issues.append({
+                    "type": "REPORTESE_AUTHOR_SUBJECT",
+                    "sent_idx": 0,
+                    "evidence": f"[[{ev}]]",
+                    "instruction": "消除『作者做了…/论文指出…』的审稿汇报腔：直接把机制、任务或实验现象本身作为主语（如把『作者在两个任务上做了 14 组对照』改为『拿两个任务上的 14 组预设对照来看』）。",
+                })
+            # 代偿病灶 3：连续多段零气口赤字（每满 4 段触发一次定位，避免连续刷屏）
+            has_any_buf = (
+                any(w in p for w in ("其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了", "你看"))
+                or ("？" in p)
+                or ("你" in p)
+            )
+            if not has_any_buf:
+                no_buf_run += 1
+                if no_buf_run >= 4 and len(p) >= 90:
+                    issues.append({
+                        "type": "PARAGRAPH_BUFFER_DEFICIT",
+                        "sent_idx": 0,
+                        "evidence": f"[[连续 {no_buf_run} 段零气口: {p[:32]}...]]",
+                        "instruction": "连续多段零讲课气口，读感干瘪机械：在句中解释或转折处自然补入 1 处气口词（如『其实』『换句话说』『说到底』『也就是』），放在句中不要放段首。",
+                    })
+                    no_buf_run = 0
+            else:
+                no_buf_run = 0
+
         for s in sents:
             for w, pos in pseg.cut(s):
                 if pos.startswith("n") and len(w) >= 2:

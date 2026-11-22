@@ -422,6 +422,7 @@
         <a href="#antihack">4-Lock Anti-Hacking</a>
         <a href="#loao">Multi-Author LOAO</a>
         <a href="#sandbox">Prescription Sandbox</a>
+        <a href="#case-study">Real-World Case Study</a>
         <a href="https://yenanjing.github.io/" target="_blank">Author Home ↗</a>
       </div>
     </div>
@@ -890,6 +891,14 @@
               <td class="num"><strong>0.0</strong></td>
               <td><strong>Lock 3 原子事实锚点红线</strong>：核心实验数字/专名丢失直接一票否决清零</td>
             </tr>
+            <tr class="row-hacked">
+              <td>🐍 <strong>Hack E：一逗到底粘连逃逸</strong>（把句号全偷换成逗号规避句首英文硬顶与冒号）</td>
+              <td class="num">0.239 (虚高 92.0)</td>
+              <td class="num"><strong>0.800 (捕获!)</strong></td>
+              <td class="num"><span class="badge badge-green">PASS</span></td>
+              <td class="num"><strong>75.6</strong></td>
+              <td><strong>Lock 2b 双向句长耦合锁 + 汇报腔/气口锁</strong>：抓 ≥90 字粘连长句（31.9%）与汇报腔过载</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1045,6 +1054,164 @@
       </div>
     </section>
 
+    <!-- Real-World Case Study: Compensatory Slop in Constrained Long-Form Generation -->
+    <section id="case-study">
+      <div class="section-header">
+        <div class="section-tag">Real-World Case Study · Catching & Fixing Compensatory Slop (arXiv:2611.20882)</div>
+        <h2 class="section-title">🕵️ 真实长文深度案例：当模型被禁止用破折号与句首英文时，如何发生「一逗到底」代偿逃逸？</h2>
+        <p class="section-desc">
+          在真实技术长文生成场景中（以最新论文 <a href="https://arxiv.org/abs/2611.20882" target="_blank" style="color: var(--accent-cyan);">Accelerate Bench, arXiv:2611.20882</a> 的 5,600 字中文深度解读为例），我们观察到了继「剁碎短句刷 Burstiness」「口水词轰炸」之后的<strong>第三种 Goodhart 代偿逃逸（The Comma-Splice Compensatory Escape）</strong>：当提示词明确要求大模型<strong>「禁用破折号/括号/冒号提示体、禁止句号后直接硬顶英文缩写（<code>。E</code>）」</strong>时，模型为了不触发句号后的句首惩罚，干脆<strong>消灭句号、把全篇本该打句号或冒号的地方全部偷换成逗号 <code>，</code></strong>，在 48 个正文段中造出 33 个含 90–182 字巨型流水句的粘连段落，并退化为冷冰冰的「作者/论文」第三人称审稿汇报腔。
+        </p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 24px;">
+        <div class="card">
+          <h3>🐍 逃逸机制 ①：一逗到底粘连长句</h3>
+          <p>为了规避句号后的 <code>。E</code> 句首英文硬顶与冒号枚举惩罚，模型将并列分句全部用逗号粘连：全文平均句长飙升至 <strong>58.8 字</strong>（真人长文均值 38.4 字，<code>P90 = 48.5 字</code>），≥90 字超长粘连句占比达 <strong>31.9%</strong>（真人 <code>P90 = 18.0%</code>）。</p>
+          <div class="pill-list">
+            <span class="pill">COMMA_SPLICE_OVERLONG</span>
+            <span class="pill">M2_overlong_sent_ratio</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>📋 逃逸机制 ②：第三人称审稿汇报腔</h3>
+          <p>受限于严格的标点负向约束，模型放弃了面向读者的自然讲述视角，高频使用「论文指出 / 作者测试了 / 研究者设计了」起手，汇报腔密度达 <strong>2.78/千字</strong>（真人博客均值 0.25/千字，<code>P90 = 0.90/千字</code>）。</p>
+          <div class="pill-list">
+            <span class="pill">REPORTESE_AUTHOR_SUBJECT</span>
+            <span class="pill">M1_reportese_rate</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>😮‍💨 逃逸机制 ③：全篇零气口赤字</h3>
+          <p>全文 5,630 字仅出现 1 次口语过渡缓冲词，连续十余段密集铺陈实验数字而无任何呼吸气口，<code>M1_buffer_deficit</code> 高达 <strong>7.00</strong>（真人长文 <code>P90 = 2.00</code>），造成强烈的机器说明书窒息感。</p>
+          <div class="pill-list">
+            <span class="pill">PARAGRAPH_BUFFER_DEFICIT</span>
+            <span class="pill">M1_buffer_deficit</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🔒 双向耦合防刷锁闭环</h3>
+          <p>升级 <code>Lock 1</code> 气口赤字/汇报腔越界惩罚与 <code>Lock 2b</code>「左防剁碎断链、右防一逗到底粘连」双向耦合锁后，科技长文 Heldout（$n=99$）零样本判别 AUROC 从 <code>0.9640</code> 提升至 <strong>0.9785</strong>。</p>
+          <div class="pill-list">
+            <span class="pill">AUROC 0.9640 → 0.9785</span>
+            <span class="pill">1-Pass Gate Fix</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom: 24px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Accelerate Bench (5,600 字长文) 生成与修复阶段</th>
+              <th class="num">官方总分↑</th>
+              <th class="num">HumanPass↑</th>
+              <th class="num">防刷 Z↓</th>
+              <th class="num">D1↓</th>
+              <th class="num">D2↓</th>
+              <th class="num">平均句长 (≤48.5)</th>
+              <th class="num">粘连长句率 (≤18%)</th>
+              <th class="num">汇报腔/千字 (≤0.90)</th>
+              <th class="num">气口赤字 (≤2.0)</th>
+              <th class="num">病灶处方单</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. 常规未约束长文生成 (Standard Unconstrained Draft)</td>
+              <td class="num">75.5</td>
+              <td class="num">85.9</td>
+              <td class="num">0.433</td>
+              <td class="num">1.196 🚨</td>
+              <td class="num">0.355</td>
+              <td class="num">40.9 字</td>
+              <td class="num">7.6%</td>
+              <td class="num">0.34</td>
+              <td class="num">5.28 🚨</td>
+              <td class="num"><span class="badge badge-amber">59 条 / 36 段</span></td>
+            </tr>
+            <tr class="row-hacked">
+              <td>2. 负向标点约束从零生成 (<strong>一逗到底代偿逃逸样本</strong>)</td>
+              <td class="num">68.6</td>
+              <td class="num">75.6 <small>(旧版虚高 92.0)</small></td>
+              <td class="num"><strong>0.800 🚨</strong></td>
+              <td class="num"><strong>1.609 🚨</strong></td>
+              <td class="num"><strong>1.214 🚨</strong></td>
+              <td class="num"><strong>58.8 字 🚨</strong></td>
+              <td class="num"><strong>31.9% 🚨</strong></td>
+              <td class="num"><strong>2.78 🚨</strong></td>
+              <td class="num"><strong>7.00 🚨</strong></td>
+              <td class="num"><span class="badge badge-rose">44 条 / 33 段</span></td>
+            </tr>
+            <tr class="row-highlight">
+              <td>3. <strong>防代偿处方 + ParagraphQualityGate 1-Pass 修复后</strong></td>
+              <td class="num"><strong>84.0</strong></td>
+              <td class="num"><strong>94.3</strong></td>
+              <td class="num"><strong>0.168</strong></td>
+              <td class="num"><strong>0.184</strong></td>
+              <td class="num"><strong>0.101</strong></td>
+              <td class="num"><strong>47.3 字 ✅</strong></td>
+              <td class="num"><strong>7.8% ✅</strong></td>
+              <td class="num"><strong>0.00 ✅</strong></td>
+              <td class="num"><strong>0.45 ✅</strong></td>
+              <td class="num"><span class="badge badge-green">0 条 (100% 清零)</span></td>
+            </tr>
+            <tr class="row-human">
+              <td>4. 常规长文经处方 + ParagraphQualityGate 修复对照</td>
+              <td class="num"><strong>84.8</strong></td>
+              <td class="num"><strong>97.0</strong></td>
+              <td class="num"><strong>0.087</strong></td>
+              <td class="num"><strong>0.155</strong></td>
+              <td class="num"><strong>0.023</strong></td>
+              <td class="num"><strong>41.3 字 ✅</strong></td>
+              <td class="num"><strong>6.6% ✅</strong></td>
+              <td class="num"><strong>0.00 ✅</strong></td>
+              <td class="num"><strong>0.00 ✅</strong></td>
+              <td class="num"><span class="badge badge-green">0 条 (100% 清零)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="filter-bar">
+        <button class="tab-btn active" onclick="showRealCase(0, this)">实测处方 A：182 字 13 逗号「一逗到底」粘连段 (COMMA_SPLICE_OVERLONG)</button>
+        <button class="tab-btn" onclick="showRealCase(1, this)">实测处方 B：「论文从…说起」第三人称审稿汇报腔 (REPORTESE_AUTHOR_SUBJECT)</button>
+        <button class="tab-btn" onclick="showRealCase(2, this)">实测处方 C：连续零气口 + 165 字长句堆砌 12 个实验数字 (BUFFER_DEFICIT + OVERLONG)</button>
+      </div>
+
+      <div class="sandbox-box">
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>🚨 代偿逃逸原段 + C-LongSlopBench 自动处方单</span>
+            <span class="badge badge-rose" id="rc-tag">COMMA_SPLICE_OVERLONG (182 chars / 13 commas)</span>
+          </div>
+          <div id="rc-before" style="margin-bottom: 14px;">
+            <span class="tell-mark">[[这 32 个任务里 29 个来自六类超算竞赛，包括 ASC、PAC、IPCC、SC、ISC 和 IndySCC，另外 3 个是围绕竞赛主题新搭的工作流，分别是分页生成、Tucker 重构和图稀疏化，合起来覆盖八个方向，分子模拟 5 个、流体与大气 7 个、输运与等离子体 4 个、生物信息 4 个、数值与图 6 个、量子电路 2 个、机器学习 2 个、科学 I/O 2 个，后面常出现的几个名字可以先有个印象，SU2 算翼型绕流，ABySS 拼基因组，PRESTO 找脉冲星，HPCG 做稀疏迭代，QiboTN 模拟量子电路。]]</span>原始工作负载动辄在多节点上跑几个小时，这里统一缩到单节点四核或八核、内存 4 到 32 GiB 的容器里，保留主要计算阶段、阶段间依赖和数值判据，好让每个任务在有限时间里跑完验证。
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: #cbd5e1;" id="rc-rx">
+            <strong>📋 自动生成的定向修复处方（Paragraph #8）：</strong><br/>
+            1. 检出严重「一逗到底」粘连长句（首句长达 <strong>182 字、连串 13 个逗号/顿号</strong>才打句号），系模型为规避句首英文硬顶与冒号而产生的代偿逃逸；<br/>
+            2. 请在语义转折与枚举边界处果断拆分为 5–7 个自然短句（单句 ≤65 字），用「前面四个方向…后面四个方向…」「同时…而…」承接，且 100% 保留全部 11 个专名与 12 个数字锚点。
+          </div>
+        </div>
+
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>✅ 处方引导 1-Pass 修复后（通过 ParagraphQualityGate）</span>
+            <span class="badge badge-green" id="rc-gain">最长句 182 字 → 65 字 · 事实锚点 23/23 保留</span>
+          </div>
+          <div id="rc-after" style="margin-bottom: 14px;">
+            <span class="fix-mark">为了搭起这套考题，这 32 个任务里有 29 个来自 ASC、PAC、IPCC、SC、ISC 和 IndySCC 六类超算竞赛。另外 3 个则是围绕竞赛主题新搭的分页生成、Tucker 重构和图稀疏化。这 32 个任务合起来覆盖八个方向，前面四个方向是分子模拟 5 个、流体与大气 7 个、输运与等离子体 4 个和生物信息 4 个。后面四个方向则是数值与图 6 个、量子电路 2 个、机器学习 2 个和科学 I/O 2 个。里面常出现的几个程序名字可以先记一下，SU2 算翼型绕流，ABySS 拼基因组，PRESTO 找脉冲星。同时 HPCG 做稀疏迭代，而 QiboTN 负责模拟量子电路。</span>原始工作负载动辄要在多节点上跑几个小时，在这个基准里统一缩到了单节点四核或八核、内存 4 到 32 GiB 的容器里<span class="fix-mark">。同时它完整</span>保留了主要计算阶段、阶段间依赖和数值判据，让每个任务都能在有限时间内跑完完整验证。
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: var(--accent-emerald);" id="rc-audit">
+            <strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>
+            • 全部专名（<code>ASC/PAC/IPCC/SC/ISC/IndySCC/Tucker/SU2/ABySS/PRESTO/HPCG/QiboTN/GiB</code>）与数字（<code>32/29/3/5/7/4/6/2/8</code>）保留率：<strong>100.0% (PASS)</strong><br/>
+            • 段落句数从 2 句恢复为 7 句，<code>。E</code> 句首英文硬顶保持 <strong>0 处</strong>，标点拐杖 <strong>0 处</strong>。
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Quick Start & Citation -->
     <section id="quickstart">
       <div class="grid-2">
@@ -1169,6 +1336,46 @@ python3 run_main_bench_experiments.py</pre>
       document.getElementById('case-gain').innerText = c.gain;
       document.getElementById('case-after').innerHTML = c.after;
       document.getElementById('case-audit').innerHTML = c.audit;
+    }
+
+    // ── Real-World Case Study (Accelerate Bench Compensatory Slop) ──
+    const REAL_CASES = [
+      {
+        tag: "COMMA_SPLICE_OVERLONG (182 chars / 13 commas)",
+        before: `<span class="tell-mark">[[这 32 个任务里 29 个来自六类超算竞赛，包括 ASC、PAC、IPCC、SC、ISC 和 IndySCC，另外 3 个是围绕竞赛主题新搭的工作流，分别是分页生成、Tucker 重构和图稀疏化，合起来覆盖八个方向，分子模拟 5 个、流体与大气 7 个、输运与等离子体 4 个、生物信息 4 个、数值与图 6 个、量子电路 2 个、机器学习 2 个、科学 I/O 2 个，后面常出现的几个名字可以先有个印象，SU2 算翼型绕流，ABySS 拼基因组，PRESTO 找脉冲星，HPCG 做稀疏迭代，QiboTN 模拟量子电路。]]</span>原始工作负载动辄在多节点上跑几个小时，这里统一缩到单节点四核或八核、内存 4 到 32 GiB 的容器里，保留主要计算阶段、阶段间依赖和数值判据，好让每个任务在有限时间里跑完验证。`,
+        rx: `<strong>📋 自动生成的定向修复处方（Paragraph #8）：</strong><br/>1. 检出严重「一逗到底」粘连长句（首句长达 <strong>182 字、连串 13 个逗号/顿号</strong>才打句号），系模型为规避句首英文硬顶与冒号而产生的代偿逃逸；<br/>2. 请在语义转折与枚举边界处果断拆分为 5–7 个自然短句（单句 ≤65 字），用「前面四个方向…后面四个方向…」「同时…而…」承接，且 100% 保留全部 11 个专名与 12 个数字锚点。`,
+        gain: "最长句 182 字 → 65 字 · 事实锚点 23/23 保留",
+        after: `<span class="fix-mark">为了搭起这套考题，这 32 个任务里有 29 个来自 ASC、PAC、IPCC、SC、ISC 和 IndySCC 六类超算竞赛。另外 3 个则是围绕竞赛主题新搭的分页生成、Tucker 重构和图稀疏化。这 32 个任务合起来覆盖八个方向，前面四个方向是分子模拟 5 个、流体与大气 7 个、输运与等离子体 4 个和生物信息 4 个。后面四个方向则是数值与图 6 个、量子电路 2 个、机器学习 2 个和科学 I/O 2 个。里面常出现的几个程序名字可以先记一下，SU2 算翼型绕流，ABySS 拼基因组，PRESTO 找脉冲星。同时 HPCG 做稀疏迭代，而 QiboTN 负责模拟量子电路。</span>原始工作负载动辄要在多节点上跑几个小时，在这个基准里统一缩到了单节点四核或八核、内存 4 到 32 GiB 的容器里<span class="fix-mark">。同时它完整</span>保留了主要计算阶段、阶段间依赖和数值判据，让每个任务都能在有限时间内跑完完整验证。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 全部专名（<code>ASC/PAC/IPCC/SC/ISC/IndySCC/Tucker/SU2/ABySS/PRESTO/HPCG/QiboTN/GiB</code>）与数字（<code>32/29/3/5/7/4/6/2/8</code>）保留率：<strong>100.0% (PASS)</strong><br/>• 段落句数从 2 句恢复为 7 句，<code>。E</code> 句首英文硬顶保持 <strong>0 处</strong>，标点拐杖 <strong>0 处</strong>。`
+      },
+      {
+        tag: "REPORTESE_AUTHOR_SUBJECT (审稿汇报腔 + 零读者代入)",
+        before: `<span class="tell-mark">[[论文从一个具体的差别说起，]]</span>改一个 bug 时有明确的失败信号，测试会红、报错会指出行号；让一个已经跑得通的程序变快就没有这种信号，改动可以完全合法、能编译通过、结果一字不差，而端到端时间一点没降。这个落差是整个基准的起点。`,
+        rx: `<strong>📋 自动生成的定向修复处方（Paragraph #4）：</strong><br/>1. 检出第三人称审稿汇报腔起手 <code>论文从…说起</code>（全文汇报腔密度达 2.78/千字，超出真人 P90 上界 0.90/千字 3 倍），且长句把转折与让步粘连在一起；<br/>2. 请将「论文从…说起」转化为面向读者的工程日常体验（「你平时改一个 bug 时…」），并在转折处自然拆句、补入 1 个口语缓冲气口（<code>其实</code>）。`,
+        gain: "汇报腔清零 · D1 偏离度 -88.6%",
+        after: `<span class="fix-mark">你平时改一个 bug 时总有明确的失败信号，测试会变红，报错也会直接指出行号。但让一个已经跑得通的程序变快，其实完全没有这种信号。就算改动完全合法、能编译通过、结果一字不差，端到端时间也可能一点没降。</span>这个落差正是整个基准的起点。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 专名 <code>bug</code> 与核心对比逻辑 100% 保留，字数守恒（107 字 → 114 字，允许区间 [70, 150]）<br/>• 消除第三人称汇报腔，单段口语缓冲词 <code>1 处 ≤ 1</code>（未触发口水词过载锁）。`
+      },
+      {
+        tag: "PARAGRAPH_BUFFER_DEFICIT + COMMA_SPLICE_OVERLONG",
+        before: `<span class="tell-mark">[[为排除这个怀疑，作者在跑任何 Agent 之前先跑了一套固定的构建和运行设置配方，R1 打开 -O3 和 -march=native 但不碰 -ffast-math，R2 叠加应用自带的 SIMD 选项，R3 把线程数设成分配核数并做绑定，先由公开测试挑出最快且通过的一档，再交给同一个验证器重判。32 个任务全部保持正确，只有 9 个真的换上了新配置，当中只有 GROMACS 一项超过 1.25 倍，靠把 SIMD 从默认关闭换成 AVX2_256 配上原生指令集拿到 2.225 倍，支持向量机 ThunderSVM 是 1.249 倍，格子玻尔兹曼流体 Palabos 是 1.162 倍，其余六个在 1 到 1.16 倍之间；另外 23 个任务退回未改程序本身，里面三个纯 Python 任务用不上编译配方，SU2 的构建本来就带 -O3 和原生指令集，wtdbg2 的公开测试不报时间，剩下的 18 个则是没有任何候选比原程序快过 2%，其中 8 个是因为跑得最快的 R1 改坏了数值、输出比对没过。]]</span>未改程序的对照落在 0.923 到 1.017 倍之间，中位数 0.999，折成分数是 0.40%，整套配置配方的 Score@1 是 3.85%。`,
+        rx: `<strong>📋 自动生成的定向修复处方（Paragraph #35–36）：</strong><br/>1. 同时命中三项代偿病灶：段首 <code>作者在跑…</code> 汇报腔、连续 4 段零口语缓冲气口、以及长达 <strong>165 字塞满 12 个实验数字</strong>的一逗到底巨型长句；<br/>2. 请用读者视角设问顺承上一节结尾，并在「9 个生效任务」与「23 个回退任务」处分句交代，保证全部 18 个实验数字与 11 个专名零丢失。`,
+        gain: "气口赤字 7.00 → 0.45 · 18 个实验数字 100% 保留",
+        after: `<span class="fix-mark">看到这里你可能会有一个自然的怀疑，这些高分是不是全靠改编译器开关刷出来的，跟读懂程序没多大关系？为了排除这个水分，实验在跑任何 Agent 之前先定死了一套只改构建和运行设置的固定配方。其中 R1 打开 -O3 和 -march=native 但不碰 -ffast-math，R2 叠加应用自带的 SIMD 选项，而 R3 把线程数设成分配核数并做绑定。这一轮先由公开测试挑出最快且通过的一档，再交给同一个验证器重判一次。</span><br/><br/><span class="fix-mark">从这一轮重判结果来看，光靠配置能拿到的加速比其实比想象中少得多。虽然这 32 个任务全部保持正确，但只有 9 个任务真的换上了新配置。在这 9 个里面，只有 GROMACS 一项超过 1.25 倍，靠把 SIMD 从默认关闭换成 AVX2_256 配上原生指令集拿到了 2.225 倍。在这 9 个任务的其余几项里，支持向量机 ThunderSVM 是 1.249 倍，格子玻尔兹曼流体 Palabos 是 1.162 倍，另外六个都停在 1 到 1.16 倍之间。剩下的 23 个任务干脆退回了未改程序本身，其中三个纯 Python 任务用不上编译配方，SU2 的构建本来就带 -O3 和原生指令集，而 wtdbg2 的公开测试不报时间。至于另外 18 个任务，则是没有任何候选比原程序快过 2%。那 18 个任务里有 8 个是因为跑得最快的 R1 改坏了数值、输出比对没过。</span>同时未改程序的对照组落在 0.923 到 1.017 倍之间，中位数 0.999 折成分数只有 0.40%，整套配置配方的 Score@1 加起来只有 3.85%。`,
+        audit: `<strong>🛡️ ParagraphQualityGate 门禁审计：</strong><br/>• 全部 18 个数字（<code>32/9/1.25/256/2.225/1.249/1.162/1.16/23/18/2%/8/0.923/1.017/0.999/0.40%/3.85%</code>）与 11 个专名保留率：<strong>100.0% (PASS)</strong><br/>• 最长句从 165 字降至 63 字，消除机器说明书窒息感。`
+      }
+    ];
+
+    function showRealCase(idx, btn) {
+      document.querySelectorAll('#case-study .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const c = REAL_CASES[idx];
+      document.getElementById('rc-tag').innerText = c.tag;
+      document.getElementById('rc-before').innerHTML = c.before;
+      document.getElementById('rc-rx').innerHTML = c.rx;
+      document.getElementById('rc-gain').innerText = c.gain;
+      document.getElementById('rc-after').innerHTML = c.after;
+      document.getElementById('rc-audit').innerHTML = c.audit;
     }
   </script>
 </body>

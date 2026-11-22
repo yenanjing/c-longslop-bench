@@ -99,7 +99,7 @@ def is_locked_block(block: str) -> bool:
         return True
     first_line = s.split("\n")[0].strip()
     if re.match(
-        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)[：:]",
+        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)",
         first_line,
         re.I,
     ):
@@ -113,6 +113,7 @@ def diagnose_blocks(blocks: List[str]) -> List[Dict[str, Any]]:
     """在保持原始块索引 (`block_idx`) 不变的前提下，仅对自然语言正文块生成诊断处方。"""
     rx = []
     seen = set()
+    no_buf_run = 0
     prose_indices = [i for i, b in enumerate(blocks) if not is_locked_block(b)]
     n_prose = max(1, len(prose_indices))
 
@@ -181,6 +182,48 @@ def diagnose_blocks(blocks: List[str]) -> List[Dict[str, Any]]:
                     "instruction": "中段全抽象机制名词堆叠且无气口。拆开连续名词定语，补 1 处自然讲课过渡词或直白解释。",
                 })
 
+        # 代偿病灶 1：一逗到底粘连长句（把句号/冒号偷换成逗号以逃避 `。E` 与冒号检测）
+        for si, s in enumerate(sents):
+            if len(s) >= 92 or (len(s) >= 78 and s.count("，") >= 4):
+                issues.append({
+                    "type": "COMMA_SPLICE_OVERLONG",
+                    "sent_idx": si,
+                    "evidence": f"[[({len(s)}字/{s.count('，')}逗) {s[:42]}...]]",
+                    "instruction": f"消除『一逗到底』粘连长句（本句长达 {len(s)} 字，含 {s.count('，')} 个逗号）：在语义分界处改打句号，拆成 2–3 个 30–50 字的清晰短句；新句句首用自然指代或动作承接，严禁靠不打句号来逃避 `。E` 检测。",
+                })
+                break
+
+        # 代偿病灶 2：第三人称论文汇报腔（句首硬顶「作者/论文/研究者」或单段密集出现）
+        rep_hits = re.findall(r"(?:作者|论文中|原论文|研究者|研究团队|实验表明|结果表明)", p)
+        author_starts = [s for s in sents if re.match(r"^(?:作者|论文|研究者|研究团队|本文)", s)]
+        if len(rep_hits) >= 2 or author_starts:
+            ev = author_starts[0][:36] if author_starts else f"段内汇报词 {rep_hits}"
+            issues.append({
+                "type": "REPORTESE_AUTHOR_SUBJECT",
+                "sent_idx": 0,
+                "evidence": f"[[{ev}]]",
+                "instruction": "消除『作者做了…/论文指出…』的审稿汇报腔：直接把机制、任务或实验现象本身作为主语。",
+            })
+
+        # 代偿病灶 3：连续多段零气口赤字
+        has_any_buf = (
+            any(w in p for w in ("其实", "换句话说", "说到底", "也就是", "先看", "再看", "说白了", "你看"))
+            or ("？" in p)
+            or ("你" in p)
+        )
+        if not has_any_buf:
+            no_buf_run += 1
+            if no_buf_run >= 4 and len(p) >= 90:
+                issues.append({
+                    "type": "PARAGRAPH_BUFFER_DEFICIT",
+                    "sent_idx": 0,
+                    "evidence": f"[[连续 {no_buf_run} 段零气口: {p[:32]}...]]",
+                    "instruction": "连续多段零讲课气口，读感干瘪机械：在句中解释或转折处自然补入 1 处气口词（如『其实』『换句话说』『说到底』『也就是』），放句中不放段首。",
+                })
+                no_buf_run = 0
+        else:
+            no_buf_run = 0
+
         for s in sents:
             for w, pos in pseg.cut(s):
                 if pos.startswith("n") and len(w) >= 2:
@@ -215,6 +258,10 @@ def check_local_gate(orig_p: str, cand_p: str, prev_prefixes: set) -> Tuple[bool
     also_cnt = cand_p.count("也就是")
     if local_crutch_score(cand_p) > local_crutch_score(orig_p) or buf_cnt > 1 or also_cnt > 1:
         return False, f"口语词堆砌(buf={buf_cnt}, 也就是={also_cnt})或标点拐杖未降"
+    orig_max_s = max((len(s) for s in split_sentences(orig_p)), default=0)
+    cand_max_s = max((len(s) for s in split_sentences(cand_p)), default=0)
+    if cand_max_s >= 90 and cand_max_s > orig_max_s:
+        return False, f"出现一逗到底粘连长句 (最长句 {cand_max_s} 字)"
     if len(cand_p) >= 2 and cand_p[:2] in prev_prefixes:
         return False, f"段首起手词「{cand_p[:2]}」与前段重复"
     return True, "PASS"
@@ -315,7 +362,8 @@ def init_evaluator():
 
 def score_article(md_text: str, band: AHS.HumanBand, vec, clf) -> Dict[str, Any]:
     feats = band._extract(md_text)
-    dims = AHS.score_four_dims(feats, band)
+    feats.update(AHS.extract_compensatory_probes(md_text))
+    dims = AHS.score_four_dims(feats, band, compensatory_lock=True)
     x = vec.transform([AHS.normalize_for_sparse(md_text)])
     sparse_p = round(float(clf.predict_proba(x)[0, 1]), 3)
     total_score = round(0.70 * dims["humanpass_100"] + 0.30 * (1.0 - sparse_p) * 100.0, 1)
@@ -332,6 +380,10 @@ def score_article(md_text: str, band: AHS.HumanBand, vec, clf) -> Dict[str, Any]
             "punct_crutch_per_1k": feats["M1_punct_crutch_total"],
             "colon_prompt_per_1k": feats["M1_colon_prompt_rate"],
             "speech_buffer_per_1k": feats["M1_speech_buffer_rate"],
+            "buffer_deficit": round(feats["M1_buffer_deficit"], 3),
+            "reportese_per_1k": feats["M1_reportese_rate"],
+            "overlong_sent_ratio": feats["M2_overlong_sent_ratio"],
+            "mean_sent_len": feats["M2_mean_sent_len"],
             "cohesion_break_rate": round(feats["M2_cohesion_break_rate"], 3),
             "uid_onset_shock": round(feats["UID_onset_minus_end_surp"], 3),
             "opener_homogeneity": round(feats["M3_opener_homogeneity"], 3),

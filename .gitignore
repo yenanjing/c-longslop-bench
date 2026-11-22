@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 data/raw/hc3_chinese/.git
 data/raw/
+paper/
