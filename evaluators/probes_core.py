@@ -43,7 +43,7 @@ def clean_markdown_header(text: str) -> str:
     # 剥离独立成行的项目符号元信息块（如 `· 论文标题：...`、`- 论文链接：...`）
     cleaned_lines = []
     meta_pat = re.compile(
-        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)[：:]",
+        r"^[·•\-\*\s]*(?:论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)[：:]",
         re.I,
     )
     for ln in text.split("\n"):
@@ -66,7 +66,14 @@ def split_paragraphs(text: str) -> List[str]:
 
 
 def split_sentences(text: str) -> List[str]:
-    t = re.sub(r"(?<!\d)\.(?!\d)", "。", text)
+    prose_lines = []
+    for ln in text.split("\n"):
+        s = ln.strip()
+        if not s or s.startswith(("#", "![", "|", "$$", "```", "<center", "---")):
+            continue
+        prose_lines.append(s)
+    t = "\n".join(prose_lines)
+    t = re.sub(r"(?<!\d)\.(?!\d)", "。", t)
     sents = re.findall(r"[^。！？!\?\n；;]+[。！？!\?；;]?", t)
     return [s.strip() for s in sents if len(s.strip()) >= 4]
 

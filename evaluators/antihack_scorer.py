@@ -154,8 +154,27 @@ def factual_gate(orig: str, cand: str) -> Dict[str, Any]:
 
 # ──────────────────────────── 四维防刷 Z 评分 ────────────────────────────
 
+COMMON_ENG_WHITELIST = {
+    "ai", "agent", "agents", "coding", "bug", "bugs", "cpu", "gpu", "llm", "llms",
+    "gpt", "claude", "sonnet", "opus", "deepseek", "qwen", "kimi", "grok", "codex",
+    "python", "numpy", "openmp", "git", "api", "gib", "mib", "kib", "gb", "mb", "kb",
+    "score", "table", "figure", "fig", "avx", "avx2", "simd", "io", "ml", "nan", "json",
+    "flash", "preview", "pro", "max", "mini", "sol", "terra", "astra", "luna", "hy3", "hy4",
+    "swe", "perf", "gso", "kernel", "kernels", "harness", "profiler",
+}
+
+GLOSS_ANCHOR_RE = re.compile(
+    r"(?:软件|程序|工具|系统|框架|基准|算法|模型|库|函数|指令|套件|项目|竞赛|赛题|方程|用来|用于|负责|指的是|也就是|模拟|求解|计算|拼接|组装|搜索)"
+)
+
+TRANSLATIONESE_WORDS = (
+    "受控重放", "失败信号", "起始程序", "未改程序", "未改源码", "正确候选",
+    "无效变体", "参照验证解", "有界化", "全因子实验", "私有输入", "私有工作负载",
+)
+
+
 def extract_compensatory_probes(raw: str) -> Dict[str, float]:
-    """提取技术长文从零生成中的隐蔽代偿特征：一逗到底粘连长句、平均句长膨胀、第三人称论文汇报腔、单一口语词刷分、缩写倾倒与谜语小标题。"""
+    """提取技术长文从零生成中的隐蔽代偿特征：粘连长句、平均句长、汇报腔、单口语词刷分、直译黑话压缩、术语裸奔、缩写倾倒、数字查账倾倒与谜语小标题。"""
     t = clean_markdown_header(raw)
     t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", t)
     n = max(1, len(t))
@@ -167,7 +186,10 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
             "M1_reportese_rate": 0.0,
             "M1_reader_hook_rate": 0.0,
             "M1_single_filler_max_rate": 0.0,
+            "M1_translationese_rate": 0.0,
             "M2_acronym_dump_paras": 0.0,
+            "M2_unexplained_jargon_paras": 0.0,
+            "M2_numeric_overload_paras": 0.0,
             "M3_riddle_heading_count": 0.0,
         }
     sent_lens = [len(s) for s in sents]
@@ -184,19 +206,38 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么", "比如", "相当于", "说白了")
     hook_hits = sum(t.count(w) for w in reader_hooks) + t.count("？")
 
-    # 单一口语词高频复读检测（防靠狂塞「其实」刷气口指标）
+    # 1. 单一口语词高频复读检测（防靠狂塞「其实」刷气口指标）
     filler_candidates = ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "老实说", "坦率讲", "事实上")
     max_filler_cnt = max((t.count(w) for w in filler_candidates), default=0)
     single_filler_max_rate = (max_filler_cnt / n * 1000.0) if max_filler_cnt >= 4 else 0.0
 
-    # 单段大写英文缩写倾倒检测（Info-Dumping：单段 >=5 个不同大写缩写/专名）
+    # 2. 翻译腔黑话、句法压缩饼干与论文内部代号泄漏检测
+    trans_hits = sum(t.count(w) for w in TRANSLATIONESE_WORDS)
+    workload_cnt = t.count("工作负载")
+    if workload_cnt >= 3:
+        trans_hits += workload_cnt
+    # 疑问词三字诀压缩饼干（如「算什么、要多快、能改哪里」「允许改哪些目录、计时从哪到哪、产出什么、怎么判对错」）
+    compressed_wh = len(re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", t))
+    # 论文内部单字母/编号代号直接做主语（如 R1 打开... R2 叠加... R3 把... / B 是... R 是... L 是...）
+    internal_codes = len(re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", t))
+    translationese_rate = (trans_hits * 1.5 + compressed_wh * 3.0 + internal_codes * 2.5) / n * 1000.0
+
+    # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题
     paras = [p.strip() for p in t.split("\n\n") if p.strip()]
     acronym_dump_paras = 0
+    unexplained_jargon_paras = 0
+    numeric_overload_paras = 0
     riddle_heading_count = 0
+    seen_jargon: set = set()
+
     for p in paras:
         if p.startswith("## "):
             hd = p[3:].strip()
-            if re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次)$", hd):
+            # 半截疑问句、无主核结论短标题或直译谜语标题
+            if (
+                re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
+                and "：" not in hd and ":" not in hd
+            ):
                 riddle_heading_count += 1
             continue
         if is_structural_or_meta_para(p):
@@ -208,13 +249,43 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         if len(acronyms) >= 5:
             acronym_dump_paras += 1
 
+        # 检查本段首次出场的非常识专业术语是否带内嵌解释锚点
+        p_unexplained = 0
+        for s in split_sentences(p):
+            terms = [
+                w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{2,15}\b", s)
+                if w.lower() not in COMMON_ENG_WHITELIST and any(c.isupper() for c in w)
+            ]
+            new_terms = [w for w in terms if w.lower() not in seen_jargon]
+            for w in terms:
+                seen_jargon.add(w.lower())
+            if len(new_terms) >= 3:
+                p_unexplained += 1
+            elif len(new_terms) >= 1:
+                for w in new_terms:
+                    idx = s.find(w)
+                    ctx = s[max(0, idx - 18): min(len(s), idx + len(w) + 18)]
+                    if not GLOSS_ANCHOR_RE.search(ctx):
+                        p_unexplained += 1
+        if p_unexplained > 0:
+            unexplained_jargon_paras += 1
+
+        # 检查查账式数字与冗余小数区间倾倒
+        nums_in_p = re.findall(r"\d+(?:\.\d+)?%?", p)
+        decimal_ranges = re.findall(r"\d+\.\d+\s*到\s*\d+\.\d+", p)
+        if len(nums_in_p) >= 10 or len(decimal_ranges) >= 2:
+            numeric_overload_paras += 1
+
     return {
         "M2_overlong_sent_ratio": round(overlong_cnt / len(sents), 3),
         "M2_mean_sent_len": round(statistics.mean(sent_lens), 2),
         "M1_reportese_rate": round(rep_rate, 3),
         "M1_reader_hook_rate": round(hook_hits / n * 1000.0, 3),
         "M1_single_filler_max_rate": round(single_filler_max_rate, 3),
+        "M1_translationese_rate": round(translationese_rate, 3),
         "M2_acronym_dump_paras": float(acronym_dump_paras),
+        "M2_unexplained_jargon_paras": float(unexplained_jargon_paras),
+        "M2_numeric_overload_paras": float(numeric_overload_paras),
         "M3_riddle_heading_count": float(riddle_heading_count),
     }
 
@@ -247,16 +318,19 @@ def score_four_dims(
     coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
     d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
 
-    # 长文生成代偿防刷锁（Lock 1 气口赤字/单一口语词刷分/汇报腔 + Lock 2b 粘连长句与缩写倾倒锁）
+    # 长文生成代偿防刷锁（Lock 1 气口赤字/单口语词刷分/汇报腔/直译压缩 + Lock 2b 粘连长句/缩写倾倒/术语裸奔/数字查账锁）
     if compensatory_lock or "M2_overlong_sent_ratio" in feats:
         z_buf_def = max(0.0, (feats.get("M1_buffer_deficit", 1.0) - 2.0) / 1.2)
         z_rep = max(0.0, (feats.get("M1_reportese_rate", 0.0) - 0.90) / 0.65)
-        z_filler_spam = max(0.0, (feats.get("M1_single_filler_max_rate", 0.0) - 0.85) / 0.45)
-        d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40 + z_filler_spam * 0.65) / 2.8
+        z_filler_spam = max(0.0, (feats.get("M1_single_filler_max_rate", 0.0) - 0.85) / 0.35)
+        z_trans = max(0.0, (feats.get("M1_translationese_rate", 0.0) - 0.60) / 0.50)
+        d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40 + z_filler_spam * 0.85 + z_trans * 0.75) / 2.8
         z_overlong = max(0.0, (feats.get("M2_overlong_sent_ratio", 0.0) - 0.18) / 0.07)
         z_mslen = max(0.0, (feats.get("M2_mean_sent_len", 38.0) - 48.5) / 5.5)
         z_info_dump = feats.get("M2_acronym_dump_paras", 0.0) * 0.45
-        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + z_info_dump
+        z_jargon = max(0.0, feats.get("M2_unexplained_jargon_paras", 0.0) - 1.0) * 0.28
+        z_num_dump = max(0.0, feats.get("M2_numeric_overload_paras", 0.0) - 1.0) * 0.25
+        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + z_info_dump + z_jargon + z_num_dump
 
     # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度 + 词汇多样性双边带 + 谜语小标题惩罚
     d3 = statistics.mean([
@@ -334,7 +408,7 @@ def is_structural_or_meta_para(p: str) -> bool:
     if s.startswith(("#", "![", "<center", "<img", "<div", "$$", "```", "|", ">", "---")):
         return True
     if re.match(
-        r"^[·•\-\*\s]*(?:一句话讲清楚|论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)",
+        r"^[·•\-\*\s]*(?:论文标题|论文题目|论文链接|项目链接|开源链接|代码链接|作者|机构|来源|arXiv)",
         s,
         re.I,
     ):
@@ -350,18 +424,22 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
     rx, seen = [], set()
     no_buf_run = 0
     filler_counts: Dict[str, int] = {}
+    seen_jargon_rx: set = set()
     for p_idx, p in enumerate(paras):
         # 优先检查小标题是否命中「半截疑问/谜语式 AI 小标题」
         if p.startswith("## ") and include_compensatory:
             hd = p[3:].strip()
-            if re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次)$", hd):
+            if (
+                re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
+                and "：" not in hd and ":" not in hd
+            ):
                 rx.append({
                     "para_idx": p_idx,
                     "issues": [{
                         "type": "RIDDLE_HEADING",
                         "sent_idx": 0,
                         "evidence": f"[[{p}]]",
-                        "instruction": "消除半截疑问/谜语式小标题（违反 RST 主核结构）：直接把本节最核心的结论写成完整大白话判断句（如『单靠编译器开关只能拿 5.3 分，真正的差距在改算法』）。",
+                        "instruction": "消除半截疑问/谜语式小标题（违反 RST 主核结构）：直接把本节最核心的结论写成完整大白话判断句（如『单靠编译器开关只能拿 3.85 分，真正的差距在改算法』）。",
                     }],
                     "prev_para_tail": paras[p_idx - 1][-40:] if p_idx else "",
                 })
@@ -461,6 +539,50 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "sent_idx": 0,
                     "evidence": f"[[{p[:24]}...]]",
                     "instruction": "消除生硬的公文状语起手胶水：直接用具体主语和动作开篇，或承接上一段的核心问题。",
+                })
+            # 代偿病灶 6：专业术语首次出场裸奔（Google LearnLM 第一原则：缺少内嵌大白话解释）
+            unexplained_terms = []
+            for s in sents:
+                terms = [
+                    w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{2,15}\b", s)
+                    if w.lower() not in COMMON_ENG_WHITELIST and any(c.isupper() for c in w)
+                ]
+                new_terms = [w for w in terms if w.lower() not in seen_jargon_rx]
+                for w in terms:
+                    seen_jargon_rx.add(w.lower())
+                for w in new_terms:
+                    idx = s.find(w)
+                    ctx = s[max(0, idx - 18): min(len(s), idx + len(w) + 18)]
+                    if not GLOSS_ANCHOR_RE.search(ctx) or len(new_terms) >= 3:
+                        unexplained_terms.append(w)
+            if unexplained_terms:
+                issues.append({
+                    "type": "UNEXPLAINED_JARGON_ON_FIRST_USE",
+                    "sent_idx": 0,
+                    "evidence": f"[[专业术语首次出场未解释: {', '.join(unexplained_terms[:5])}]]",
+                    "instruction": f"消除专业术语裸奔（{', '.join(unexplained_terms[:5])}）：首次出场必须在紧邻前方加上半句大白话功能定语（如『用来模拟分子运动的开源软件 GROMACS』），或将次要并列缩写合并为中文统称。",
+                })
+            # 代偿病灶 7：查账式数字与冗余小数区间倾倒
+            nums_in_p = re.findall(r"\d+(?:\.\d+)?%?", p)
+            decimal_ranges = re.findall(r"\d+\.\d+\s*到\s*\d+\.\d+", p)
+            if len(nums_in_p) >= 10 or len(decimal_ranges) >= 2:
+                issues.append({
+                    "type": "NUMERIC_ACCOUNTING_OVERLOAD",
+                    "sent_idx": 0,
+                    "evidence": f"[[单段 {len(nums_in_p)} 个数字 / {len(decimal_ranges)} 处小数区间: {p[:36]}...]]",
+                    "instruction": "消除查账式数字倾倒：单段数字或冗余小数范围（如『75.98 到 76.01 秒』）过多，读者无法消化。只保留支撑核心结论的 2–4 个关键数字，把微小的测量噪声区间化整为大白话（如『约 76 秒』），删掉附录式的四舍五入核账过程。",
+                })
+            # 代偿病灶 8：翻译腔黑话、句法压缩饼干与论文内部单字母代号泄漏
+            hit_trans = [w for w in TRANSLATIONESE_WORDS if w in p]
+            hit_wh = re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", p)
+            hit_codes = re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", p)
+            if hit_trans or hit_wh or hit_codes:
+                ev_parts = hit_trans + hit_wh + hit_codes
+                issues.append({
+                    "type": "TRANSLATIONESE_COMPRESSION",
+                    "sent_idx": 0,
+                    "evidence": f"[[翻译腔/压缩饼干/内部代号: {', '.join(ev_parts[:4])}]]",
+                    "instruction": "消除直译黑话、疑问词三连压缩饼干与论文内部代号（R1/R2/R3/B/R/L）：把『受控重放/失败信号/起始程序/未改程序/正确候选』换成人话，把『算什么、要多快、能改哪里』展开为完整主谓宾句，禁止直接拿 R1/B/L 代号当主语推导。",
                 })
             # 代偿病灶 6：连续多段零气口赤字（每满 4 段触发一次定位，认可自然举例与对比词）
             has_any_buf = (
