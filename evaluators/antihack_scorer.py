@@ -184,6 +184,7 @@ TRANSLATIONESE_WORDS = (
     "无效变体", "参照验证解", "有界化", "全因子实验", "私有输入", "私有工作负载",
     "参测", "计算契约", "得到了完整保留", "被压到了合理区间", "软件工程 Agent", "编码 Agent",
     "旗舰款", "顶配款", "满血版", "第一点是", "第二点是", "第三点是", "另外一方面",
+    "噪声带", "误差边界",
 )
 
 AI_CLICHE_PHRASES = (
@@ -191,7 +192,8 @@ AI_CLICHE_PHRASES = (
     "值得玩味", "稳如泰山", "遥遥领先", "天壤之别", "低得惊人", "费尽心思",
     "无一漏网", "统统被判为", "硬骨头", "王牌手段", "降维打击", "老实说",
     "坦率讲", "说实话", "平心而论", "这个原因其实不难理解", "显眼的结论",
-    "交出了", "正确答卷", "交卷",
+    "交出了", "正确答卷", "交卷", "白捡来的", "白捡", "白忙活", "混不过去",
+    "绑架整张榜单", "抠出", "实操经验很明确", "实操经验", "工程启示", "对于正在使用",
 )
 
 REDUNDANT_PREFIX_RE = re.compile(
@@ -248,10 +250,16 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     reader_hooks = ("你", "我们", "其实", "换句话说", "说到底", "也就是", "先看", "再看", "为什么", "怎么", "比如", "相当于", "说白了")
     hook_hits = sum(t.count(w) for w in reader_hooks) + t.count("？")
 
-    # 1. 单一口语词高频复读检测（防靠狂塞「其实」「还有」刷气口指标）
+    # 1. 单一口语词或刷分连接词高频复读检测（防靠狂塞「其实」「还有」「这一来」「在结果上」刷气口或句首惊奇度）
     filler_candidates = ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "老实说", "坦率讲", "事实上", "还有")
-    max_filler_cnt = max((t.count(w) for w in filler_candidates), default=0)
+    connector_spam_candidates = ("这一来", "在结果上", "到了这一步")
+    max_filler_cnt = max(
+        max((t.count(w) for w in filler_candidates), default=0),
+        max((t.count(w) + 1 for w in connector_spam_candidates if t.count(w) >= 3), default=0),
+    )
     single_filler_max_rate = (max_filler_cnt / n * 1000.0) if max_filler_cnt >= 4 else 0.0
+    zhe_opener_cnt = sum(1 for s in sents if s.strip().startswith("这"))
+    micro_sent_cnt = sum(1 for s in sents if len(s.strip()) < 16)
 
     # 2. 翻译腔黑话、句法压缩饼干、公文简写（参测/赛题泛滥）、贴标签赘词、戏剧化套话与拔高金句检测
     trans_hits = sum(t.count(w) for w in TRANSLATIONESE_WORDS)
@@ -303,10 +311,14 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     for p in paras:
         if p.startswith("## "):
             hd = p[3:].strip()
-            # 半截疑问句、无主核结论短标题或直译谜语标题
+            # 半截疑问句、无主核结论短标题或含生硬黑话/套话的小标题
             if (
-                re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
-                and "：" not in hd and ":" not in hd
+                (
+                    re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
+                    and "：" not in hd and ":" not in hd
+                )
+                or any(w in hd for w in TRANSLATIONESE_WORDS)
+                or any(w in hd for w in AI_CLICHE_PHRASES)
             ):
                 riddle_heading_count += 1
             continue
@@ -354,6 +366,8 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     return {
         "M2_overlong_sent_ratio": round(overlong_cnt / len(sents), 3),
         "M2_mean_sent_len": round(statistics.mean(sent_lens), 2),
+        "M2_zhe_opener_ratio": round(zhe_opener_cnt / len(sents), 3),
+        "M2_micro_sent_ratio": round(micro_sent_cnt / len(sents), 3),
         "M1_reportese_rate": round(rep_rate, 3),
         "M1_reader_hook_rate": round(hook_hits / n * 1000.0, 3),
         "M1_single_filler_max_rate": round(single_filler_max_rate, 3),
@@ -384,8 +398,8 @@ def score_four_dims(
     z_persona = band.two_sided_z("M1_persona_hacking_rate", feats.get("M1_persona_hacking_rate", 0.0))
     d1 = (z_buf + z_crutch * 1.3 + z_noun * 0.7 + z_persona * 0.8) / 2.8
 
-    # D2 中观：句首惊奇冲击 + 句内信息波动赤字 + 跨句搭扣 + 以旧带新违规 + 剁碎短句/短段耦合锁
-    z_onset = band.two_sided_z("UID_onset_minus_end_surp", feats["UID_onset_minus_end_surp"]) + max(0.0, feats["UID_onset_minus_end_surp"] - 1.75) * 1.1
+    # D2 中观：句首惊奇冲击（双边人类带 [P10, P90]）+ 句内信息波动赤字 + 跨句搭扣 + 以旧带新违规 + 剁碎短句/短段耦合锁
+    z_onset = band.two_sided_z("UID_onset_minus_end_surp", feats["UID_onset_minus_end_surp"])
     z_wave = max(0.0, 0.072 - feats["UID_sentence_wave_cv"]) * 14.0 + band.two_sided_z("UID_sentence_wave_cv", feats["UID_sentence_wave_cv"]) * 0.5
     z_coh = band.two_sided_z("M2_cohesion_break_rate", feats["M2_cohesion_break_rate"])
     z_o2n = band.two_sided_z("M2_old_to_new_violation", feats["M2_old_to_new_violation"])
@@ -393,7 +407,7 @@ def score_four_dims(
     coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
     d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
 
-    # 长文生成代偿防刷锁（Lock 1 气口赤字/单口语词刷分/汇报腔/直译压缩 + Lock 2b 粘连长句/缩写倾倒/术语裸奔/数字查账锁）
+    # 长文生成代偿防刷锁（Lock 1 气口赤字/单口语词刷分/汇报腔/直译压缩 + Lock 2b 左防剁碎微句与「这」起手刷分、右防粘连长句/缩写倾倒/术语裸奔/数字查账锁）
     if compensatory_lock or "M2_overlong_sent_ratio" in feats:
         z_buf_def = max(0.0, (feats.get("M1_buffer_deficit", 1.0) - 2.0) / 1.2)
         z_rep = max(0.0, (feats.get("M1_reportese_rate", 0.0) - 0.90) / 0.65)
@@ -401,11 +415,14 @@ def score_four_dims(
         z_trans = max(0.0, (feats.get("M1_translationese_rate", 0.0) - 0.60) / 0.50)
         d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40 + z_filler_spam * 0.85 + z_trans * 0.75) / 2.8
         z_overlong = max(0.0, (feats.get("M2_overlong_sent_ratio", 0.0) - 0.18) / 0.07)
-        z_mslen = max(0.0, (feats.get("M2_mean_sent_len", 38.0) - 48.5) / 5.5)
+        mslen = feats.get("M2_mean_sent_len", 38.0)
+        z_mslen = max(0.0, (mslen - 48.5) / 5.5) + max(0.0, (35.0 - mslen) / 3.0)
+        z_micro = max(0.0, (feats.get("M2_micro_sent_ratio", 0.0) - 0.05) / 0.03)
+        z_zhe_spam = max(0.0, (feats.get("M2_zhe_opener_ratio", 0.0) - 0.10) / 0.03)
         z_info_dump = feats.get("M2_acronym_dump_paras", 0.0) * 0.45
         z_jargon = max(0.0, feats.get("M2_unexplained_jargon_paras", 0.0) - 1.0) * 0.28
         z_num_dump = max(0.0, feats.get("M2_numeric_overload_paras", 0.0) - 1.0) * 0.25
-        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + z_info_dump + z_jargon + z_num_dump
+        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + 0.45 * z_micro + 0.45 * z_zhe_spam + z_info_dump + z_jargon + z_num_dump
 
     # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度（容忍自然均衡段落 para_cv in [0.20, 0.80]，严禁靠切碎单句短段刷 CV）+ 词汇多样性双边带 + 谜语小标题/单句残段惩罚
     pf = feats["M2_para_flatness"]
@@ -511,21 +528,40 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
     saiti_running = 0
     yonglai_running = 0
     for p_idx, p in enumerate(paras):
-        # 优先检查小标题是否命中「半截疑问/谜语式 AI 小标题」
+        # 优先检查小标题是否命中「半截疑问/谜语式 AI 小标题」或翻译腔/AI 套话
         if p.startswith("## ") and include_compensatory:
             hd = p[3:].strip()
+            hd_issues = []
             if (
                 re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
                 and "：" not in hd and ":" not in hd
             ):
+                hd_issues.append({
+                    "type": "RIDDLE_HEADING",
+                    "sent_idx": 0,
+                    "evidence": f"[[{p}]]",
+                    "instruction": "消除半截疑问/谜语式小标题（违反 RST 主核结构）：直接把本节最核心的结论写成完整大白话判断句（如『单靠编译器开关只能拿 3.85 分，真正的差距在改算法』）。",
+                })
+            for tw in TRANSLATIONESE_WORDS:
+                if tw in hd:
+                    hd_issues.append({
+                        "type": "TRANSLATIONESE",
+                        "sent_idx": 0,
+                        "evidence": p.replace(tw, f"[[{tw}]]"),
+                        "instruction": f"消除小标题中的生硬行话/翻译腔『{tw}』，改用自然口语大白话（如『正常波动范围内』）。",
+                    })
+            for cp in AI_CLICHE_PHRASES:
+                if cp in hd:
+                    hd_issues.append({
+                        "type": "AI_CLICHE_EXPRESSION",
+                        "sent_idx": 0,
+                        "evidence": p.replace(cp, f"[[{cp}]]"),
+                        "instruction": f"消除小标题中的 AI 套话/生造俗语『{cp}』，改用平实陈述。",
+                    })
+            if hd_issues:
                 rx.append({
                     "para_idx": p_idx,
-                    "issues": [{
-                        "type": "RIDDLE_HEADING",
-                        "sent_idx": 0,
-                        "evidence": f"[[{p}]]",
-                        "instruction": "消除半截疑问/谜语式小标题（违反 RST 主核结构）：直接把本节最核心的结论写成完整大白话判断句（如『单靠编译器开关只能拿 3.85 分，真正的差距在改算法』）。",
-                    }],
+                    "issues": hd_issues,
                     "prev_para_tail": paras[p_idx - 1][-40:] if p_idx else "",
                 })
             continue
@@ -593,18 +629,37 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "evidence": f"[[{ev}]]",
                     "instruction": "消除『作者做了…/论文指出…』的审稿汇报腔：直接把机制、任务或实验现象本身作为主语（如把『作者在两个任务上做了 14 组对照』改为『拿两个任务上的 14 组预设对照来看』）。",
                 })
-            # 代偿病灶 3：单一口语缓冲词全篇高频复读（如全篇狂塞 15 个「其实」或 7 个「还有」）
-            for fw in ("其实", "说白了", "换句话说", "说到底", "也就是", "你看", "还有"):
+            # 代偿病灶 3：单一口语缓冲词或刷分连接词全篇高频复读（如全篇狂塞 15 个「其实」、7 个「还有」或 6 个「这一来」）
+            for fw, limit in (
+                ("其实", 4), ("说白了", 4), ("换句话说", 4), ("说到底", 4),
+                ("也就是", 4), ("你看", 4), ("还有", 4),
+                ("这一来", 2), ("在结果上", 2), ("到了这一步", 2),
+            ):
                 c = p.count(fw)
                 if c > 0:
                     filler_counts[fw] = filler_counts.get(fw, 0) + c
-                    if filler_counts[fw] >= 4:
+                    if filler_counts[fw] >= limit:
                         issues.append({
                             "type": "SINGLE_FILLER_SPAM",
                             "sent_idx": 0,
                             "evidence": f"[[全篇第 {filler_counts[fw]} 次出现『{fw}』: {p[:36]}...]]",
-                            "instruction": f"消除单一口语词『{fw}』高频复读刷分（全篇已累计 {filler_counts[fw]} 次，上限 ≤3 次）：直接删掉『{fw}』，或改用『与/及/以及/、』和自然因果对比衔接。",
+                            "instruction": f"消除单一缓冲词/连接词『{fw}』高频复读刷分（全篇已累计 {filler_counts[fw]} 次，上限 <{limit} 次）：直接删掉『{fw}』，改用自然因果对比衔接。",
                         })
+            # 代偿病灶 3b：单段连续『这…』指代起手刷分或剁碎微句（<16 字）
+            zhe_in_p = [s for s in sents if s.strip().startswith("这")]
+            micro_in_p = [s for s in sents if len(s.strip()) < 16]
+            if len(zhe_in_p) >= 2 or len(micro_in_p) >= 2:
+                ev_parts = []
+                if len(zhe_in_p) >= 2:
+                    ev_parts.append(f"单段 {len(zhe_in_p)} 句以『这』开头({', '.join(s[:10] for s in zhe_in_p[:3])})")
+                if len(micro_in_p) >= 2:
+                    ev_parts.append(f"单段 {len(micro_in_p)} 个<16字碎句({', '.join(micro_in_p[:3])})")
+                issues.append({
+                    "type": "CHOPPY_FRAGMENT_OR_ZHE_SPAM",
+                    "sent_idx": 0,
+                    "evidence": f"[[{'; '.join(ev_parts)}]]",
+                    "instruction": "消除为刷低句首惊奇度而制造的『这…』指代泛滥与剁碎微句：每段最多允许 1 句以『这』字起手，其余句子直接写具体主语或动作；严禁把完整语义剁成 <16 字的碎句，将相邻碎句用逗号自然合并为 30–50 字的复句。",
+                })
             # 代偿病灶 4：单段陌生大写英文缩写倾倒（Info-Dumping，排除熟知 AI 模型名与基础词）
             acronyms = sorted({
                 w for w in re.findall(r"\b[A-Za-z][A-Za-z0-9_\-]{1,15}\b", p)
