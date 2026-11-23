@@ -423,6 +423,7 @@
         <a href="#loao">Multi-Author LOAO</a>
         <a href="#sandbox">Prescription Sandbox</a>
         <a href="#case-study">Real-World Case Study</a>
+        <a href="#model-evolution">Cross-Model & Iterations</a>
       </div>
     </div>
   </nav>
@@ -1211,6 +1212,212 @@
       </div>
     </section>
 
+    <!-- Cross-Model Capability Fingerprints & Multi-Iteration Evolution -->
+    <section id="model-evolution">
+      <div class="section-header">
+        <div class="section-tag">Cross-Model Fingerprints & Multi-Iteration Evolution · Controlled Study on arXiv:2611.20882</div>
+        <h2 class="section-title">🔬 跨模型能力指纹与同模型多轮迭代剖析：为什么不同模型在「去 AI 味」约束下会走出截然不同的代偿路径？</h2>
+        <p class="section-desc">
+          当我们对同一篇复杂系统与科学计算论文（<a href="https://arxiv.org/abs/2611.20882" target="_blank" style="color: var(--accent-cyan);">AccelerateBench, arXiv:2611.20882</a>）施加完全相同的负向去味约束（禁用破折号、括号英文注释、冒号提示体与句首英文硬顶）并追踪<strong>轻量快速模型（<code>DeepSeek-V4.1-Flash</code>）</strong>与<strong>旗舰推理模型（<code>Gemini-4-Argon</code>）</strong>在多轮门禁迭代下的表现时，C-LongSlopBench 揭示了一个核心规律：<strong>去 AI 味绝非表层标点与套话过滤，而是把高密度专业概念拆解重述为完整因果链的「认知重述（Cognitive Paraphrasing）」</strong>。不同模型因底座合成能力差异，在受约束时会暴露出截然不同的<strong>模型特异代偿指纹（Model-Specific Compensatory Fingerprints）</strong>。
+        </p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 24px;">
+        <div class="card">
+          <h3>⚡ 轻量模型代偿 A：刷 UID 剁碎微句与「这」字泛滥</h3>
+          <p>当提示词要求控制句首惊奇度（<code>UID_onset_minus_end_surp</code>）时，<code>DeepSeek-V4.1-Flash</code>（Iter 2a）选择投机刷分：将复句剁成 <code>&lt;16</code> 字碎句（占比达 <strong>13.0%</strong>，平均句长跌至 <strong>30.3 字</strong>），全篇 <strong>18.8%</strong> 的句子以「这…」起手、连塞 6 次「这一来」，甚至写出未提第二项就先写「这两者之间差了 18 分」的倒装病句。</p>
+          <div class="pill-list">
+            <span class="pill">CHOPPY_FRAGMENT_OR_ZHE_SPAM</span>
+            <span class="pill">Lock 2b Left-Bound</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🧩 轻量模型代偿 B：电报式暗语与未解释数学黑话</h3>
+          <p>封堵碎句刷分后，<code>DeepSeek-V4.1-Flash</code>（Iter 2b）因缺乏把复杂机制嚼碎的跨句重述能力，退化为<strong>无铺垫电报式伪白话</strong>（「测量本身也会晃」「放大到了六份负载」「折成半个奖励」「收益全在设置里」），并原样倾倒未解释的数学直译黑话（「常系数三维 27 点模板，正弦基能把算子对角化」）与三轮试验原始小数（<code>21.18×、22.22× 与 21.26×</code>），导致人类盲评「看完根本看不懂」。</p>
+          <div class="pill-list">
+            <span class="pill">TRANSLATIONESE_COMPRESSION</span>
+            <span class="pill">NUMERIC_ACCOUNTING_OVERLOAD</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🏷️ 旗舰模型代偿：贴标签前缀、报幕短段与拔高收尾</h3>
+          <p>相比之下，<code>Gemini-4-Argon</code>（Iter 1）的中观信息流天然通顺（<code>D2 = 0.215</code>），能把科学背景与实验逻辑讲清楚；但它在负向约束下暴露出旗舰模型特有的<strong>「过度显式化」代偿</strong>：给熟知专名硬贴冗余类别前缀（「工具框架 Claude Code」「模型 DeepSeek-V4-Flash」）、把单句过渡拆成独立报幕残段（「独立的私有裁判才会登场。」）以及结尾宏大排比拔高。</p>
+          <div class="pill-list">
+            <span class="pill">REDUNDANT_CLASSIFIER_PREFIX</span>
+            <span class="pill">THEATRICAL_DRUMROLL_OR_CLICHE</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🎯 同模型多轮收敛：从 65 条处方到 1-Pass 零处方</h3>
+          <p>针对旗舰模型的特定病灶补齐前缀锁与单句残段锁后，<code>Gemini-4-Argon</code> 在 Iter 2 跃升至 <strong>HumanPass 82.4</strong>（人类盲评全文通顺易懂，仅标出「白捡来的 / 仍在噪声带内 / 实操经验很明确」3 处局部词癖）；再经处方单 + <code>ParagraphQualityGate</code> 1-Pass 微修（Iter 3），直达 <strong>HumanPass 91.9（0 处方）</strong>。</p>
+          <div class="pill-list">
+            <span class="pill">Iter 1 (35.8) → Iter 2 (82.4) → Iter 3 (91.9)</span>
+            <span class="pill">100% Anchor Fidelity</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom: 24px;">
+        <table>
+          <thead>
+            <tr>
+              <th>模型底座与迭代轮次 (同源论文 arXiv:2611.20882)</th>
+              <th class="num">官方总分↑</th>
+              <th class="num">HumanPass↑</th>
+              <th class="num">防刷 Z↓</th>
+              <th class="num">D1 微观↓</th>
+              <th class="num">D2 中观↓</th>
+              <th class="num">D3 骨架↓</th>
+              <th class="num">平均句长 (35–48.5)</th>
+              <th class="num">直译/压缩率 (≤0.60)</th>
+              <th class="num">主要暴露的代偿指纹与人类盲评反馈</th>
+              <th class="num">处方单命中</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-hacked">
+              <td><strong>DeepSeek-V4.1-Flash · Iter 1</strong> (初始负向标点约束)</td>
+              <td class="num">29.9</td>
+              <td class="num">20.3</td>
+              <td class="num">4.559 🚨</td>
+              <td class="num">4.740 🚨</td>
+              <td class="num">8.819 🚨</td>
+              <td class="num">4.662 🚨</td>
+              <td class="num">63.0 字 🚨</td>
+              <td class="num">8.34 🚨</td>
+              <td>一逗到底粘连长句 (35.7%) + 审稿汇报腔 + 15 段查账数字倾倒 + 专业术语裸奔</td>
+              <td class="num"><span class="badge badge-rose">98 条 / 46 段</span></td>
+            </tr>
+            <tr class="row-hacked">
+              <td><strong>DeepSeek-V4.1-Flash · Iter 2a</strong> (单边压 UID 投机刷分)</td>
+              <td class="num">67.4</td>
+              <td class="num">72.4</td>
+              <td class="num">0.921 🚨</td>
+              <td class="num">0.458</td>
+              <td class="num">2.903 🚨</td>
+              <td class="num">0.281</td>
+              <td class="num">30.3 字 🚨</td>
+              <td class="num">0.00</td>
+              <td>剁碎 &lt;16 字微句 (13.0%) + 18.8% 句子以「这…」起手 + 6 次「这一来」+ 倒装凑句尾</td>
+              <td class="num"><span class="badge badge-rose">17 条 / 14 段</span></td>
+            </tr>
+            <tr class="row-hacked">
+              <td><strong>DeepSeek-V4.1-Flash · Iter 2b</strong> (封堵碎句后的电报暗语态)</td>
+              <td class="num">62.1</td>
+              <td class="num">64.6</td>
+              <td class="num">1.247 🚨</td>
+              <td class="num">3.044 🚨</td>
+              <td class="num">0.908</td>
+              <td class="num">0.970</td>
+              <td class="num">43.7 字 ✅</td>
+              <td class="num">5.83 🚨</td>
+              <td>电报式半截暗语（「测量本身也会晃 / 放大到了六份负载」）+ 未解释数学直译黑话 + 三轮小数罗列</td>
+              <td class="num"><span class="badge badge-rose">20 条 / 14 段</span></td>
+            </tr>
+            <tr>
+              <td><strong>Gemini-4-Argon · Iter 1</strong> (初始负向标点约束)</td>
+              <td class="num">42.7</td>
+              <td class="num">35.8</td>
+              <td class="num">2.937 🚨</td>
+              <td class="num">7.895 🚨</td>
+              <td class="num"><strong>0.215 ✅</strong></td>
+              <td class="num">3.575 🚨</td>
+              <td class="num">45.5 字 ✅</td>
+              <td class="num">15.09 🚨</td>
+              <td>因果叙事清晰，但出现贴标签类别前缀（13 处）+ 单句戏剧化报幕短段 + 结尾宏大叙事拔高</td>
+              <td class="num"><span class="badge badge-amber">65 条 / 48 段</span></td>
+            </tr>
+            <tr class="row-human">
+              <td><strong>Gemini-4-Argon · Iter 2</strong> (补齐类别前缀与单句残段锁后独立生成)</td>
+              <td class="num">75.6</td>
+              <td class="num">82.4</td>
+              <td class="num">0.552 ✅</td>
+              <td class="num">1.038</td>
+              <td class="num"><strong>0.244 ✅</strong></td>
+              <td class="num">0.874</td>
+              <td class="num">48.1 字 ✅</td>
+              <td class="num">2.24</td>
+              <td>全文因果脉络通畅易懂，人类盲评仅标出 3 处局部词癖（「白捡来的 / 仍在噪声带内 / 实操经验很明确」）</td>
+              <td class="num"><span class="badge badge-amber">8 条 / 8 段</span></td>
+            </tr>
+            <tr class="row-highlight">
+              <td><strong>Gemini-4-Argon · Iter 3</strong> (<strong>处方引导 + ParagraphQualityGate 1-Pass 闭环</strong>)</td>
+              <td class="num"><strong>82.2</strong></td>
+              <td class="num"><strong>91.9</strong></td>
+              <td class="num"><strong>0.243 ✅</strong></td>
+              <td class="num"><strong>0.161 ✅</strong></td>
+              <td class="num"><strong>0.235 ✅</strong></td>
+              <td class="num"><strong>0.524 ✅</strong></td>
+              <td class="num"><strong>48.4 字 ✅</strong></td>
+              <td class="num"><strong>0.00 ✅</strong></td>
+              <td><strong>四维探针与防代偿锁全部通过，11 处局部微修 100% 通过门禁，人类盲评零障碍通读</strong></td>
+              <td class="num"><span class="badge badge-green">0 条 (100% 清零)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="filter-bar">
+        <button class="tab-btn active" onclick="showEvoCase(0, this)">同源切片 ①：GROMACS 四配置消融（天降账本 vs 因果讲透）</button>
+        <button class="tab-btn" onclick="showEvoCase(1, this)">同源切片 ②：HPCG 三维矩阵直接求解（未解释数学黑话 + 三轮小数 vs 嚼碎机制）</button>
+        <button class="tab-btn" onclick="showEvoCase(2, this)">同源切片 ③：空操作基线与防作弊校准（电报式半截暗语 vs 完整工程逻辑）</button>
+      </div>
+
+      <div class="sandbox-box" style="margin-bottom: 24px;">
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>❌ DeepSeek-V4.1-Flash (Iter 2b) · 电报暗语与未消化直译</span>
+            <span class="badge badge-rose" id="evo-tag">NUMERIC_ACCOUNTING + TELEGRAPHIC_CALQUE</span>
+          </div>
+          <div id="evo-left" style="margin-bottom: 14px;">
+            先看一处最直观的证据，它来自一道只改了配置的提交。<span class="tell-mark">[[那份 GROMACS 程序与原始源码只差一个构建描述文件，收益全在设置里。]]</span>把同一份源码在四种组合下重跑，全部通过正确性检查，<span class="tell-mark">[[加速比从 0.289× 到 2.123×。配上四个线程的 AVX2 是 2.123×，只给一个线程就只剩 0.709×，把 AVX2 关掉再配一个线程，只剩 0.289×。]]</span>
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: #cbd5e1;" id="evo-diag">
+            <strong>🔍 C-LongSlopBench 诊断与人类盲评失分点：</strong><br/>
+            1. <strong>悬空指代与生硬直译</strong>：未铺垫背景直接抛「那份 GROMACS 程序」（未解释 GROMACS 是什么），把 <code>CMakeLists.txt</code> 生硬直译为「构建描述文件」，并用半截暗语「收益全在设置里」替代具体机制说明；<br/>
+            2. <strong>同段小数复读查账</strong>：先报一遍 <code>0.289× 到 2.123×</code>，紧接着又把 <code>2.123× / 0.709× / 0.289×</code> 复读一遍，且漏掉了「关向量化 + 开满四线程 = 0.992×」的对照组，读者完全看不懂为何会跌到 0.289×。
+          </div>
+        </div>
+
+        <div class="code-pane">
+          <div class="pane-title">
+            <span>✅ Gemini-4-Argon (Iter 2 → Iter 3) · 因果铺垫与机制嚼碎</span>
+            <span class="badge badge-green" id="evo-gain">HumanPass 91.9 · 处方 0 条 · 读者零门槛读懂</span>
+          </div>
+          <div id="evo-right" style="margin-bottom: 14px;">
+            <span class="fix-mark">拿分子动力学模拟软件 GROMACS 上的这组对比测试来说，在一场只改了配置文件的运行里，同一份分子模拟源码被固定在四个物理核心上，测试了四组向量化指令与线程数的搭配。</span>当关掉向量化且只开单线程时，速度只有基准的 0.289×；保持关闭向量化但开满四线程，速度回到 0.992×。要是打开 AVX2 向量化却只给单线程，速度依然只有 0.709×；<span class="fix-mark">只有同时打开 AVX2 向量化并配齐四线程，速度才会跳到 2.123×，同一份源码在不同配置下快慢差了七倍多。</span>
+          </div>
+          <div style="border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.84rem; color: var(--accent-emerald);" id="evo-audit">
+            <strong>🛡️ 跨模型与跨轮次演进对照：</strong><br/>
+            • <strong>Iter 1 → Iter 2 → Iter 3 演进</strong>：保留了旗舰模型清晰的四组合递进对比（单线程关向量化 → 四线程关向量化 → 单线程开 AVX2 → 四线程开 AVX2），并在 Iter 3 中消除了全文重复套用「用来…的程序」模板的微瑕；<br/>
+            • 读者一眼就能读懂核心结论：<strong>单开编译向量化或单加线程都没用，两者必须同时配齐才能释放 7 倍性能差距</strong>。
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: rgba(56, 189, 248, 0.35); background: rgba(15, 23, 42, 0.9);">
+        <h3 style="margin-bottom: 12px; color: var(--accent-cyan);">💡 给研究者与内容创作者的 4 条核心 Takeaway (Benchmark Takeaways)</h3>
+        <div class="grid-2" style="gap: 16px;">
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            <strong>1. 「去 AI 味」的上限取决于底座模型的认知重述能力：</strong><br/>
+            当负向规则禁止模型使用破折号、括号和冒号偷懒时，<strong>旗舰模型（如 <code>Gemini-4-Argon</code>）</strong>能把生涩的英文论文逻辑拆解重组为符合中文阅读习惯的主谓宾因果链（<code>D2 = 0.235</code>）；而<strong>轻量模型（如 <code>DeepSeek-V4.1-Flash</code>）</strong>由于缺乏长程重述容量，只能把原句强行压缩成无主语的「电报式伪白话」或直接生吞数学黑话（<code>直译压缩率 5.83/千字</code>），表面没有破折号，实则全文充满难以读懂的机器暗语。
+          </div>
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            <strong>2. 不同模型家族具有高度可分的「代偿指纹」：</strong><br/>
+            C-LongSlopBench 证明 AI 味并非单一维度的均匀退化：轻量模型主要在<strong>句法层（$D_2$ 粘连长句 / 剁碎微句 / 「这」字起手泛滥）与未解释黑话/小数罗列</strong>上失分；旗舰模型则主要在<strong>修辞与结构层（$D_1/D_3$ 熟知专名前贴冗余类别标签、单句独立成段的戏剧化报幕、结尾排比拔高金句）</strong>上暴露出深层训练偏好。
+          </div>
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            <strong>3. 单边指标必然诱发 Goodhart 投机，必须用双向成对耦合锁：</strong><br/>
+            无论是「只禁句首英文 <code>。E</code> 诱发 182 字一逗到底」（Iter 1）、「只奖段落长度变异度诱发 &lt;75 字单句报幕残段」（Gemini Iter 1），还是「只压句首惊奇度 UID 诱发 30 字剁碎微句与 6 次『这一来』」（DS-Flash Iter 2a），都证明任何单边优化目标都会被大模型钻空子。C-LongSlopBench 的 <code>[P10, P90]</code> 双边带与 <code>Lock 2b</code> 左右双向锁正是为此而生。
+          </div>
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            <strong>4. 高起点初稿 + 处方引导 1-Pass 局部门禁是最优生产范式：</strong><br/>
+            对比全流程轨迹，最有效的工程路径不是让轻量模型反复全文重写，而是<strong>「用强推理模型在双边结构约束下生成高可读初稿（如 Gemini Iter 2，HumanPass 82.4）→ 用 C-LongSlopBench <code>prescribe</code> 精准定位剩余 8 处局部词癖 → 在 <code>ParagraphQualityGate</code> 守护下做 1-Pass 局部微修直达 91.9 分」</strong>。
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Quick Start & Citation -->
     <section id="quickstart">
       <div class="grid-2">
@@ -1375,6 +1582,46 @@ python3 run_main_bench_experiments.py</pre>
       document.getElementById('rc-gain').innerText = c.gain;
       document.getElementById('rc-after').innerHTML = c.after;
       document.getElementById('rc-audit').innerHTML = c.audit;
+    }
+
+    // ── Cross-Model & Multi-Iteration Evolution Cases ──
+    const EVO_CASES = [
+      {
+        tag: "NUMERIC_ACCOUNTING + TELEGRAPHIC_CALQUE",
+        left: `先看一处最直观的证据，它来自一道只改了配置的提交。<span class="tell-mark">[[那份 GROMACS 程序与原始源码只差一个构建描述文件，收益全在设置里。]]</span>把同一份源码在四种组合下重跑，全部通过正确性检查，<span class="tell-mark">[[加速比从 0.289× 到 2.123×。配上四个线程的 AVX2 是 2.123×，只给一个线程就只剩 0.709×，把 AVX2 关掉再配一个线程，只剩 0.289×。]]</span>`,
+        diag: `<strong>🔍 C-LongSlopBench 诊断与人类盲评失分点：</strong><br/>1. <strong>悬空指代与生硬直译</strong>：未铺垫背景直接抛「那份 GROMACS 程序」（未解释 GROMACS 是什么），把 <code>CMakeLists.txt</code> 生硬直译为「构建描述文件」，并用半截暗语「收益全在设置里」替代具体机制说明；<br/>2. <strong>同段小数复读查账</strong>：先报一遍 <code>0.289× 到 2.123×</code>，紧接着又把 <code>2.123× / 0.709× / 0.289×</code> 复读一遍，且漏掉了「关向量化 + 开满四线程 = 0.992×」的对照组，读者完全看不懂为何会跌到 0.289×。`,
+        gain: "HumanPass 91.9 · 处方 0 条 · 读者零门槛读懂",
+        right: `<span class="fix-mark">拿分子动力学模拟软件 GROMACS 上的这组对比测试来说，在一场只改了配置文件的运行里，同一份分子模拟源码被固定在四个物理核心上，测试了四组向量化指令与线程数的搭配。</span>当关掉向量化且只开单线程时，速度只有基准的 0.289×；保持关闭向量化但开满四线程，速度回到 0.992×。要是打开 AVX2 向量化却只给单线程，速度依然只有 0.709×；<span class="fix-mark">只有同时打开 AVX2 向量化并配齐四线程，速度才会跳到 2.123×，同一份源码在不同配置下快慢差了七倍多。</span>`,
+        audit: `<strong>🛡️ 跨模型与跨轮次演进对照：</strong><br/>• <strong>Iter 1 → Iter 2 → Iter 3 演进</strong>：保留了旗舰模型清晰的四组合递进对比（单线程关向量化 → 四线程关向量化 → 单线程开 AVX2 → 四线程开 AVX2），并在 Iter 3 中消除了全文重复套用「用来…的程序」模板的微瑕；<br/>• 读者一眼就能读懂核心结论：<strong>单开编译向量化或单加线程都没用，两者必须同时配齐才能释放 7 倍性能差距</strong>。`
+      },
+      {
+        tag: "UNEXPLAINED_MATH_CALQUE + RAW_TRIAL_DECIMAL_LIST",
+        left: `<span class="tell-mark">[[到了 HPCG 这道稀疏线性代数题，加速倍率最扎眼，几十倍的提交不少见。这恰好可以检验它是不是吃到了题目结构的红利。题目求解一个常系数三维 27 点模板，正弦基能把三个方向的算子对角化，]]</span>共轭梯度迭代可以直接换成分块特征分解求解。一套按这个思路写的实现，把每次算子作用的网格遍历、光环交换与点积归约统统省掉，换成在 <span class="tell-mark">[[Z 切片上做二维正弦变换、再沿第三维做融合乘加收缩，单次能跑出 37.98×，三轮独立运行分别是 21.18×、22.22× 与 21.26×]]</span>，残差落到 1.72×10⁻¹⁶，远低于 10⁻⁶ 的门槛。`,
+        diag: `<strong>🔍 C-LongSlopBench 诊断与人类盲评失分点：</strong><br/>1. <strong>未消化的数学直译黑话</strong>：直接向读者生抛「常系数三维 27 点模板，正弦基能把三个方向的算子对角化」「在 Z 切片上做二维正弦变换、再沿第三维做融合乘加收缩」，零通俗解释；<br/>2. <strong>多次试验原始小数流水账</strong>：把三次重复实验的原始噪声记录 <code>21.18×、22.22× 与 21.26×</code> 逐个罗列，打断阅读流。`,
+        gain: "消除未解释数学黑话 · 浓缩核心机理与结论",
+        right: `<span class="fix-mark">除了给现有代码做手术，遇到稀疏线性方程组求解程序 HPCG 时，模型甚至会直接换掉底层的数学解法。原程序用的是标准的共轭梯度法，需要一轮接一轮地在三维网格上反复迭代逼近。但测试里的网格刚好是规则的常系数三维网格，模型敏锐地抓住了这个特殊结构，没有去抠原来的迭代循环，而是改用正弦变换直接把三维方程组解耦，一步算出了精确解。</span><br/><br/><span class="fix-mark">这么一改，原本几十轮迭代里的网格遍历、边界通信和全局归约全被省掉了，单次运行最高跑出了 37.98× 的惊人加速，三次独立运行的稳定加速比也超过了 21×，计算残差更是压到了 10⁻¹⁶ 量级，远低于题目要求的 10⁻⁶ 误差线。</span>`,
+        audit: `<strong>🛡️ 跨模型与跨轮次演进对照：</strong><br/>• <strong>认知重述差异</strong>：<code>Gemini-4-Argon</code> 把晦涩的「正弦基把三个方向算子对角化」翻译成谁都能懂的「原程序需要一轮接一轮在三维网格上反复迭代逼近 → 改用正弦变换直接把三维方程组解耦、一步算出精确解」；<br/>• 同时将枯燥的三轮小数流水账收敛为「三次独立运行的稳定加速比也超过了 21×」，信息量不减而可读性天壤之别。`
+      },
+      {
+        tag: "TELEGRAPHIC_SHORTHAND + INTERROGATIVE_CRAMMING",
+        left: `<span class="tell-mark">[[它只交代必须算出的结果与必须交付的输出，优化点在哪、怎么改全交给 Agent 判断。]]</span>……<span class="tell-mark">[[规则换了一套。]]</span>每道题给的是一个还能跑通的仓库，外加公开测试与计时脚本，先确认程序没算错，再去抠端到端运行时间；<span class="tell-mark">[[改哪里、要不要动构建配置，全由 Agent 自己拿主意。]]</span>……为了压住抖动，<span class="tell-mark">[[测量本身也会晃。]]</span>……验证环境把好几道原本只跑零点几秒的题<span class="tell-mark">[[放大到了六份负载]]</span>……任务分走的是带封顶的对数曲线，<span class="tell-mark">[[一次干净的 2× 加速折成半个奖励]]</span>，4× 拿满单题上限。`,
+        diag: `<strong>🔍 C-LongSlopBench 诊断与人类盲评失分点（用户在 R4 集中标注的 6 处暗语）：</strong><br/>1. <strong>疑问词压缩饼干</strong>：反复使用「优化点在哪、怎么改全交给…」「改哪里、要不要动…全由…」的生硬压缩句式；<br/>2. <strong>电报式半截暗语</strong>：「规则换了一套」「测量本身也会晃」「放大到了六份负载」「折成半个奖励」全部省略了主语或物理背景，读者必须自己在脑子里补全英文原文才能猜出意思。`,
+        gain: "消除全部 6 处电报暗语 · 还原完整主谓宾逻辑",
+        right: `<span class="fix-mark">为了看清真实水平，每道题只给一份能跑通的原始代码仓库，不提供任何「改第几行能变快」的提示，要改算法、调多线程还是换编译参数，全靠智能体自己去读代码、跑剖析工具找瓶颈。</span><br/><br/><span class="fix-mark">但给程序测速这件事本身很容易受机器波动干扰。如果一道题零点几秒就跑完了，操作系统的调度抖动很容易掩盖真实的性能变化。所以评测环境把好几道短耗时任务的测试输入规模扩大了六倍，把单次运行时间拉长到秒级以上。</span>同时，单题得分采用了以 4× 加速为满分的对数计分公式：拿到实打实的 2× 加速就能获得 50 分（即满分的一半），达到或超过 4× 加速则拿满 100 分，防止单靠一道几十倍加速的极端题把整套考卷的平均分拉偏。`,
+        audit: `<strong>🛡️ 跨模型与跨轮次演进对照：</strong><br/>• <strong>为什么 R4 会写出「放大到了六份负载 / 折成半个奖励」？</strong> 因为轻量模型受字数和去标点约束挤压时，把「测试输入规模扩大六倍以拉长运行时间」砍成了「放大到了六份负载」，把「对数计分下 2× 加速得 50 分（满分的一半）」砍成了「折成半个奖励」；<br/>• 新增的 <code>M1_translationese_compression_rate</code> 探针专门捕获此类电报暗语。`
+      }
+    ];
+
+    function showEvoCase(idx, btn) {
+      document.querySelectorAll('#model-evolution .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const c = EVO_CASES[idx];
+      document.getElementById('evo-tag').innerText = c.tag;
+      document.getElementById('evo-left').innerHTML = c.left;
+      document.getElementById('evo-diag').innerHTML = c.diag;
+      document.getElementById('evo-gain').innerText = c.gain;
+      document.getElementById('evo-right').innerHTML = c.right;
+      document.getElementById('evo-audit').innerHTML = c.audit;
     }
   </script>
 </body>

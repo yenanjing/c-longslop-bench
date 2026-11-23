@@ -184,7 +184,9 @@ TRANSLATIONESE_WORDS = (
     "无效变体", "参照验证解", "有界化", "全因子实验", "私有输入", "私有工作负载",
     "参测", "计算契约", "得到了完整保留", "被压到了合理区间", "软件工程 Agent", "编码 Agent",
     "旗舰款", "顶配款", "满血版", "第一点是", "第二点是", "第三点是", "另外一方面",
-    "噪声带", "误差边界",
+    "噪声带", "误差边界", "放大到了六份负载", "构建描述文件", "27 点模板", "正弦基",
+    "算子对角化", "融合乘加收缩", "相对场误差", "非单调变化", "变异系数中位数",
+    "折成半个奖励", "折成近九成", "干净的 2× 加速", "必须算出的结果与必须交付的输出",
 )
 
 AI_CLICHE_PHRASES = (
@@ -194,6 +196,9 @@ AI_CLICHE_PHRASES = (
     "坦率讲", "说实话", "平心而论", "这个原因其实不难理解", "显眼的结论",
     "交出了", "正确答卷", "交卷", "白捡来的", "白捡", "白忙活", "混不过去",
     "绑架整张榜单", "抠出", "实操经验很明确", "实操经验", "工程启示", "对于正在使用",
+    "规则换了一套", "测量本身也会晃", "收益全在设置里", "互相定价", "吃到了题目结构的红利",
+    "结构的红利", "跑对只是入场券", "只是入场券", "边界写得很清楚", "全由 Agent 自己拿主意",
+    "全交给 Agent 判断", "优化点自己找",
 )
 
 REDUNDANT_PREFIX_RE = re.compile(
@@ -286,8 +291,8 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         redundant_prefix_hits += (len(yonglai_templates) - 1)
     stiff_prep_hits = len(STIFF_PREP_FRAME_RE.findall(t))
     grandstanding_hits = len(GRANDSTANDING_RE.findall(t))
-    # 疑问词三字诀压缩饼干（如「算什么、要多快、能改哪里」「允许改哪些目录、计时从哪到哪、产出什么、怎么判对错」）
-    compressed_wh = len(re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", t))
+    # 疑问词/选择疑问压缩饼干（如「算什么、要多快、能改哪里」「优化点在哪、怎么改」「改哪里、要不要动构建配置」）
+    compressed_wh = len(re.findall(r"(?:[^，。！？\n]{1,7}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)[，、]\s*(?:[^，。！？\n]{1,8}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)))", t))
     # 论文内部单字母/编号代号直接做主语（如 R1 打开... R2 叠加... R3 把... / B 是... R 是... L 是...）
     internal_codes = len(re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", t))
     translationese_rate = (
@@ -357,10 +362,17 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         if p_unexplained > 0:
             unexplained_jargon_paras += 1
 
-        # 检查查账式数字与冗余小数区间倾倒
+        # 检查查账式数字、多次试验小数罗列与同段小数复读倾倒
         nums_in_p = re.findall(r"\d+(?:\.\d+)?%?", p)
         decimal_ranges = re.findall(r"\d+\.\d+\s*到\s*\d+\.\d+", p)
-        if len(nums_in_p) >= 10 or len(decimal_ranges) >= 2:
+        trial_arrays = re.findall(r"\d+\.\d+[×%]?[、，]\s*\d+\.\d+[×%]?\s*(?:与|和|及|、)\s*\d+\.\d+", p)
+        dec_nums = re.findall(r"\d+\.\d+", p)
+        if (
+            len(nums_in_p) >= 10
+            or len(decimal_ranges) >= 2
+            or len(trial_arrays) >= 1
+            or (len(dec_nums) >= 4 and len(dec_nums) - len(set(dec_nums)) >= 2)
+        ):
             numeric_overload_paras += 1
 
     return {
@@ -704,15 +716,22 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     "evidence": f"[[专业术语首次出场未解释: {', '.join(unexplained_terms[:5])}]]",
                     "instruction": f"消除专业术语裸奔（{', '.join(unexplained_terms[:5])}）：首次出场必须在紧邻前方加上简明中文功能同位语（如『分子动力学模拟软件 GROMACS』『流体力学求解器 SU2』），或将次要并列缩写合并为中文统称。",
                 })
-            # 代偿病灶 7：查账式数字与冗余小数区间倾倒
+            # 代偿病灶 7：查账式数字、多次试验小数罗列与同段小数复读倾倒
             nums_in_p = re.findall(r"\d+(?:\.\d+)?%?", p)
             decimal_ranges = re.findall(r"\d+\.\d+\s*到\s*\d+\.\d+", p)
-            if len(nums_in_p) >= 10 or len(decimal_ranges) >= 2:
+            trial_arrays = re.findall(r"\d+\.\d+[×%]?[、，]\s*\d+\.\d+[×%]?\s*(?:与|和|及|、)\s*\d+\.\d+", p)
+            dec_nums = re.findall(r"\d+\.\d+", p)
+            if (
+                len(nums_in_p) >= 10
+                or len(decimal_ranges) >= 2
+                or len(trial_arrays) >= 1
+                or (len(dec_nums) >= 4 and len(dec_nums) - len(set(dec_nums)) >= 2)
+            ):
                 issues.append({
                     "type": "NUMERIC_ACCOUNTING_OVERLOAD",
                     "sent_idx": 0,
-                    "evidence": f"[[单段 {len(nums_in_p)} 个数字 / {len(decimal_ranges)} 处小数区间: {p[:36]}...]]",
-                    "instruction": "消除查账式数字倾倒：单段数字或冗余小数范围（如『75.98 到 76.01 秒』）过多，读者无法消化。只保留支撑核心结论的 2–4 个关键数字，把微小的测量噪声区间化整为大白话（如『约 76 秒』），删掉附录式的四舍五入核账过程。",
+                    "evidence": f"[[单段 {len(nums_in_p)} 个数字 / {len(trial_arrays)} 处多次试验小数罗列: {p[:36]}...]]",
+                    "instruction": "消除查账式数字与重复小数倾倒：不要逐一罗列三次重复试验的原始小数（如『21.18×、22.22× 与 21.26×』直接化整为『平均约 21.5×』），也不要在同一段里把起止小数先报一遍区间再逐个复读一遍。",
                 })
             # 代偿病灶 8：翻译腔黑话、公文简写（参测/赛题泛滥）、漏「的」硬接「时候」、模糊代称（旗舰款）与论文内部代号泄漏
             hit_trans = [w for w in TRANSLATIONESE_WORDS if w in p]
@@ -722,7 +741,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                 saiti_running += p.count("赛题")
                 if saiti_running >= 3:
                     hit_trans.append(f"赛题(全篇第{saiti_running}次)")
-            hit_wh = re.findall(r"(?:[^，。！？\n]{1,6}(?:什么|哪[里个些]|多[少快久大]|怎么[样做判]|从哪到哪)[，、]){2,}", p)
+            hit_wh = re.findall(r"(?:[^，。！？\n]{1,7}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)[，、]\s*(?:[^，。！？\n]{1,8}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)))", p)
             hit_codes = re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", p)
             if hit_trans or hit_wh or hit_codes:
                 ev_parts = hit_trans + hit_wh + hit_codes
