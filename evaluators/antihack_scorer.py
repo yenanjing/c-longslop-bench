@@ -190,6 +190,8 @@ TRANSLATIONESE_WORDS = (
     "未公开输入", "在评分这一端", "它计的是", "可比版本历史", "第二个右端项", "非有限概率",
     "分组件测试", "求解器子树", "可以复现的加速", "技术标签由一个模型", "带这类动作的回合里",
     "在统计上分不出来", "这两种拆分都还没有做", "版本之间也不能混着看",
+    "要跑的那套计算", "由应用和它要跑的那套计算定义", "原始代码计算", "相对题目自带的",
+    "未见输入", "没见过的输入", "换上没见过的输入", "计时范围", "并不存在这种相关性",
 )
 
 AI_CLICHE_PHRASES = (
@@ -202,6 +204,22 @@ AI_CLICHE_PHRASES = (
     "规则换了一套", "测量本身也会晃", "收益全在设置里", "互相定价", "吃到了题目结构的红利",
     "结构的红利", "跑对只是入场券", "只是入场券", "边界写得很清楚", "全由 Agent 自己拿主意",
     "全交给 Agent 判断", "优化点自己找", "摸到 1.25", "判定用的那份代码始终不公开",
+    "最弱一位", "最强一位", "测得最多的一位", "最差那个", "最好那个", "十四家",
+    "这一点在看排名时要记住", "在看排名时要记住", "并没有缺位", "缺任何一半都不成立",
+    "计分规则只有一条公式", "三个失败案例指向同一件事", "指向同一件事",
+    "只管结果与计时范围", "公开测试给方向", "摆在每个系统面前", "摆在面前", "真正的分水岭",
+)
+
+CAUSAL_SCAFFOLD_RE = re.compile(
+    r"因为|由于|所以|因此|之所以|如果|要是|一旦|哪怕|只要|不过|但是|然而|但|却|反而|虽然|尽管|相比之下|反过来|换句话说|说白了|也就是说|比如|例如|好比|为什么|怎么|？"
+)
+
+GLUE_PARTICLES_RE = re.compile(
+    r"因为|由于|所以|因此|如果|要是|一旦|哪怕|只要|不过|但是|然而|而|但|却|就|才|再|又|也|还|先|后|并|且|或|既|越|为了|通过|随着|按照|根据|除了|从而|进而|以便|以免|既然|虽然|尽管|无论|不管|不仅|不但|甚至|尤其"
+)
+
+FAKE_COLON_CLAUSE_RE = re.compile(
+    r"^(?:先看|再看|最后看|回头看|接着看|原因写在[^，]{1,8}里|原因出在[^，]{1,8}|问题出在[^，]{1,8}|另一处是[^，]{1,8}|另一个[^，]{1,8}是|第一[层步点]是|第二[层步点]是|第三[层步点]是|真正拉开[^，]{1,8}的是|更关键的是|最典型的是|最直接的[^，]{1,8}是|[^，。]{2,16}有个副作用|[^，。]{2,16}带来一个风险|[^，。]{2,16}指向同一件事|[^，。]{2,16}并没有缺位|[^，。]{2,16}只有一条公式|[^，。]{2,16}分成了两步|[^，。]{2,16}分两步走|[^，。]{2,16}靠两道锁|[^，。]{2,16}靠一道公式)，"
 )
 
 REDUNDANT_PREFIX_RE = re.compile(
@@ -334,12 +352,35 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         + calque_syntax_hits * 2.5
     ) / n * 1000.0
 
-    # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题、单句残段与超长墙段
+    # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题、单句残段与超长墙段、第二代电报拼贴特征
+    img_cnt = len(re.findall(r"!\[[^\]]*\]\([^)]+\)", raw))
+    local_img_cnt = len(re.findall(r"!\[[^\]]*\]\((?!https?://)[^)]+\)", raw))
+    captions_raw = [
+        re.sub(r"<[^>]+>", "", c).strip()
+        for c in re.findall(r"<center>(.*?)</center>", raw, flags=re.S)
+        if "关注我" not in c
+    ]
+    unnum_cap_cnt = sum(1 for c in captions_raw if not re.match(r"^\s*(?:图|表|Figure|Table)\s*\d+", c))
+    body_no_cap = re.sub(r"<center>.*?</center>", "", t, flags=re.S)
+    fig_ref_cnt = len(re.findall(r"(?:图|表)\s*\d+", body_no_cap))
+    unanchored_fig_penalty = float(local_img_cnt + unnum_cap_cnt * 0.5)
+    if img_cnt >= 3 and fig_ref_cnt < max(2, img_cnt // 2):
+        unanchored_fig_penalty += float(max(2, img_cnt // 2) - fig_ref_cnt)
+
+    scaffold_rate = len(CAUSAL_SCAFFOLD_RE.findall(body_no_cap)) / max(1, len(body_no_cap)) * 1000.0
+    causal_scaffold_deficit = max(0.0, 3.80 - scaffold_rate)
+    bare_comma_stack_cnt = sum(
+        1 for s in sents if s.count("，") >= 2 and not GLUE_PARTICLES_RE.search(s)
+    )
+    bare_comma_stack_ratio = bare_comma_stack_cnt / max(1, len(sents))
+
     paras = [p.strip() for p in t.split("\n\n") if p.strip()]
     acronym_dump_paras = 0
     unexplained_jargon_paras = 0
     numeric_overload_paras = 0
     riddle_heading_count = 0
+    cold_opener_paras = 0
+    body_para_cnt = 0
     seen_jargon: set = set()
 
     for p in paras:
@@ -348,7 +389,7 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
             # 半截疑问句、无主核结论短标题或含生硬黑话/套话的小标题
             if (
                 (
-                    re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
+                    re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制|反而最少|再判一次|只管结果与计时范围)$", hd)
                     and "：" not in hd and ":" not in hd
                 )
                 or any(w in hd for w in TRANSLATIONESE_WORDS)
@@ -358,7 +399,11 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
             continue
         if is_structural_or_meta_para(p):
             continue
+        body_para_cnt += 1
         p_sents = split_sentences(p)
+        if p_sents:
+            if (len(p_sents) >= 2 and len(p_sents[0]) <= 20 and "？" not in p[:25]) or FAKE_COLON_CLAUSE_RE.search(p):
+                cold_opener_paras += 1
         if not p.startswith("**一句话讲清楚") and (
             (len(p_sents) == 1 and len(p) < 75) or len(p) > 330
         ):
@@ -397,18 +442,27 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         trial_arrays = re.findall(r"\d+\.\d+[×%]?[、，]\s*\d+\.\d+[×%]?\s*(?:与|和|及|、)\s*\d+\.\d+", p)
         dec_nums = re.findall(r"\d+\.\d+", p)
         if (
-            len(nums_in_p) >= 10
+            len(nums_in_p) >= 14
             or len(decimal_ranges) >= 2
             or len(trial_arrays) >= 1
             or (len(dec_nums) >= 4 and len(dec_nums) - len(set(dec_nums)) >= 2)
         ):
             numeric_overload_paras += 1
 
+    ta_opener_cnt = sum(1 for s in sents if s.strip().startswith("它"))
+    short_choppy_paras = sum(
+        1 for p in paras
+        if not p.startswith("## ") and not is_structural_or_meta_para(p)
+        and not p.startswith("**一句话讲清楚") and len(p) < 110
+    )
+
     return {
         "M2_overlong_sent_ratio": round(overlong_cnt / len(sents), 3),
         "M2_mean_sent_len": round(statistics.mean(sent_lens), 2),
         "M2_zhe_opener_ratio": round(zhe_opener_cnt / len(sents), 3),
+        "M2_ta_opener_ratio": round(ta_opener_cnt / len(sents), 3),
         "M2_micro_sent_ratio": round(micro_sent_cnt / len(sents), 3),
+        "M2_short_choppy_paras": float(short_choppy_paras),
         "M1_reportese_rate": round(rep_rate, 3),
         "M1_reader_hook_rate": round(hook_hits / n * 1000.0, 3),
         "M1_single_filler_max_rate": round(single_filler_max_rate, 3),
@@ -417,6 +471,10 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         "M2_unexplained_jargon_paras": float(unexplained_jargon_paras),
         "M2_numeric_overload_paras": float(numeric_overload_paras),
         "M3_riddle_heading_count": float(riddle_heading_count),
+        "M2_causal_scaffold_deficit": round(causal_scaffold_deficit, 3),
+        "M2_cold_aphorism_opener_ratio": round(cold_opener_paras / max(1, body_para_cnt), 3),
+        "M2_bare_comma_stack_ratio": round(bare_comma_stack_ratio, 3),
+        "M3_unanchored_figure_count": round(unanchored_fig_penalty, 2),
     }
 
 
@@ -448,7 +506,7 @@ def score_four_dims(
     coupling = 0.6 * max(0.0, z_coh - 0.3) * max(0.0, z_onset - 0.5)
     d2 = statistics.mean([z_onset, z_wave, z_coh, z_o2n, z_chop]) + coupling
 
-    # 长文生成代偿防刷锁（Lock 1 气口赤字/单口语词刷分/汇报腔/直译压缩 + Lock 2b 左防剁碎微句与「这」起手刷分、右防粘连长句/缩写倾倒/术语裸奔/数字查账锁）
+    # 长文生成代偿防刷锁（Lock 1 气口赤字/单口语词刷分/汇报腔/直译压缩 + Lock 2b 左防剁碎微句与「这/它」起手刷分、右防粘连长句/缩写倾倒/术语裸奔/数字查账/因果脚手架赤字/冷判词起手/无连词裸逗拼贴锁）
     if compensatory_lock or "M2_overlong_sent_ratio" in feats:
         z_buf_def = max(0.0, (feats.get("M1_buffer_deficit", 1.0) - 2.0) / 1.2)
         z_rep = max(0.0, (feats.get("M1_reportese_rate", 0.0) - 0.90) / 0.65)
@@ -456,16 +514,35 @@ def score_four_dims(
         z_trans = max(0.0, (feats.get("M1_translationese_rate", 0.0) - 0.60) / 0.50)
         d1 = d1 + (z_buf_def * 0.45 + z_rep * 0.40 + z_filler_spam * 0.85 + z_trans * 0.75) / 2.8
         z_overlong = max(0.0, (feats.get("M2_overlong_sent_ratio", 0.0) - 0.18) / 0.07)
-        mslen = feats.get("M2_mean_sent_len", 38.0)
-        z_mslen = max(0.0, (mslen - 48.5) / 5.5) + max(0.0, (35.0 - mslen) / 3.0)
+        mslen = feats.get("M2_mean_sent_len", 46.0)
+        z_mslen = max(0.0, (mslen - 56.0) / 5.5) + max(0.0, (41.0 - mslen) / 2.5)
         z_micro = max(0.0, (feats.get("M2_micro_sent_ratio", 0.0) - 0.05) / 0.03)
         z_zhe_spam = max(0.0, (feats.get("M2_zhe_opener_ratio", 0.0) - 0.10) / 0.03)
+        z_ta_spam = max(0.0, (feats.get("M2_ta_opener_ratio", 0.0) - 0.04) / 0.02)
+        z_choppy_p = max(0.0, (feats.get("M2_short_choppy_paras", 0.0) - 2.0) / 2.0) * 0.45
         z_info_dump = feats.get("M2_acronym_dump_paras", 0.0) * 0.45
         z_jargon = max(0.0, feats.get("M2_unexplained_jargon_paras", 0.0) - 1.0) * 0.28
         z_num_dump = max(0.0, feats.get("M2_numeric_overload_paras", 0.0) - 1.0) * 0.25
-        d2 = d2 + 0.35 * z_overlong + 0.25 * z_mslen + 0.45 * z_micro + 0.45 * z_zhe_spam + z_info_dump + z_jargon + z_num_dump
+        z_scaf_def = feats.get("M2_causal_scaffold_deficit", 0.0) * 0.85
+        z_cold_open = max(0.0, (feats.get("M2_cold_aphorism_opener_ratio", 0.0) - 0.08) / 0.05) * 0.55
+        z_bare_stack = max(0.0, (feats.get("M2_bare_comma_stack_ratio", 0.0) - 0.10) / 0.03) * 0.50
+        d2 = (
+            d2
+            + 0.35 * z_overlong
+            + 0.25 * z_mslen
+            + 0.45 * z_micro
+            + 0.45 * z_zhe_spam
+            + 0.40 * z_ta_spam
+            + z_choppy_p
+            + z_info_dump
+            + z_jargon
+            + z_num_dump
+            + z_scaf_def
+            + z_cold_open
+            + z_bare_stack
+        )
 
-    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度（容忍自然均衡段落 para_cv in [0.20, 0.80]，严禁靠切碎单句短段刷 CV）+ 词汇多样性双边带 + 谜语小标题/单句残段惩罚
+    # D3 句式骨架：滑动窗口段首起手同质化 + 段落字数均匀度（容忍自然均衡段落 para_cv in [0.20, 0.80]，严禁靠切碎单句短段刷 CV）+ 词汇多样性双边带 + 谜语小标题/单句残段惩罚 + 图文脱节惩罚
     pf = feats["M2_para_flatness"]
     if 1.10 <= pf <= 3.30:
         z_para_flat = 0.12 * abs(pf - 2.10) / 0.65
@@ -473,11 +550,15 @@ def score_four_dims(
         z_para_flat = (1.10 - pf) / 0.35 + 0.18
     else:
         z_para_flat = (pf - 3.30) / 0.55 + 0.22
-    d3 = statistics.mean([
-        band.two_sided_z("M3_opener_homogeneity", feats["M3_opener_homogeneity"]) + feats["M3_opener_homogeneity"] * 2.0,
-        z_para_flat,
-        band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"]),
-    ]) + feats.get("M3_riddle_heading_count", 0.0) * 0.35
+    d3 = (
+        statistics.mean([
+            band.two_sided_z("M3_opener_homogeneity", feats["M3_opener_homogeneity"]) + feats["M3_opener_homogeneity"] * 2.0,
+            z_para_flat,
+            band.two_sided_z("M3_lexical_diversity_MATTR", feats["M3_lexical_diversity_MATTR"]),
+        ])
+        + feats.get("M3_riddle_heading_count", 0.0) * 0.35
+        + feats.get("M3_unanchored_figure_count", 0.0) * 0.18
+    )
 
     # D4 宏观：跨段远距回环复述 + 远距回声均值
     d4 = statistics.mean([
@@ -563,6 +644,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
     paras = [p.strip() for p in text.split("\n\n") if p.strip()]
     rx, seen = [], set()
     no_buf_run = 0
+    no_scaf_run = 0
     filler_counts: Dict[str, int] = {}
     seen_jargon_rx: set = set()
     seen_gloss_en: Dict[str, int] = {}
@@ -574,7 +656,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
             hd = p[3:].strip()
             hd_issues = []
             if (
-                re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制)$", hd)
+                re.search(r"(?:能.{1,6}多少|能读出什么|意味着什么|说明了什么|没有失败信号|有几个层次|一份合同|它能用到哪|谁排在前面|分数怎么算|怎么互相牵制|反而最少|再判一次|只管结果与计时范围)$", hd)
                 and "：" not in hd and ":" not in hd
             ):
                 hd_issues.append({
@@ -603,6 +685,31 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                 rx.append({
                     "para_idx": p_idx,
                     "issues": hd_issues,
+                    "prev_para_tail": paras[p_idx - 1][-40:] if p_idx else "",
+                })
+            continue
+        if include_compensatory and (p.startswith("![") or p.startswith("<center>")):
+            fig_issues = []
+            if p.startswith("![") and re.search(r"!\[[^\]]*\]\((?!https?://)[^)]+\)", p):
+                fig_issues.append({
+                    "type": "UNANCHORED_FIGURE_OR_CAPTION",
+                    "sent_idx": 0,
+                    "evidence": f"[[本地未上云图片路径: {p[:60]}]]",
+                    "instruction": "严禁在正文中使用相对路径 `assets/...`（会导致网页端图片裂开），必须替换为已上传云端图床的完整 `https://...` URL。",
+                })
+            if "<center>" in p:
+                cap_m = re.search(r"<center>(.*?)</center>", p, flags=re.S)
+                if cap_m and "关注我" not in cap_m.group(1) and not re.match(r"^\s*(?:图|表)\s*\d+\s*[｜|：:]", cap_m.group(1)):
+                    fig_issues.append({
+                        "type": "UNANCHORED_FIGURE_OR_CAPTION",
+                        "sent_idx": 0,
+                        "evidence": f"[[图注缺少『图 X｜/表 X｜』编号: {cap_m.group(1)[:42]}...]]",
+                        "instruction": "图注必须以『图 1｜』『表 1｜』等统一编号开头，并在相邻正文中显式引导读者看图（如『先看图 1 左右两侧的对比』『从图 2 可以看到』），严禁把图片当成与正文无关的插画硬塞进去。",
+                    })
+            if fig_issues:
+                rx.append({
+                    "para_idx": p_idx,
+                    "issues": fig_issues,
                     "prev_para_tail": paras[p_idx - 1][-40:] if p_idx else "",
                 })
             continue
@@ -751,7 +858,7 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
             trial_arrays = re.findall(r"\d+\.\d+[×%]?[、，]\s*\d+\.\d+[×%]?\s*(?:与|和|及|、)\s*\d+\.\d+", p)
             dec_nums = re.findall(r"\d+\.\d+", p)
             if (
-                len(nums_in_p) >= 10
+                len(nums_in_p) >= 14
                 or len(decimal_ranges) >= 2
                 or len(trial_arrays) >= 1
                 or (len(dec_nums) >= 4 and len(dec_nums) - len(set(dec_nums)) >= 2)
@@ -886,6 +993,41 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     no_buf_run = 0
             else:
                 no_buf_run = 0
+
+            # 代偿病灶 12：段首冷判词短句或伪冒号逗号起手（第二代电报腔典型病灶）
+            fake_colon_m = FAKE_COLON_CLAUSE_RE.search(p)
+            if fake_colon_m or (len(sents) >= 2 and len(sents[0]) <= 20 and "？" not in p[:25]):
+                ev_cold = fake_colon_m.group(0) if fake_colon_m else sents[0]
+                issues.append({
+                    "type": "COLD_APHORISM_OR_FAKE_COLON_OPENER",
+                    "sent_idx": 0,
+                    "evidence": f"[[段首冷判词/伪冒号逗号起手: {ev_cold}]]",
+                    "instruction": "消除段首 <=20 字的冷判词短句（如『版本管理并没有缺位。』『计分规则只有一条公式。』『缺任何一半都不成立。』）或用逗号代替冒号的伪提示起手（如『先看…，』『原因写在源码里，』『…有个副作用，』）：把段首第一句展开为承接上文问题的完整主谓宾自然句。",
+                })
+
+            # 代偿病灶 13：无逻辑连接词多逗号裸拼句（电报式短句强行用逗号拼贴）
+            bare_sents = [s for s in sents if s.count("，") >= 2 and not GLUE_PARTICLES_RE.search(s)]
+            if len(bare_sents) >= 2 or any(s.count("，") >= 3 for s in bare_sents):
+                issues.append({
+                    "type": "BARE_COMMA_CLAUSE_STITCHING",
+                    "sent_idx": 0,
+                    "evidence": f"[[无逻辑连接词逗号裸拼句: {bare_sents[0][:48]}...]]",
+                    "instruction": "消除无逻辑连接词的电报式逗号裸拼句：不要把几个主语不同、缺少『因为/所以/如果/不过/而/才/就/为了』等连接词的半截短句硬拿逗号拼在一起；补全分句间的因果或转折连词，或在不同主语之间正常断句。",
+                })
+
+            # 代偿病灶 14：连续多段因果与提问逻辑脚手架赤字
+            if not CAUSAL_SCAFFOLD_RE.search(p):
+                no_scaf_run += 1
+                if no_scaf_run >= 3 and len(p) >= 80:
+                    issues.append({
+                        "type": "CAUSAL_SCAFFOLD_DEFICIT",
+                        "sent_idx": 0,
+                        "evidence": f"[[连续 {no_scaf_run} 段零因果/假设/转折/提问连接词: {p[:32]}...]]",
+                        "instruction": "消除电报式事实罗列（连续多段缺少因果/假设/转折/提问脚手架）：像老师讲课一样把『为什么需要这一步』『如果不这么做会出什么问题』『由此带来什么结果』用自然的『因为…所以…』『如果…就会…』『不过』『换句话说』串起来。",
+                    })
+                    no_scaf_run = 0
+            else:
+                no_scaf_run = 0
 
         for s in sents:
             for w, pos in pseg.cut(s):
