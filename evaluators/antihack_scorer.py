@@ -298,6 +298,31 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
     compressed_wh = len(re.findall(r"(?:[^，。！？\n]{1,7}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)[，、]\s*(?:[^，。！？\n]{1,8}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)))", t))
     # 论文内部单字母/编号代号直接做主语（如 R1 打开... R2 叠加... R3 把... / B 是... R 是... L 是...）
     internal_codes = len(re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", t))
+    # 句法级直译模式（在…这一端、重跑…未公开输入、A、B，以及 C、并不单调、版本之间不能混、由一个模型…另一个模型、机械审稿免责补丁、抽检/回合/跨零区间核账）
+    calque_syntax_hits = len(
+        re.findall(
+            r"在[^，。！？\n]{1,8}(?:这|那)一端"
+            r"|(?:重跑|运行|测试)[^，。！？\n]{0,10}(?:未公开|保留|留出|私有)[^，。！？\n]{0,4}输入"
+            r"|、[^，。！？\n]{2,18}，以及"
+            r"|(?:摸到|飙到|干到|冲到|冲上)\s*\d"
+            r"|(?:并不|不是|并非|呈?)单调"
+            r"|版本之间(?:也)?不能混|拿旧版[^，。！？\n]{1,12}解释新版"
+            r"|由一个模型[^。！？\n]{1,25}另一个模型"
+            r"|论文(?:对[^，。]{1,8})?(?:没有|并未)(?:给出|回答|解释|把它们当成)"
+            r"|(?:目前|现有记录)(?:还)?(?:没有数据|给不出答案)"
+            r"|文章(?:自己也)?没有把|文章给了(?:一个)?"
+            r"|不是盲测发现，也不是|只是观察，论文|没有按[^，。]{1,8}平均(?:分配|配额)"
+            r"|(?:并不|不能)代表(?:全部|所有|专家)[^，。]{2,15}(?:情况|上限|运行)"
+            r"|只能算相关，(?:还)?不能当成因果|这点差距和随机波动分不开|只剩\s*\d+(?:\.\d+)?\s*个点的优势"
+            r"|抽\s*\d+\s*条[^。]{0,50}(?:确认了?\s*\d+\s*条|交给人)|确认了?\s*\d+\s*条[^。]{0,25}确认了?\s*\d+\s*条"
+            r"|\d+\s*个(?:相关|带这类动作的)?回合[^。]{0,20}\d+(?:\.\d+)?%\s*引用了|回滚[^。]{0,20}\d+(?:\.\d+)?%\s*引用了更早"
+            r"|区间(?:还)?跨过(?:了)?\s*[0零]"
+            r"|(?:代价|压力|难题|问题|负担)落在另一头"
+            r"|换(?:成|上)[^，。！？\n]{0,10}(?:同类|隐藏|未公开|私有)[^，。！？\n]{0,6}输入再跑|同类的(?:隐藏|未公开|私有)?输入"
+            r"|被放弃(?:的|那)(?:一)?(?:候选|版)[^。]*(?:私有验证器|重放)",
+            t,
+        )
+    )
     translationese_rate = (
         trans_hits * 1.5
         + cliche_hits * 1.5
@@ -306,6 +331,7 @@ def extract_compensatory_probes(raw: str) -> Dict[str, float]:
         + grandstanding_hits * 3.0
         + compressed_wh * 3.0
         + internal_codes * 2.5
+        + calque_syntax_hits * 2.5
     ) / n * 1000.0
 
     # 3. 段落级扫描：单段大写缩写倾倒、专业术语首次出场裸奔、查账式数字倾倒、半截疑问/谜语小标题、单句残段与超长墙段
@@ -746,14 +772,64 @@ def generate_prescriptions(raw: str, include_compensatory: bool = True) -> List[
                     hit_trans.append(f"赛题(全篇第{saiti_running}次)")
             hit_wh = re.findall(r"(?:[^，。！？\n]{1,7}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)[，、]\s*(?:[^，。！？\n]{1,8}(?:什么|哪[里个些一]|多[少快久大]|怎么\S{0,3}|要不要\S{0,4}|从哪到哪)))", p)
             hit_codes = re.findall(r"(?<![A-Za-z0-9])(?:R[123]\s*(?:打开|叠加|把|改坏|最快)|[BRL]\s*(?:代表|是把|是复用|是延迟|打开|关掉))", p)
-            if hit_trans or hit_wh or hit_codes:
-                ev_parts = hit_trans + hit_wh + hit_codes
+            hit_calque_syn = re.findall(
+                r"在[^，。！？\n]{1,8}(?:这|那)一端"
+                r"|(?:重跑|运行|测试)[^，。！？\n]{0,10}(?:未公开|保留|留出|私有)[^，。！？\n]{0,4}输入"
+                r"|、[^，。！？\n]{2,18}，以及"
+                r"|(?:摸到|飙到|干到|冲到|冲上)\s*\d"
+                r"|(?:并不|不是|并非|呈?)单调"
+                r"|版本之间(?:也)?不能混|拿旧版[^，。！？\n]{1,12}解释新版"
+                r"|由一个模型[^。！？\n]{1,25}另一个模型"
+                r"|论文(?:对[^，。]{1,8})?(?:没有|并未)(?:给出|回答|解释|把它们当成)"
+                r"|(?:目前|现有记录)(?:还)?(?:没有数据|给不出答案)"
+                r"|文章(?:自己也)?没有把|文章给了(?:一个)?"
+                r"|不是盲测发现，也不是|只是观察，论文|没有按[^，。]{1,8}平均(?:分配|配额)"
+                r"|(?:并不|不能)代表(?:全部|所有|专家)[^，。]{2,15}(?:情况|上限|运行)"
+                r"|只能算相关，(?:还)?不能当成因果|这点差距和随机波动分不开|只剩\s*\d+(?:\.\d+)?\s*个点的优势"
+                r"|抽\s*\d+\s*条[^。]{0,50}(?:确认了?\s*\d+\s*条|交给人)|确认了?\s*\d+\s*条[^。]{0,25}确认了?\s*\d+\s*条"
+                r"|\d+\s*个(?:相关|带这类动作的)?回合[^。]{0,20}\d+(?:\.\d+)?%\s*引用了|回滚[^。]{0,20}\d+(?:\.\d+)?%\s*引用了更早"
+                r"|区间(?:还)?跨过(?:了)?\s*[0零]"
+                r"|(?:代价|压力|难题|问题|负担)落在另一头"
+                r"|换(?:成|上)[^，。！？\n]{0,10}(?:同类|隐藏|未公开|私有)[^，。！？\n]{0,6}输入再跑|同类的(?:隐藏|未公开|私有)?输入"
+                r"|被放弃(?:的|那)(?:一)?(?:候选|版)[^。]*(?:私有验证器|重放)",
+                p,
+            )
+            if hit_trans or hit_wh or hit_codes or hit_calque_syn:
+                ev_parts = hit_trans + hit_wh + hit_codes + hit_calque_syn
                 issues.append({
                     "type": "TRANSLATIONESE_COMPRESSION",
                     "sent_idx": 0,
                     "evidence": f"[[生硬简写/语病/模糊代称/翻译腔: {', '.join(ev_parts[:4])}]]",
-                    "instruction": "消除公文生造简写、漏字语病与翻译腔：『参测』改为『参与评测/测试的』，『旗舰款』直呼具体模型名，『软件工程 Agent』改为『Coding Agent』，『修 Bug 时候/看榜单时候』补全为『…的时候』或『…时』，『第一点是…另外一方面』改为自然叙述，基准里的 task 统称『任务/题目/程序』（勿满篇叫『赛题』）。",
+                    "instruction": "消除公文生造简写、句法直译与方法论流水账：『在…这一端』改为自然动作切入，『重跑…未公开输入』改为『用不公开的隐藏测试数据重新运行程序』，『A、B，以及 C』改为自然动词分句，『并不单调』改为人话『并不是改得越多就越快』，删掉内部版本切割与标注员分工细节。",
                 })
+            # 代偿病灶 8b：同段车轱辘话同义复读（防为凑够段长把同一句话颠倒复述两遍）
+            clauses_p = [c.strip() for c in re.split(r"[，；。！？!?]", p) if len(c.strip()) >= 8]
+            for ci_idx in range(len(clauses_p)):
+                ci_han = "".join(re.findall(r"[\u4e00-\u9fff]", clauses_p[ci_idx]))
+                if len(ci_han) < 6:
+                    continue
+                ci_bg = {ci_han[k : k + 2] for k in range(len(ci_han) - 1)}
+                taut_hit = None
+                for cj_idx in range(ci_idx + 2, len(clauses_p)):
+                    cj_han = "".join(re.findall(r"[\u4e00-\u9fff]", clauses_p[cj_idx]))
+                    if len(cj_han) < 6:
+                        continue
+                    cj_bg = {cj_han[k : k + 2] for k in range(len(cj_han) - 1)}
+                    shared_bg = ci_bg & cj_bg - {"的是", "是在", "不会", "不能", "可以", "这个", "这种", "一套", "一个"}
+                    same_tail = len(ci_han) >= 3 and len(cj_han) >= 3 and ci_han[-2:] == cj_han[-2:]
+                    is_contrast = bool(re.search(r"但|却|要是|如果|反之|相反|分别|关闭|打开", clauses_p[ci_idx] + clauses_p[cj_idx]))
+                    jaccard = len(shared_bg) / max(1, len(ci_bg | cj_bg))
+                    if (same_tail and not is_contrast and len(shared_bg) >= 2 and jaccard >= 0.15) or jaccard >= 0.42:
+                        taut_hit = (clauses_p[ci_idx], clauses_p[cj_idx])
+                        break
+                if taut_hit:
+                    issues.append({
+                        "type": "INTRA_PARA_TAUTOLOGY",
+                        "sent_idx": 0,
+                        "evidence": f"[[同段车轱辘话复读: 『{taut_hit[0]}』 vs 『{taut_hit[1]}』]]",
+                        "instruction": "消除同段车轱辘话同义复读：切勿为凑够段落字数把同一句话在段首段尾颠倒复述两遍；删掉重复分句，若单点内容不足一段则直接并入相邻段落。",
+                    })
+                    break
             # 代偿病灶 9：贴标签式冗余类别前缀（如「工具框架 Claude Code」「模型 DeepSeek-V4-Flash」「符号 $B_t$」）、定语二次复读与「用来…的程序」机械套用
             red_prefixes = REDUNDANT_PREFIX_RE.findall(p)
             for g_match in re.findall(r"(?:评测基准|模拟程序|求解程序|开源软件|语言模型|指令集)\s+[A-Za-z][A-Za-z0-9_\-\s]{1,18}", p):
