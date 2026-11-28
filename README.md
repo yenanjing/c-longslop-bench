@@ -1,12 +1,14 @@
-# C-LongSlopBench：中文长文 AI 味检测与防刷分评测基准 v1.2
+# C-SlopBench：中文跨尺度 AI 味检测与认知可读性防刷分评测基准
 
 > 面向中文深度长文（450–10,000 字）的「AI 味」可归因、防刷分、可执行诊断评测基准。
-> 在线交互主页与排行榜：[https://yenanjing.github.io/c-longslop-bench/](https://yenanjing.github.io/c-longslop-bench/)
+> - **Homepage & Leaderboard:** [https://yenanjing.github.io/c-slopbench/](https://yenanjing.github.io/c-slopbench/)
+> - **GitHub:** [https://github.com/yenanjing/c-slopbench](https://github.com/yenanjing/c-slopbench)
+> - **Hugging Face:** [https://huggingface.co/datasets/yenanjing/c-slopbench](https://huggingface.co/datasets/yenanjing/c-slopbench)
 
 ## 一、Bench 组成与数据集结构
 
 ```
-c_longslop_bench/
+c-slopbench/
 ├── scrape_multi_human_authors.py             # 多博主真实人类中文长文采集器（陈皓/阮一峰/云风/piglei/laixintao）
 ├── build_bench_dataset.py                    # 数据集标准化构建脚本 v1.2（零泄漏切分、断行清洗、固定 seed=42）
 ├── generate_real_llm_paired10.py             # 真实 LLM 改写基线 (Zero-Shot/Checklist) 与局部自洽门禁处方微修管线
@@ -65,7 +67,7 @@ v1.2 经严格跨语种/短碎片清洗与零泄漏切分后，共包含 **418 �
 
 ### 主实验一（Table 1）：检测器与裁判跨领域对抗横评（Evaluator Benchmark）
 
-在零泄漏 Heldout 集（212 篇多领域长文，括号内为 1,000 次 Bootstrap 95% 置信区间）与 30 篇配对/对抗改写集上，对比经典统计基线、现代神经检测器（`Qwen2.5-0.5B` Neural PPL / `Fast-DetectGPT` / 监督微调 `Chinese-RoBERTa-wwm-ext`）、单分数 LLM 裁判与 C-LongSlopBench 探针：
+在零泄漏 Heldout 集（212 篇多领域长文，括号内为 1,000 次 Bootstrap 95% 置信区间）与 30 篇配对/对抗改写集上，对比经典统计基线、现代神经检测器（`Qwen2.5-0.5B` Neural PPL / `Fast-DetectGPT` / 监督微调 `Chinese-RoBERTa-wwm-ext`）、单分数 LLM 裁判与 C-SlopBench 探针：
 
 | 检测 / 评价范式 | Heldout AUROC (95% CI)↑ | Pre-AI 真人误杀率↓ | 原生 AI 检出率↑ | 对抗改写检出率↑ |
 |---|---:|---:|---:|---:|
@@ -135,7 +137,7 @@ v1.2 经严格跨语种/短碎片清洗与零泄漏切分后，共包含 **418 �
 
 > 原始数据：`results/cross_model_iteration_evolution.json` | 同源测试论文：*AccelerateBench* (`arXiv:2611.20882`)
 
-在完全相同的去标点负向约束下，**轻量快速模型（`DeepSeek-V4.1-Flash`）**与**旗舰推理模型（`Gemini-4-Argon`）**展现出截然不同的「模型特异代偿指纹（Model-Specific Compensatory Fingerprints）」，C-LongSlopBench 能够同时区分**不同底座模型的能力边界**与**同一模型跨轮次迭代的演进轨迹**：
+在完全相同的去标点负向约束下，**轻量快速模型（`DeepSeek-V4.1-Flash`）**与**旗舰推理模型（`Gemini-4-Argon`）**展现出截然不同的「模型特异代偿指纹（Model-Specific Compensatory Fingerprints）」，C-SlopBench 能够同时区分**不同底座模型的能力边界**与**同一模型跨轮次迭代的演进轨迹**：
 
 | 模型与迭代阶段 | 总分↑ | HumanPass↑ | 防刷 Z↓ | D1 微观↓ | D2 推进↓ | D3 结构↓ | 平均句长 | 直译/暗语率↓ | 核心代偿病灶与人类盲评反馈 | 处方数↓ |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|
@@ -152,7 +154,7 @@ v1.2 经严格跨语种/短碎片清洗与零泄漏切分后，共包含 **418 �
 1. **「去 AI 味」的核心是防止模型把复杂逻辑压扁成电报暗语**：当禁止破折号、括号和冒号偷懒时，轻量模型（`DeepSeek-V4.1-Flash`）若缺乏显式的因果展开约束，极易把原句强压成无主语「把…」祈使句（Iter 2b 全文高达 26 处）与「电报式伪白话」或生吞数学黑话（`直译压缩率 5.83/千字`）。
 2. **不同模型家族具有高度可分的「代偿指纹」**：轻量模型主要在**句法压缩层（粘连长句 → 剁碎微句 → 无主语「把」字句刷屏 / 电报省略暗语 / 原始小数罗列）**上失分；旗舰模型（`Gemini-4-Argon`）则主要在**修辞与结构层（熟知专名前贴冗余类别标签、单句独立成段的戏剧化报幕、结尾排比拔高金句）**上暴露深层训练偏好。
 3. **单边指标必然诱发 Goodhart 投机，必须用双向成对耦合锁**：无论是「只禁句首英文 `。E` 诱发 182 字一逗到底」、「只奖段落长度变异度诱发 <75 字单句报幕残段」，还是「只压句首惊奇度 UID 诱发 30 字剁碎微句与 6 次『这一来』」，都证明单边目标必被钻空子，必须依靠 `[P10, P90]` 双边带与 `Lock 2b` 左右双向锁。
-4. **精准反代偿探针让低成本轻量模型从零生成媲美旗舰大模型**：生产环境无需为去 AI 味而切换昂贵的旗舰大模型代写初稿——当将 C-LongSlopBench 捕获的四大轻量模型代偿病灶（无主语祈使刷屏、电报式半截暗语、直译名词包、同段小数复读）编码为前置生成约束与同模型独立审读闭环后，**`DeepSeek-V4.1-Flash` 从零完整生成的终稿（Iter 3，HumanPass 91.6，0 处方）直接追平旗舰模型（91.9），以极低生产成本实现零障碍人类可读性**。
+4. **精准反代偿探针让低成本轻量模型从零生成媲美旗舰大模型**：生产环境无需为去 AI 味而切换昂贵的旗舰大模型代写初稿——当将 C-SlopBench 捕获的四大轻量模型代偿病灶（无主语祈使刷屏、电报式半截暗语、直译名词包、同段小数复读）编码为前置生成约束与同模型独立审读闭环后，**`DeepSeek-V4.1-Flash` 从零完整生成的终稿（Iter 3，HumanPass 91.6，0 处方）直接追平旗舰模型（91.9），以极低生产成本实现零障碍人类可读性**。
 
 ---
 
